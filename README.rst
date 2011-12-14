@@ -1,6 +1,8 @@
 taskw - Python API for the taskwarrior DB
 =========================================
 
+.. split here
+
 This is a python API for the `taskwarrior <http://taskwarrior.org>`_ command
 line tool.
 

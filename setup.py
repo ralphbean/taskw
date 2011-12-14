@@ -3,13 +3,17 @@ import sys, os
 
 version = '0.1'
 
+f = open('README.rst')
+long_description = f.read().strip()
+long_description = long_description.split('split here', 1)[1]
+f.close()
+
 setup(name='taskw',
       version=version,
       description="Python bindings for your taskwarrior database",
-      long_description="""\
-""",
+      long_description=long_description,
       classifiers=[], # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
-      keywords='',
+      keywords='taskwarrior task',
       author='Ralph Bean',
       author_email='ralph.bean@gmail.com',
       url='http://threebean.org',
