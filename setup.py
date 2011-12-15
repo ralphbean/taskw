@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-version = '0.1.1'
+version = '0.1.2'
 
 f = open('README.rst')
 long_description = f.read().strip()
@@ -16,7 +16,7 @@ setup(name='taskw',
       keywords='taskwarrior task',
       author='Ralph Bean',
       author_email='ralph.bean@gmail.com',
-      url='http://threebean.org',
+      url='http://github.com/ralphbean/taskw',
       license='',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,

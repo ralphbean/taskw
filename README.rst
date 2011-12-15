@@ -6,15 +6,24 @@ taskw - Python API for the taskwarrior DB
 This is a python API for the `taskwarrior <http://taskwarrior.org>`_ command
 line tool.
 
+Getting taskw
+-------------
+
 Installing
-----------
+++++++++++
 
 Using ``taskw`` requires that you first install `taskwarrior
 <http://taskwarrior.org>`_.
 
-Installing is easy with ``pip``::
+Installing it from http://pypi.python.org/pypi/taskw is easy with ``pip``::
 
     $ pip install taskw
+
+The Source
+++++++++++
+
+You can find the source on github at http://github.com/ralphbean/taskw
+
 
 Examples
 --------
