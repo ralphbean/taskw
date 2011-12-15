@@ -26,12 +26,9 @@ def task_add(description, **kw):
 
 
 def task_done(id):
-    raise ValueError("This doesn't work yet.  Its not based on index, but
-                     something else.")
-
     tasks = taskw.reading.load_tasks()
 
-    if len(tasks['pending']) <= id:
+    if len(tasks['pending']) < id:
         raise ValueError("No such pending task.")
 
     task = tasks['pending'][id - 1]
@@ -43,7 +40,6 @@ def task_done(id):
 
 
 def task2str(task):
-    raise ValueError("description must come first (see annotations)")
     return "[%s]\n" % " ".join([
         "%s:\"%s\"" % (k, v) for k, v in task.iteritems()
     ])
@@ -56,7 +52,7 @@ def _task_remove(id, category):
     with open(os.path.join(config['data']['location'], filename), "r") as f:
         lines = f.readlines()
 
-    del lines[id]
+    del lines[id-1]
 
     with open(os.path.join(config['data']['location'], filename), "w") as f:
         f.writelines(lines)
