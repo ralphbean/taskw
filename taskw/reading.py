@@ -73,6 +73,6 @@ def parse_line(line):
     d = {}
     for pair in line.strip()[1:-1].split("\" "):
         key, value = pair.split(":\"")
-        d[key] = value[:-1]
+        d[key] = value
 
     return d
