@@ -25,13 +25,25 @@ def task_add(description, **kw):
     _task_add(task, 'pending')
 
 
-def task_done(id):
+def task_done(id=None, uuid=None):
+    if not id and not uuid:
+        raise KeyError("task_done must receive either id or uuid")
+
     tasks = taskw.reading.load_tasks()
 
-    if len(tasks['pending']) < id:
-        raise ValueError("No such pending task.")
+    if id:
+        if len(tasks['pending']) < id:
+            raise ValueError("No such pending task with id %i." % id)
 
-    task = tasks['pending'][id - 1]
+        task = tasks['pending'][id - 1]
+    else:
+        matching = filter(lambda t: t['uuid'] == uuid, tasks['pending'])
+        if not matching:
+            raise ValueError("No such pending task with uuid %i." % uuid)
+
+        task = matching[0]
+        id = tasks['pending'].index(task)+1
+
     task['status'] = 'completed'
     task['end'] = str(int(time.time()))
 
