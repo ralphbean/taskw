@@ -68,10 +68,11 @@ def parse_line(line):
 
     >>> parse_line('[description:"Make a python API for taskwarrior"]')
     {'description': 'Make a python API for taskwarrior'}
+
     """
 
     d = {}
-    for pair in line.strip()[1:-1].split("\" "):
+    for pair in line.strip()[1:-2].split("\" "):
         key, value = pair.split(":\"")
         d[key] = value
 
