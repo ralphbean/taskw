@@ -1,4 +1,9 @@
+import codecs
 import os
+
+
+open = lambda fname : codecs.open(fname, "r", "utf-8")
+
 
 def load_tasks():
     """ Load all tasks.
