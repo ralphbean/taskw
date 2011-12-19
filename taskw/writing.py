@@ -1,8 +1,13 @@
 import taskw.reading
 
+import codecs
 import os
 import time
 import uuid
+
+
+open = lambda fname, mode : codecs.open(fname, mode, "utf-8")
+
 
 def task_add(description, **kw):
     """ Add a new task.
