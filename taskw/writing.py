@@ -78,7 +78,14 @@ def _task_remove(id, category):
 def _task_add(task, category):
     filename = category + '.data'
     config = taskw.reading.load_config()
+    location = config['data']['location']
 
     # Append the task
-    with open(os.path.join(config['data']['location'], filename), "a") as f:
+    with open(os.path.join(location, filename), "a") as f:
         f.writelines([task2str(task)])
+
+    # Add to undo.data
+    with open(os.path.join(location, 'undo.data'), "a") as f:
+        f.write("time %s\n" % str(int(time.time())))
+        f.write("new %s" % task2str(task))
+        f.write("---\n")
