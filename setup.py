@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-import sys, os
 
 version = '0.1.9'
 
@@ -27,6 +26,8 @@ setup(name='taskw',
       include_package_data=True,
       zip_safe=False,
       install_requires=[],
+      test_suite='unittest2.collector',
+      tests_require=['mock', 'unittest2'],
       entry_points="""
       # -*- Entry points: -*-
       """,

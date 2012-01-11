@@ -1,6 +1,6 @@
 import codecs
 import os
-
+import re
 
 open = lambda fname : codecs.open(fname, "r", "utf-8")
 
@@ -77,8 +77,7 @@ def parse_line(line):
     """
 
     d = {}
-    for pair in line.strip()[1:-2].split("\" "):
-        key, value = pair.split(":\"")
+    for key, value in re.findall(r'(\w+):"(.*?)"', line):
         d[key] = value
 
     return d
