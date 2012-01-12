@@ -27,7 +27,7 @@ setup(name='taskw',
       zip_safe=False,
       install_requires=[],
       test_suite='unittest2.collector',
-      tests_require=['mock', 'unittest2'],
+      tests_require=['unittest2'],
       entry_points="""
       # -*- Entry points: -*-
       """,
