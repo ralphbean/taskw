@@ -1,4 +1,5 @@
 import taskw.reading
+import taskw.utils
 
 import codecs
 import os
@@ -56,12 +57,6 @@ def task_done(id=None, uuid=None):
     _task_remove(id, 'pending')
 
 
-def task2str(task):
-    return "[%s]\n" % " ".join([
-        "%s:\"%s\"" % (k, v) for k, v in task.iteritems()
-    ])
-
-
 def _task_remove(id, category):
     filename = category + '.data'
     config = taskw.reading.load_config()
@@ -82,10 +77,10 @@ def _task_add(task, category):
 
     # Append the task
     with open(os.path.join(location, filename), "a") as f:
-        f.writelines([task2str(task)])
+        f.writelines([taskw.utils.task2str(task)])
 
     # Add to undo.data
     with open(os.path.join(location, 'undo.data'), "a") as f:
         f.write("time %s\n" % str(int(time.time())))
-        f.write("new %s" % task2str(task))
+        f.write("new %s" % taskw.utils.task2str(task))
         f.write("---\n")

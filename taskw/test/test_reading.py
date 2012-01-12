@@ -3,7 +3,7 @@
 import unittest2
 
 import taskw.reading as reading
-from taskw.writing import task2str
+from taskw.utils import task2str
 
 
 class TestReading(unittest2.TestCase):
