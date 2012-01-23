@@ -29,7 +29,7 @@ def load_tasks():
         (db, _load_tasks('%s.data' % db)) for db in ['completed', 'pending']
     )
 
-def load_config():
+def load_config(filename="~/.taskrc"):
     """ Load ~/.taskrc into a python dict
 
     >>> config = load_config()
@@ -40,7 +40,7 @@ def load_config():
 
     """
 
-    with open(os.path.expanduser('~/.taskrc')) as f:
+    with open(os.path.expanduser(filename)) as f:
         lines = f.readlines()
 
     _usable = lambda l : not(l.startswith('#') or l.strip() == '')
