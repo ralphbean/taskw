@@ -2,27 +2,27 @@
 
 import re
 
-replacements = {
+encode_replacements = {
     '"': '&dquot;',
     '[': '&open;',
     ']': '&close;',
     '/': '\\/',
 }
+decode_replacements = dict([[v, k] for k, v in encode_replacements.items()])
 
 
 def clean_task(task):
     """ Clean a task by replacing any dangerous characters """
-    task = task.copy()
-    for k in task:
-        for unsafe, safe in replacements.iteritems():
-            task[k] = task[k].replace(unsafe, safe)
     return task
 
 
 def encode_task(task):
     """ Convert a dict-like task to its string representation """
     # First, clean the task:
-    task = clean_task(task)
+    task = task.copy()
+    for k in task:
+        for unsafe, safe in encode_replacements.iteritems():
+            task[k] = task[k].replace(unsafe, safe)
 
     # Then, format it as a string
     return "[%s]\n" % " ".join([
@@ -41,8 +41,10 @@ def decode_task(line):
 
     """
 
-    d = {}
+    task = {}
     for key, value in re.findall(r'(\w+):"(.*?)"', line):
-        d[key] = value
+        task[key] = value
+        for unsafe, safe in decode_replacements.iteritems():
+            task[key] = task[key].replace(unsafe, safe)
 
-    return d
+    return task

@@ -12,9 +12,6 @@ TASK = {'description': "task 2 http://www.google.com/",
 TASK_LEADING_WS = TASK.copy()
 TASK_LEADING_WS.update({'description': "      task 3"})
 
-TASK_QUOTE = TASK.copy()
-TASK_QUOTE.update({'description': 'foo \\&dquot;bar\\&dquot;'})
-
 
 class TestUtils(object):
 
@@ -30,10 +27,6 @@ class TestUtils(object):
     def test_decode_leading_whitespace_in_value(self):
         r = decode_task(encode_task(TASK_LEADING_WS))
         eq_(r, TASK_LEADING_WS)
-
-    def test_quote_escaped_tasks(self):
-        r = decode_task(encode_task(TASK_QUOTE))
-        eq_(r, TASK_QUOTE)
 
     def test_composition(self):
         eq_(TASK, decode_task(encode_task(TASK)))
