@@ -17,6 +17,12 @@ TASK_QUOTE.update({'description': 'foo \\&dquot;bar\\&dquot;'})
 
 
 class TestUtils(object):
+
+    def test_no_side_effects(self):
+        orig = TASK.copy()
+        decode_task(encode_task(TASK))
+        eq_(orig, TASK)
+
     def test_decode(self):
         r = decode_task(encode_task(TASK))
         eq_(r, TASK)

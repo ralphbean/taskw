@@ -12,6 +12,7 @@ replacements = {
 
 def clean_task(task):
     """ Clean a task by replacing any dangerous characters """
+    task = task.copy()
     for k in task:
         for unsafe, safe in replacements.iteritems():
             task[k] = task[k].replace(unsafe, safe)
