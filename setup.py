@@ -1,3 +1,4 @@
+import multiprocessing, logging
 from setuptools import setup, find_packages
 
 version = '0.2.0'
@@ -26,8 +27,8 @@ setup(name='taskw',
       include_package_data=True,
       zip_safe=False,
       install_requires=[],
-      test_suite='unittest2.collector',
-      tests_require=['unittest2'],
+      test_suite='nose.collector',
+      tests_require=['nose'],
       entry_points="""
       # -*- Entry points: -*-
       """,

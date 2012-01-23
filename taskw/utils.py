@@ -1,5 +1,7 @@
 """ Various utilties """
 
+import re
+
 replacements = {
     '"': '&dquot;',
     '[': '&open;',
@@ -16,7 +18,7 @@ def clean_task(task):
     return task
 
 
-def task2str(task):
+def encode_task(task):
     """ Convert a dict-like task to its string representation """
     # First, clean the task:
     task = clean_task(task)
@@ -25,3 +27,21 @@ def task2str(task):
     return "[%s]\n" % " ".join([
         "%s:\"%s\"" % (k, v) for k, v in task.iteritems()
     ])
+
+
+def decode_task(line):
+    """ Parse a single record (task) from a task database file.
+
+    I don't understand why they don't just use JSON or YAML.  But
+    that's okay.
+
+    >>> decode_task('[description:"Make a python API for taskwarrior"]')
+    {'description': 'Make a python API for taskwarrior'}
+
+    """
+
+    d = {}
+    for key, value in re.findall(r'(\w+):"(.*?)"', line):
+        d[key] = value
+
+    return d
