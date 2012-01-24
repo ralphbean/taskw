@@ -31,8 +31,9 @@ Examples
 Looking at tasks
 ++++++++++++++++
 
-    >>> from taskw import load_tasks
-    >>> tasks = load_tasks()
+    >>> from taskw import TaskWarrior
+    >>> w = TaskWarrior()
+    >>> tasks = w.load_tasks()
     >>> tasks.keys()
     ['completed', 'pending']
     >>> type(tasks['pending'])
@@ -43,21 +44,24 @@ Looking at tasks
 Adding tasks
 ++++++++++++
 
-    >>> from taskw import task_add
-    >>> task_add("Eat food")
-    >>> task_add("Take a nap", priority="H", project="life")
+    >>> from taskw import TaskWarrior
+    >>> w = TaskWarrior()
+    >>> w.task_add("Eat food")
+    >>> w.task_add("Take a nap", priority="H", project="life")
 
 Completing tasks
 ++++++++++++++++
 
-    >>> from taskw import task_done
-    >>> task_done(46)
+    >>> from taskw import TaskWarrior
+    >>> w = TaskWarrior()
+    >>> w.task_done(46)
 
 Looking at the config
 +++++++++++++++++++++
 
-    >>> from taskw import load_config
-    >>> config = load_config()
+    >>> from taskw import TaskWarrior
+    >>> w = TaskWarrior()
+    >>> config = w.load_config()
     >>> config['data']['location']
     '/home/threebean/.task'
     >>> config['_forcecolor']
