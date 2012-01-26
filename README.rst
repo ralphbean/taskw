@@ -56,6 +56,15 @@ Completing tasks
     >>> w = TaskWarrior()
     >>> w.task_done(46)
 
+Being Flexible
+++++++++++++++
+
+You can point ``taskw`` at different taskwarrior databases.
+
+    >>> from taskw import TaskWarrior
+    >>> w = TaskWarrior(config_filename="~/some_project/.taskrc")
+    >>> w.task_add("Use 'taskw'.")
+
 Looking at the config
 +++++++++++++++++++++
 
