@@ -3,6 +3,8 @@ taskw - Python API for the taskwarrior DB
 
 .. split here
 
+.. image::  http://secure.travis-ci.org/ralphbean/taskw.png
+
 This is a python API for the `taskwarrior <http://taskwarrior.org>`_ command
 line tool.
 
