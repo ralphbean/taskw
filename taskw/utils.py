@@ -1,6 +1,7 @@
 """ Various utilties """
 
 import re
+from operator import itemgetter
 
 encode_replacements = {
     '"': '&dquot;',
@@ -26,7 +27,7 @@ def encode_task(task):
 
     # Then, format it as a string
     return "[%s]\n" % " ".join([
-        "%s:\"%s\"" % (k, v) for k, v in task.iteritems()
+        "%s:\"%s\"" % (k, v) for k, v in sorted(task.items(), key=itemgetter(0))
     ])
 
 
