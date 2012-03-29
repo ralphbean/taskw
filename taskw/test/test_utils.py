@@ -1,3 +1,5 @@
+import random
+
 from nose.tools import eq_
 
 from taskw.utils import decode_task, encode_task
@@ -11,6 +13,12 @@ TASK = {'description': "task 2 http://www.google.com/",
 
 TASK_LEADING_WS = TASK.copy()
 TASK_LEADING_WS.update({'description': "      task 3"})
+
+
+def shuffled(l):
+    new = l[:]
+    random.shuffle(new)
+    return new
 
 
 class TestUtils(object):
@@ -33,3 +41,8 @@ class TestUtils(object):
 
     def test_double_composition(self):
         eq_(TASK, decode_task(encode_task(decode_task(encode_task(TASK)))))
+
+    def test_ordering(self):
+        task1 = dict(shuffled(TASK.items()))
+        task2 = dict(shuffled(TASK.items()))
+        eq_(encode_task(task1), encode_task(task2))
