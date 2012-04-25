@@ -5,6 +5,9 @@ import time
 import uuid
 
 import taskw.utils
+from six.moves import filter
+from six.moves import map
+from six.moves import zip
 
 
 open = lambda fname, mode: codecs.open(fname, mode, "utf-8")
@@ -40,7 +43,7 @@ class TaskWarrior(object):
             with open(filename, 'r') as f:
                 lines = f.readlines()
 
-            return map(taskw.utils.decode_task, lines)
+            return list(map(taskw.utils.decode_task, lines))
 
         return dict(
             (db, _load_tasks('%s.data' % db))
@@ -117,7 +120,10 @@ class TaskWarrior(object):
 
             task = tasks['pending'][id - 1]
         else:
-            matching = filter(lambda t: t['uuid'] == uuid, tasks['pending'])
+            matching = list(filter(
+                lambda t: t['uuid'] == uuid,
+                tasks['pending']
+            ))
             if not matching:
                 raise ValueError("No such pending task with uuid %i." % uuid)
 
