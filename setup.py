@@ -26,7 +26,9 @@ setup(name='taskw',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
       zip_safe=False,
-      install_requires=[],
+      install_requires=[
+          "six",
+      ],
       test_suite='nose.collector',
       tests_require=['nose'],
       entry_points="""
