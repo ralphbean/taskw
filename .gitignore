@@ -7,3 +7,4 @@ build
 dist
 test.html
 *.egg*
+*.pdf
