@@ -2,6 +2,7 @@
 
 import re
 from operator import itemgetter
+import six
 
 encode_replacements = {
     '"': '&dquot;',
@@ -22,7 +23,7 @@ def encode_task(task):
     # First, clean the task:
     task = task.copy()
     for k in task:
-        for unsafe, safe in encode_replacements.iteritems():
+        for unsafe, safe in six.iteritems(encode_replacements):
             task[k] = task[k].replace(unsafe, safe)
 
     # Then, format it as a string
@@ -45,7 +46,7 @@ def decode_task(line):
     task = {}
     for key, value in re.findall(r'(\w+):"(.*?)"', line):
         task[key] = value
-        for unsafe, safe in decode_replacements.iteritems():
+        for unsafe, safe in six.iteritems(decode_replacements):
             task[key] = task[key].replace(unsafe, safe)
 
     return task

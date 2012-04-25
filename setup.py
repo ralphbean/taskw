@@ -1,7 +1,7 @@
 import multiprocessing, logging
 from setuptools import setup, find_packages
 
-version = '0.3.2'
+version = '0.4.0'
 
 f = open('README.rst')
 long_description = f.read().strip()
@@ -15,6 +15,10 @@ setup(name='taskw',
       classifiers=[
           "Development Status :: 5 - Production/Stable",
           "Programming Language :: Python :: 2",
+          "Programming Language :: Python :: 2.6",
+          "Programming Language :: Python :: 2.7",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.2",
           "License :: OSI Approved :: GNU General Public License (GPL)",
           "Intended Audience :: Developers",
       ],
@@ -26,7 +30,9 @@ setup(name='taskw',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
       zip_safe=False,
-      install_requires=[],
+      install_requires=[
+          "six",
+      ],
       test_suite='nose.collector',
       tests_require=['nose'],
       entry_points="""

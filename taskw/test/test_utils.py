@@ -16,7 +16,7 @@ TASK_LEADING_WS.update({'description': "      task 3"})
 
 
 def shuffled(l):
-    new = l[:]
+    new = list(l)
     random.shuffle(new)
     return new
 
