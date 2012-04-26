@@ -9,4 +9,3 @@ notifications:
     email: true
     irc:
         - "irc.freenode.net#foss-rit"
-        - "irc.freenode.net#taskwarrior"
