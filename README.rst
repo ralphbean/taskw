@@ -17,7 +17,7 @@ Build Status
    :alt: Build Status - develop branch
    :target: http://travis-ci.org/#!/ralphbean/taskw
 
-+==========+===========+
++----------+-----------+
 | Branch   | Status    |
 +==========+===========+
 | master   | |master|  |
