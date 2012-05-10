@@ -78,6 +78,14 @@ class TestDB(object):
         eq_(len(tasks['completed']), 1)
         eq_(len(sum(tasks.values(), [])), 1)
 
+    def test_completing_task_by_id_retrieved(self):
+        task = self.tw.task_add("foobar")
+        self.tw.task_done(task['id'])
+        tasks = self.tw.load_tasks()
+        eq_(len(tasks['pending']), 0)
+        eq_(len(tasks['completed']), 1)
+        eq_(len(sum(tasks.values(), [])), 1)
+
     def test_completing_task_by_uuid(self):
         self.tw.task_add("foobar")
         uuid = self.tw.load_tasks()['pending'][0]['uuid']

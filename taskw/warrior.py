@@ -106,7 +106,9 @@ class TaskWarrior(object):
         if not 'uuid' in task:
             task['uuid'] = str(uuid.uuid4())
 
-        self._task_add(task, 'pending')
+        id = self._task_add(task, 'pending')
+        task['id'] = id
+        return task
 
     def task_done(self, id=None, uuid=None):
         if not id and not uuid:
@@ -135,6 +137,7 @@ class TaskWarrior(object):
 
         self._task_add(task, 'completed')
         self._task_remove(id, 'pending')
+        return task
 
     def _task_remove(self, id, category):
         location = self.config['data']['location']
@@ -162,3 +165,7 @@ class TaskWarrior(object):
             f.write("time %s\n" % str(int(time.time())))
             f.write("new %s" % taskw.utils.encode_task(task))
             f.write("---\n")
+
+        with open(os.path.join(location, filename), "r") as f:
+            # The 'id' of this latest added task.
+            return len(f.readlines())
