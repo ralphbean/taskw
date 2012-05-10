@@ -3,16 +3,27 @@ taskw - Python API for the taskwarrior DB
 
 .. split here
 
-.. image::  https://secure.travis-ci.org/ralphbean/taskw.png?branch=master
-   :alt: Build status - master branch
-   :target: http://travis-ci.org/#!/ralphbean/taskw
-
-.. image::  https://secure.travis-ci.org/ralphbean/taskw.png?branch=develop
-   :alt: Build status - develop branch
-   :target: http://travis-ci.org/#!/ralphbean/taskw
-
 This is a python API for the `taskwarrior <http://taskwarrior.org>`_ command
 line tool.
+
+Build Status
+------------
+
+.. |master| image:: https://secure.travis-ci.org/ralphbean/taskw.png?branch=master
+   :alt: Build Status - master branch
+   :target: http://travis-ci.org/#!/ralphbean/taskw
+
+.. |develop| image:: https://secure.travis-ci.org/ralphbean/taskw.png?branch=develop
+   :alt: Build Status - develop branch
+   :target: http://travis-ci.org/#!/ralphbean/taskw
+
++----------+-----------+
+| Branch   | Status    |
++==========+===========+
+| master   | |master|  |
++----------+-----------+
+| develop  | |develop| |
++----------+-----------+
 
 Getting taskw
 -------------

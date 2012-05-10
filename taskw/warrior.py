@@ -106,37 +106,81 @@ class TaskWarrior(object):
         if not 'uuid' in task:
             task['uuid'] = str(uuid.uuid4())
 
-        self._task_add(task, 'pending')
+        id = self._task_add(task, 'pending')
+        task['id'] = id
+        return task
 
-    def task_done(self, id=None, uuid=None):
-        if not id and not uuid:
-            raise KeyError("task_done must receive either id or uuid")
+    def get_task(self, **kw):
+        valid_keys = ['id', 'uuid', 'description']
+
+        if len(kw) != 1:
+            raise KeyError("get_task must receive one keyword argument")
+
+        key = list(kw.keys())[0]
+        if key not in valid_keys:
+            raise KeyError("Argument must be one of %r" % valid_keys)
 
         tasks = self.load_tasks()
 
-        if id:
+        if key == 'id':
+            id = kw[key]
+
             if len(tasks['pending']) < id:
                 raise ValueError("No such pending task with id %i." % id)
 
             task = tasks['pending'][id - 1]
         else:
             matching = list(filter(
-                lambda t: t['uuid'] == uuid,
+                lambda t: t[key] == kw[key],
                 tasks['pending']
             ))
+
             if not matching:
-                raise ValueError("No such pending task with uuid %i." % uuid)
+                raise ValueError("No such pending task with %s %r." % (
+                    key, kw[key]))
 
             task = matching[0]
             id = tasks['pending'].index(task) + 1
+
+        return id, task
+
+    def task_done(self, **kw):
+        id, task = self.get_task(**kw)
 
         task['status'] = 'completed'
         task['end'] = str(int(time.time()))
 
         self._task_add(task, 'completed')
         self._task_remove(id, 'pending')
+        return task
+
+    def task_update(self, task):
+        id, _task = self.get_task(uuid=task['uuid'])
+
+        if 'id' in task:
+            del task['id']
+
+        _task.update(task)
+        self._task_replace(id, 'pending', _task)
+        return id, _task
+
+    def _task_replace(self, id, category, task):
+        def modification(lines):
+            lines[id - 1] = taskw.utils.encode_task(task)
+            return lines
+
+        # FIXME write to undo.data
+        self._apply_modification(id, category, modification)
 
     def _task_remove(self, id, category):
+        def modification(lines):
+            del lines[id - 1]
+            return lines
+
+        # FIXME write to undo.data
+        self._apply_modification(id, category, modification)
+
+    def _apply_modification(self, id, category, modification):
         location = self.config['data']['location']
         filename = category + '.data'
         filename = os.path.join(self.config['data']['location'], filename)
@@ -144,7 +188,7 @@ class TaskWarrior(object):
         with open(filename, "r") as f:
             lines = f.readlines()
 
-        del lines[id - 1]
+        lines = modification(lines)
 
         with open(filename, "w") as f:
             f.writelines(lines)
@@ -157,8 +201,13 @@ class TaskWarrior(object):
         with open(os.path.join(location, filename), "a") as f:
             f.writelines([taskw.utils.encode_task(task)])
 
+        # FIXME - this gets written when a task is completed.  incorrect.
         # Add to undo.data
         with open(os.path.join(location, 'undo.data'), "a") as f:
             f.write("time %s\n" % str(int(time.time())))
             f.write("new %s" % taskw.utils.encode_task(task))
             f.write("---\n")
+
+        with open(os.path.join(location, filename), "r") as f:
+            # The 'id' of this latest added task.
+            return len(f.readlines())

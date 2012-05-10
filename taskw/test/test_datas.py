@@ -1,4 +1,4 @@
-from nose.tools import eq_
+from nose.tools import eq_, raises
 import os
 import shutil
 import tempfile
@@ -55,16 +55,13 @@ class TestDB(object):
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 0)
 
+    @raises(KeyError)
     def test_completion_raising_unspecified(self):
-        try:
-            self.tw.task_done()
-            assert False
-        except KeyError:
-            assert True
+        self.tw.task_done()
 
     def test_completing_task_by_id_unspecified(self):
         self.tw.task_add("foobar")
-        self.tw.task_done(1)
+        self.tw.task_done(id=1)
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 0)
         eq_(len(tasks['completed']), 1)
@@ -78,6 +75,14 @@ class TestDB(object):
         eq_(len(tasks['completed']), 1)
         eq_(len(sum(tasks.values(), [])), 1)
 
+    def test_completing_task_by_id_retrieved(self):
+        task = self.tw.task_add("foobar")
+        self.tw.task_done(id=task['id'])
+        tasks = self.tw.load_tasks()
+        eq_(len(tasks['pending']), 0)
+        eq_(len(tasks['completed']), 1)
+        eq_(len(sum(tasks.values(), [])), 1)
+
     def test_completing_task_by_uuid(self):
         self.tw.task_add("foobar")
         uuid = self.tw.load_tasks()['pending'][0]['uuid']
@@ -86,3 +91,29 @@ class TestDB(object):
         eq_(len(tasks['pending']), 0)
         eq_(len(tasks['completed']), 1)
         eq_(len(sum(tasks.values(), [])), 1)
+
+    @raises(KeyError)
+    def test_get_task_mismatch(self):
+        self.tw.task_add("foobar")
+        self.tw.task_add("bazbar")
+        uuid = self.tw.load_tasks()['pending'][0]['uuid']
+        self.tw.get_task(id=2, uuid=uuid)  # which one?
+
+    def test_updating_task(self):
+        self.tw.task_add("foobar")
+
+        tasks = self.tw.load_tasks()
+        eq_(len(tasks['pending']), 1)
+
+        task = tasks['pending'][0]
+        task["priority"] = "L"
+        self.tw.task_update(task)
+
+        tasks = self.tw.load_tasks()
+        eq_(len(tasks['pending']), 1)
+        eq_(tasks['pending'][0], task)
+
+    @raises(KeyError)
+    def test_update_exc(self):
+        task = dict(description="lol")
+        self.tw.task_update(task)
