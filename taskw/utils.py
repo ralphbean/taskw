@@ -28,7 +28,8 @@ def encode_task(task):
 
     # Then, format it as a string
     return "[%s]\n" % " ".join([
-        "%s:\"%s\"" % (k, v) for k, v in sorted(task.items(), key=itemgetter(0))
+        "%s:\"%s\"" % (k, v)
+        for k, v in sorted(task.items(), key=itemgetter(0))
     ])
 
 
