@@ -110,7 +110,7 @@ class TaskWarrior(object):
         task['id'] = id
         return task
 
-    def task_done(self, id=None, uuid=None):
+    def get_task(self, id=None, uuid=None):
         if not id and not uuid:
             raise KeyError("task_done must receive either id or uuid")
 
@@ -132,6 +132,14 @@ class TaskWarrior(object):
             task = matching[0]
             id = tasks['pending'].index(task) + 1
 
+        if uuid and task['uuid'] != uuid:
+            raise ValueError("id and uuid did not match up")
+
+        return id, task
+
+    def task_done(self, id=None, uuid=None):
+        id, task = self.get_task(id, uuid)
+
         task['status'] = 'completed'
         task['end'] = str(int(time.time()))
 
@@ -139,7 +147,32 @@ class TaskWarrior(object):
         self._task_remove(id, 'pending')
         return task
 
+    def task_update(self, task):
+        id, _task = self.get_task(task.get('id', None), task.get('uuid', None))
+
+        if 'id' in task:
+            del task['id']
+
+        _task.update(task)
+        self._task_replace(id, 'pending', _task)
+
+    def _task_replace(self, id, category, task):
+        def modification(lines):
+            lines[id - 1] = taskw.utils.encode_task(task)
+            return lines
+
+        # FIXME write to undo.data
+        self._apply_modification(id, category, modification)
+
     def _task_remove(self, id, category):
+        def modification(lines):
+            del lines[id - 1]
+            return lines
+
+        # FIXME write to undo.data
+        self._apply_modification(id, category, modification)
+
+    def _apply_modification(self, id, category, modification):
         location = self.config['data']['location']
         filename = category + '.data'
         filename = os.path.join(self.config['data']['location'], filename)
@@ -147,7 +180,7 @@ class TaskWarrior(object):
         with open(filename, "r") as f:
             lines = f.readlines()
 
-        del lines[id - 1]
+        lines = modification(lines)
 
         with open(filename, "w") as f:
             f.writelines(lines)
@@ -160,6 +193,7 @@ class TaskWarrior(object):
         with open(os.path.join(location, filename), "a") as f:
             f.writelines([taskw.utils.encode_task(task)])
 
+        # FIXME - this gets written when a task is completed.  incorrect.
         # Add to undo.data
         with open(os.path.join(location, 'undo.data'), "a") as f:
             f.write("time %s\n" % str(int(time.time())))
