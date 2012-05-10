@@ -110,35 +110,42 @@ class TaskWarrior(object):
         task['id'] = id
         return task
 
-    def get_task(self, id=None, uuid=None):
-        if not id and not uuid:
-            raise KeyError("task_done must receive either id or uuid")
+    def get_task(self, **kw):
+        valid_keys = ['id', 'uuid', 'description']
+
+        if len(kw) != 1:
+            raise KeyError("get_task must receive one keyword argument")
+
+        key = list(kw.keys())[0]
+        if key not in valid_keys:
+            raise KeyError("Argument must be one of %r" % valid_keys)
 
         tasks = self.load_tasks()
 
-        if id:
+        if key == 'id':
+            id = kw[key]
+
             if len(tasks['pending']) < id:
                 raise ValueError("No such pending task with id %i." % id)
 
             task = tasks['pending'][id - 1]
         else:
             matching = list(filter(
-                lambda t: t['uuid'] == uuid,
+                lambda t: t[key] == kw[key],
                 tasks['pending']
             ))
+
             if not matching:
-                raise ValueError("No such pending task with uuid %i." % uuid)
+                raise ValueError("No such pending task with %s %r." % (
+                    key, kw[key]))
 
             task = matching[0]
             id = tasks['pending'].index(task) + 1
 
-        if uuid and task['uuid'] != uuid:
-            raise ValueError("id and uuid did not match up")
-
         return id, task
 
-    def task_done(self, id=None, uuid=None):
-        id, task = self.get_task(id, uuid)
+    def task_done(self, **kw):
+        id, task = self.get_task(**kw)
 
         task['status'] = 'completed'
         task['end'] = str(int(time.time()))
@@ -148,13 +155,14 @@ class TaskWarrior(object):
         return task
 
     def task_update(self, task):
-        id, _task = self.get_task(task.get('id', None), task.get('uuid', None))
+        id, _task = self.get_task(uuid=task['uuid'])
 
         if 'id' in task:
             del task['id']
 
         _task.update(task)
         self._task_replace(id, 'pending', _task)
+        return id, _task
 
     def _task_replace(self, id, category, task):
         def modification(lines):

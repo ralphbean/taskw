@@ -61,7 +61,7 @@ class TestDB(object):
 
     def test_completing_task_by_id_unspecified(self):
         self.tw.task_add("foobar")
-        self.tw.task_done(1)
+        self.tw.task_done(id=1)
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 0)
         eq_(len(tasks['completed']), 1)
@@ -77,7 +77,7 @@ class TestDB(object):
 
     def test_completing_task_by_id_retrieved(self):
         task = self.tw.task_add("foobar")
-        self.tw.task_done(task['id'])
+        self.tw.task_done(id=task['id'])
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 0)
         eq_(len(tasks['completed']), 1)
@@ -92,7 +92,7 @@ class TestDB(object):
         eq_(len(tasks['completed']), 1)
         eq_(len(sum(tasks.values(), [])), 1)
 
-    @raises(ValueError)
+    @raises(KeyError)
     def test_get_task_mismatch(self):
         self.tw.task_add("foobar")
         self.tw.task_add("bazbar")
