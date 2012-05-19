@@ -40,6 +40,7 @@ class TaskWarrior(object):
 
         def _load_tasks(filename):
             filename = os.path.join(self.config['data']['location'], filename)
+            filename = os.path.expanduser(filename)
             with open(filename, 'r') as f:
                 lines = f.readlines()
 
