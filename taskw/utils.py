@@ -45,7 +45,7 @@ def decode_task(line):
     """
 
     task = {}
-    for key, value in re.findall(r'(\w+):"(.*?)"', line):
+    for key, value in re.findall(r'(\w+):"(.*?)(?<!\\)"', line):
         task[key] = value
         for unsafe, safe in six.iteritems(decode_replacements):
             task[key] = task[key].replace(unsafe, safe)
