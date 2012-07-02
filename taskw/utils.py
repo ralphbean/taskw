@@ -2,17 +2,20 @@
 
 import re
 from operator import itemgetter
-import collections
 import six
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
-encode_replacements = collections.OrderedDict([
+encode_replacements = OrderedDict([
     ('\"', '&dquot;'),
     ('"', '&dquot;'),
     ('[', '&open;'),
     (']', '&close;'),
     ('/', '\\/'),
 ])
-decode_replacements = collections.OrderedDict(
+decode_replacements = OrderedDict(
     [[v, k] for k, v in encode_replacements.items()]
 )
 

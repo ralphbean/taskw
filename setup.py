@@ -1,4 +1,5 @@
 import multiprocessing, logging
+import sys
 from setuptools import setup, find_packages
 
 version = '0.4.2'
@@ -7,6 +8,15 @@ f = open('README.rst')
 long_description = f.read().strip()
 long_description = long_description.split('split here', 1)[1]
 f.close()
+
+install_requires = [
+    "six",
+]
+
+if sys.version_info[0] ==2 and sys.version_info[1] < 7:
+    install_requires.extend([
+        'ordereddict',
+    ])
 
 setup(name='taskw',
       version=version,
@@ -30,12 +40,10 @@ setup(name='taskw',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
       zip_safe=False,
-      install_requires=[
-          "six",
-      ],
+      install_requires=install_requires,
       test_suite='nose.collector',
       tests_require=['nose'],
       entry_points="""
       # -*- Entry points: -*-
       """,
-      )
+)
