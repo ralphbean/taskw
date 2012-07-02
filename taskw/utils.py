@@ -2,15 +2,19 @@
 
 import re
 from operator import itemgetter
+import collections
 import six
 
-encode_replacements = {
-    '"': '&dquot;',
-    '[': '&open;',
-    ']': '&close;',
-    '/': '\\/',
-}
-decode_replacements = dict([[v, k] for k, v in encode_replacements.items()])
+encode_replacements = collections.OrderedDict([
+    ('\"', '&dquot;'),
+    ('"', '&dquot;'),
+    ('[', '&open;'),
+    (']', '&close;'),
+    ('/', '\\/'),
+])
+decode_replacements = collections.OrderedDict(
+    [[v, k] for k, v in encode_replacements.items()]
+)
 
 
 def clean_task(task):
