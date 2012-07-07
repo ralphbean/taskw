@@ -185,6 +185,7 @@ class TaskWarrior(object):
         location = self.config['data']['location']
         filename = category + '.data'
         filename = os.path.join(self.config['data']['location'], filename)
+        filename = os.path.expanduser(filename)
 
         with open(filename, "r") as f:
             lines = f.readlines()
@@ -196,6 +197,7 @@ class TaskWarrior(object):
 
     def _task_add(self, task, category):
         location = self.config['data']['location']
+        location = os.path.expanduser(location)
         filename = category + '.data'
 
         # Append the task
