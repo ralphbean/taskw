@@ -13,6 +13,7 @@ encode_replacements = OrderedDict([
     ('"', '&dquot;'),
     ('[', '&open;'),
     (']', '&close;'),
+    ('\n', ' '),
     ('/', '\\/'),
 ])
 decode_replacements = OrderedDict(
