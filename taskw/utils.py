@@ -16,9 +16,10 @@ encode_replacements = OrderedDict([
     ('\n', ' '),
     ('/', '\\/'),
 ])
-decode_replacements = OrderedDict(
-    [[v, k] for k, v in encode_replacements.items()]
-)
+decode_replacements = OrderedDict([
+    [v, k] for k, v in encode_replacements.items()
+    if k not in ('\n')  # We skip these.
+])
 
 
 def clean_task(task):
