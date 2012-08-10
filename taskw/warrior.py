@@ -89,13 +89,13 @@ class TaskWarrior(object):
 
         return d
 
-    def task_add(self, description, tags=[], **kw):
+    def task_add(self, description, tags=None, **kw):
         """ Add a new task.
 
         Takes any of the keywords allowed by taskwarrior like proj or prior.
         """
         task = {"description": description}
-        if tags != []:
+        if tags != None:
             task['tags'] = tags
         task.update(kw)
 
