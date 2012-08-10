@@ -89,12 +89,14 @@ class TaskWarrior(object):
 
         return d
 
-    def task_add(self, description, **kw):
+    def task_add(self, description, tags=None, **kw):
         """ Add a new task.
 
         Takes any of the keywords allowed by taskwarrior like proj or prior.
         """
         task = {"description": description}
+        if tags != None:
+            task['tags'] = tags
         task.update(kw)
 
         task['status'] = 'pending'
@@ -144,6 +146,11 @@ class TaskWarrior(object):
             id = tasks['pending'].index(task) + 1
 
         return id, task
+
+    def filter_by(self, func):
+        tasks = self.load_tasks()
+        filtered = filter(func, tasks)
+        return filtered
 
     def task_done(self, **kw):
         id, task = self.get_task(**kw)

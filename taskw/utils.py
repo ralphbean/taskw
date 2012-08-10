@@ -31,6 +31,8 @@ def encode_task(task):
     """ Convert a dict-like task to its string representation """
     # First, clean the task:
     task = task.copy()
+    if 'tags' in task:
+        task['tags'] = ','.join(task['tags'])
     for k in task:
         for unsafe, safe in six.iteritems(encode_replacements):
             task[k] = task[k].replace(unsafe, safe)
@@ -58,5 +60,7 @@ def decode_task(line):
         task[key] = value
         for unsafe, safe in six.iteritems(decode_replacements):
             task[key] = task[key].replace(unsafe, safe)
-
+    if 'tags' in task:
+        task['tags'] = task['tags'].split(',')
     return task
+
