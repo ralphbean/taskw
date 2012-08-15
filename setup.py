@@ -2,7 +2,7 @@ import multiprocessing, logging
 import sys
 from setuptools import setup, find_packages
 
-version = '0.4.2'
+version = '0.4.3'
 
 f = open('README.rst')
 long_description = f.read().strip()
