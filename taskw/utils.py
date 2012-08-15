@@ -3,14 +3,23 @@
 import re
 from operator import itemgetter
 import six
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
-encode_replacements = {
-    '"': '&dquot;',
-    '[': '&open;',
-    ']': '&close;',
-    '/': '\\/',
-}
-decode_replacements = dict([[v, k] for k, v in encode_replacements.items()])
+encode_replacements = OrderedDict([
+    ('\"', '&dquot;'),
+    ('"', '&dquot;'),
+    ('[', '&open;'),
+    (']', '&close;'),
+    ('\n', ' '),
+    ('/', '\\/'),
+])
+decode_replacements = OrderedDict([
+    [v, k] for k, v in encode_replacements.items()
+    if k not in ('\n')  # We skip these.
+])
 
 
 def clean_task(task):
@@ -22,6 +31,8 @@ def encode_task(task):
     """ Convert a dict-like task to its string representation """
     # First, clean the task:
     task = task.copy()
+    if 'tags' in task:
+        task['tags'] = ','.join(task['tags'])
     for k in task:
         for unsafe, safe in six.iteritems(encode_replacements):
             task[k] = task[k].replace(unsafe, safe)
@@ -49,5 +60,7 @@ def decode_task(line):
         task[key] = value
         for unsafe, safe in six.iteritems(decode_replacements):
             task[key] = task[key].replace(unsafe, safe)
-
+    if 'tags' in task:
+        task['tags'] = task['tags'].split(',')
     return task
+

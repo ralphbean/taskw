@@ -34,6 +34,11 @@ class TestUtils(object):
         r = decode_task(line)
         eq_(r, expected)
 
+    def test_with_escaped_quotes_full(self):
+        line = r'[this:"has a \"quote\" in it."]'
+        r = encode_task(decode_task(line))
+        eq_(r, r)
+
     def test_decode(self):
         r = decode_task(encode_task(TASK))
         eq_(r, TASK)

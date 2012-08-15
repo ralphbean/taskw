@@ -40,6 +40,7 @@ class TaskWarrior(object):
 
         def _load_tasks(filename):
             filename = os.path.join(self.config['data']['location'], filename)
+            filename = os.path.expanduser(filename)
             with open(filename, 'r') as f:
                 lines = f.readlines()
 
@@ -88,12 +89,14 @@ class TaskWarrior(object):
 
         return d
 
-    def task_add(self, description, **kw):
+    def task_add(self, description, tags=None, **kw):
         """ Add a new task.
 
         Takes any of the keywords allowed by taskwarrior like proj or prior.
         """
         task = {"description": description}
+        if tags != None:
+            task['tags'] = tags
         task.update(kw)
 
         task['status'] = 'pending'
@@ -144,6 +147,11 @@ class TaskWarrior(object):
 
         return id, task
 
+    def filter_by(self, func):
+        tasks = self.load_tasks()
+        filtered = filter(func, tasks)
+        return filtered
+
     def task_done(self, **kw):
         id, task = self.get_task(**kw)
 
@@ -184,6 +192,7 @@ class TaskWarrior(object):
         location = self.config['data']['location']
         filename = category + '.data'
         filename = os.path.join(self.config['data']['location'], filename)
+        filename = os.path.expanduser(filename)
 
         with open(filename, "r") as f:
             lines = f.readlines()
@@ -195,6 +204,7 @@ class TaskWarrior(object):
 
     def _task_add(self, task, category):
         location = self.config['data']['location']
+        location = os.path.expanduser(location)
         filename = category + '.data'
 
         # Append the task
