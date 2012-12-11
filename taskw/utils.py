@@ -57,6 +57,7 @@ def decode_task(line):
 
     task = {}
     for key, value in re.findall(r'(\w+):"(.*?)(?<!\\)"', line):
+        value = value.replace('\\"', '"')  # unescape quotes
         task[key] = value
         for unsafe, safe in six.iteritems(decode_replacements):
             task[key] = task[key].replace(unsafe, safe)
