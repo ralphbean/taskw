@@ -29,9 +29,15 @@ class TestUtils(object):
         eq_(orig, TASK)
 
     def test_with_escaped_quotes(self):
-        expected = {'this': r'has a \"quote\" in it.'}
+        expected = {'this': r'has a "quote" in it.'}
         line = r'[this:"has a \"quote\" in it."]'
         r = decode_task(line)
+        eq_(r, expected)
+
+    def test_with_escaped_quotes_roundtrip(self):
+        expected = {'this': r'has a "quote" in it.'}
+        line = r'[this:"has a \"quote\" in it."]'
+        r = decode_task(encode_task(decode_task(line)))
         eq_(r, expected)
 
     def test_with_escaped_quotes_full(self):
