@@ -97,7 +97,12 @@ class TaskWarrior(object):
         task = {"description": description}
         if tags != None:
             task['tags'] = tags
+
         task.update(kw)
+
+        # Only UNIX timestamps are currently supported.
+        if 'due' in kw:
+            task['due'] = str(task['due'])
 
         task['status'] = 'pending'
 
