@@ -66,7 +66,7 @@ Adding tasks
     >>> from taskw import TaskWarrior
     >>> w = TaskWarrior()
     >>> w.task_add("Eat food")
-    >>> w.task_add("Take a nap", priority="H", project="life")
+    >>> w.task_add("Take a nap", priority="H", project="life", due="1359090000")
 
 Completing tasks
 ++++++++++++++++
