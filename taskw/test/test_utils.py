@@ -7,6 +7,7 @@ from taskw.utils import decode_task, encode_task
 TASK = {'description': "task 2 http://www.google.com/",
         'entry': "1325011643",
         'project': "work",
+        'due': "1359090000",
         'start': "1326079920", 'status': "pending",
         'uuid': "c1c431ea-f0dc-4683-9a20-e64fcfa65fd1"}
 
