@@ -119,12 +119,13 @@ class TaskWarrior(object):
         return task
 
     def get_task(self, **kw):
-        valid_keys = ['id', 'uuid', 'description']
+        valid_keys = {'id', 'uuid', 'description'}
+        id_keys = valid_keys.intersection(kw.keys())
 
-        if len(kw) != 1:
-            raise KeyError("get_task must receive one keyword argument")
+        if len(id_keys) != 1:
+            raise KeyError("get_task must receive one ID keyword argument")
 
-        key = list(kw.keys())[0]
+        key = list(id_keys)[0]
         if key not in valid_keys:
             raise KeyError("Argument must be one of %r" % valid_keys)
 
@@ -161,7 +162,7 @@ class TaskWarrior(object):
         id, task = self.get_task(**kw)
 
         task['status'] = 'completed'
-        task['end'] = str(int(time.time()))
+        task['end'] = kw.get('end') or str(int(time.time()))
 
         self._task_add(task, 'completed')
         self._task_remove(id, 'pending')
