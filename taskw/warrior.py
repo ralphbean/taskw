@@ -119,7 +119,7 @@ class TaskWarrior(object):
         return task
 
     def get_task(self, **kw):
-        valid_keys = {'id', 'uuid', 'description'}
+        valid_keys = set(['id', 'uuid', 'description'])
         id_keys = valid_keys.intersection(kw.keys())
 
         if len(id_keys) != 1:
