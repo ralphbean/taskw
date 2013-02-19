@@ -1,4 +1,4 @@
-from nose.tools import eq_, raises
+from nose.tools import eq_, ok_, raises
 import os
 import shutil
 import tempfile
@@ -66,6 +66,16 @@ class TestDB(object):
         eq_(len(tasks['pending']), 0)
         eq_(len(tasks['completed']), 1)
         eq_(len(sum(tasks.values(), [])), 1)
+        ok_(tasks['completed'][0]['end'] != None)
+
+    def test_completing_task_with_date(self):
+        self.tw.task_add("foobar")
+        uuid = self.tw.load_tasks()['pending'][0]['uuid']
+        self.tw.task_done(uuid=uuid, end="1234567890")
+        tasks = self.tw.load_tasks()
+        eq_(len(tasks['pending']), 0)
+        eq_(len(tasks['completed']), 1)
+        eq_(tasks['completed'][0]['end'], '1234567890')
 
     def test_completing_task_by_id_specified(self):
         self.tw.task_add("foobar")
