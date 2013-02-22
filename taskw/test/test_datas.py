@@ -50,6 +50,8 @@ class _BaseTestDB(object):
     def test_has_two_categories(self):
         tasks = self.tw.load_tasks()
         eq_(len(tasks), 2)
+        ok_('pending' in tasks)
+        ok_('completed' in tasks)
 
     def test_empty_db(self):
         tasks = self.tw.load_tasks()
@@ -88,6 +90,7 @@ class _BaseTestDB(object):
         eq_(len(tasks['completed']), 1)
         eq_(len(sum(tasks.values(), [])), 1)
         ok_(tasks['completed'][0]['end'] is not None)
+        eq_(tasks['completed'][0]['status'], 'completed')
 
     def test_completing_task_with_date(self):
         self.tw.task_add("foobar")
@@ -102,6 +105,8 @@ class _BaseTestDB(object):
         except Exception:
             assert(tasks['completed'][0]['end'].startswith('20130514T'))
 
+        eq_(tasks['completed'][0]['status'], 'completed')
+
     def test_completing_task_by_id_specified(self):
         self.tw.task_add("foobar")
         self.tw.task_done(id=1)
@@ -109,6 +114,7 @@ class _BaseTestDB(object):
         eq_(len(tasks['pending']), 0)
         eq_(len(tasks['completed']), 1)
         eq_(len(sum(tasks.values(), [])), 1)
+        eq_(tasks['completed'][0]['status'], 'completed')
 
     def test_completing_task_by_id_retrieved(self):
         task = self.tw.task_add("foobar")
@@ -117,6 +123,7 @@ class _BaseTestDB(object):
         eq_(len(tasks['pending']), 0)
         eq_(len(tasks['completed']), 1)
         eq_(len(sum(tasks.values(), [])), 1)
+        eq_(tasks['completed'][0]['status'], 'completed')
 
     def test_completing_task_by_uuid(self):
         self.tw.task_add("foobar")
@@ -126,6 +133,7 @@ class _BaseTestDB(object):
         eq_(len(tasks['pending']), 0)
         eq_(len(tasks['completed']), 1)
         eq_(len(sum(tasks.values(), [])), 1)
+        eq_(tasks['completed'][0]['status'], 'completed')
 
     @raises(KeyError)
     def test_get_task_mismatch(self):
@@ -133,6 +141,7 @@ class _BaseTestDB(object):
         self.tw.task_add("bazbar")
         uuid = self.tw.load_tasks()['pending'][0]['uuid']
         self.tw.get_task(id=2, uuid=uuid)  # which one?
+
 
     def test_updating_task(self):
         self.tw.task_add("foobar")
@@ -164,6 +173,8 @@ class _BaseTestDB(object):
 
         eq_(tasks['pending'][0], task)
 
+
+
     @raises(KeyError)
     def test_update_exc(self):
         task = dict(description="lol")
@@ -172,6 +183,82 @@ class _BaseTestDB(object):
 
 class TestDBNormal(_BaseTestDB):
     class_to_test = TaskWarrior
+
+    @raises(ValueError)
+    def test_completing_completed_task(self):
+        task = self.tw.task_add("foobar")
+        self.tw.task_done(uuid=task['uuid'])
+        self.tw.task_done(uuid=task['uuid'])
+
+    def test_updating_completed_task(self):
+        task = self.tw.task_add("foobar")
+        task = self.tw.task_done(uuid=task['uuid'])
+        task['priority'] = 'L'
+        id, task = self.tw.task_update(task)
+        eq_(task['priority'], 'L')
+
+    def test_get_task_completed(self):
+        task = self.tw.task_add("foobar")
+        task = self.tw.task_done(uuid=task['uuid'])
+
+        id, _task = self.tw.get_task(uuid=task['uuid'])
+        eq_(id, None)
+        eq_(_task['uuid'], task['uuid'])
+
+    def test_load_task_pending_command(self):
+        tasks = self.tw.load_tasks(command='pending')
+        eq_(len(tasks), 1)
+        ok_('pending' in tasks)
+
+    def test_load_task_completed_command(self):
+        tasks = self.tw.load_tasks(command='completed')
+        eq_(len(tasks), 1)
+        ok_('completed' in tasks)
+
+    @raises(ValueError)
+    def test_load_task_with_unknown_command(self):
+        tasks = self.tw.load_tasks(command='foobar')
+
+    def test_updating_deleted_task(self):
+        task = self.tw.task_add("foobar")
+        task = self.tw.task_delete(uuid=task['uuid'])
+        task['priority'] = 'L'
+        id, task = self.tw.task_update(task)
+        eq_(task['priority'], 'L')
+
+    def test_delete(self):
+        task = self.tw.task_add("foobar")
+        self.tw.task_delete(uuid=task['uuid'])
+        tasks = self.tw.load_tasks()
+        eq_(len(tasks['pending']), 0)
+        eq_(len(tasks['completed']), 1)
+        ok_(not tasks['completed'][0]['end'] is None)
+        eq_(tasks['completed'][0]['status'], 'deleted')
+
+    def test_delete_with_end(self):
+        task = self.tw.task_add("foobar")
+        self.tw.task_delete(uuid=task['uuid'], end="1234567890")
+        tasks = self.tw.load_tasks()
+        eq_(len(tasks['pending']), 0)
+        eq_(len(tasks['completed']), 1)
+        eq_(tasks['completed'][0]['end'], '1234567890')
+        eq_(tasks['completed'][0]['status'], 'deleted')
+
+    def test_delete_completed(self):
+        task = self.tw.task_add("foobar")
+        task = self.tw.task_done(uuid=task['uuid'])
+        self.tw.task_delete(uuid=task['uuid'])
+        tasks = self.tw.load_tasks()
+        eq_(len(tasks['pending']), 0)
+        eq_(len(tasks['completed']), 1)
+        eq_(tasks['completed'][0]['status'], 'deleted')
+
+    @raises(ValueError)
+    def test_delete_already_deleted(self):
+        task = self.tw.task_add("foobar")
+        self.tw.task_delete(uuid=task['uuid'], end="1234567890")
+        self.tw.task_delete(uuid=task['uuid'], end="1234567890")
+
 
     def should_skip(self):
         return False
