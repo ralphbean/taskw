@@ -59,8 +59,8 @@ class TaskWarrior(object):
             pending_tasks = list()
             completed_tasks = list()
             tasks = dict()
-            pending_tasks = json.loads(subprocess.Popen(['task', 'rc.json.array=TRUE', 'rc.verbose=nothing', 'status:pending', 'export'], stdout=subprocess.PIPE).communicate()[0])
-            completed_tasks = json.loads(subprocess.Popen(['task', 'rc.json.array=TRUE', 'rc.verbose=nothing', 'status:completed', 'export'], stdout=subprocess.PIPE).communicate()[0])
+            pending_tasks = json.loads(subprocess.Popen(['task', 'rc:%s' % self.config_filename, 'rc.json.array=TRUE', 'rc.verbose=nothing', 'status:pending', 'export'], stdout=subprocess.PIPE).communicate()[0])
+            completed_tasks = json.loads(subprocess.Popen(['task', 'rc:%s' % self.config_filename, 'rc.json.array=TRUE', 'rc.verbose=nothing', 'status:completed', 'export'], stdout=subprocess.PIPE).communicate()[0])
             tasks['pending'] = pending_tasks
             tasks['completed'] = completed_tasks
             return tasks
@@ -114,7 +114,7 @@ class TaskWarrior(object):
 
     def task_annotate(self, task, annotation):
         """ Annotates a task. """
-        subprocess.call(['task', 'rc.verbose=nothing', str(task[u'uuid']), 'annotate', annotation])
+        subprocess.call(['task', 'rc:%s' % self.config_filename, 'rc.verbose=nothing', str(task[u'uuid']), 'annotate', annotation])
         id, annotated_task = self.get_task(uuid=task[u'uuid'])
         return annotated_task
 
@@ -147,7 +147,7 @@ class TaskWarrior(object):
             # Check if there are annotations, if so remove them from the
             # task and add them after we've added the task.
             annotations = self._extract_annotations_from_task(task)
-            subprocess.call(['task', 'rc.verbose=nothing', 'add', taskw.utils.encode_task_experimental(task)])
+            subprocess.call(['task', 'rc:%s' % self.config_filename, 'rc.verbose=nothing', 'add', taskw.utils.encode_task_experimental(task)])
             id, added_task = self.get_task(description=task['description'])
             if annotations:
                 for annotation in annotations:
@@ -213,7 +213,7 @@ class TaskWarrior(object):
         id, task = self.get_task(**kw)
 
         if experimental is True:
-            subprocess.Popen(['task', 'rc.verbose=nothing', str(id), 'do'], stdout=subprocess.PIPE).communicate()[0]
+            subprocess.Popen(['task', 'rc:%s' % self.config_filename, 'rc.verbose=nothing', str(id), 'do'], stdout=subprocess.PIPE).communicate()[0]
             tasks = self.load_tasks()
             return tasks['completed'][-1]
 
@@ -243,7 +243,7 @@ class TaskWarrior(object):
             if 'annotations' in task_to_modify:
                 del task_to_modify['annotations']
             modification = taskw.utils.encode_task_experimental(task_to_modify)
-            subprocess.call(['task', 'rc.verbose=nothing', task[u'uuid'], 'modify', modification])
+            subprocess.call(['task', 'rc:%s' % self.config_filename, 'rc.verbose=nothing', task[u'uuid'], 'modify', modification])
             # If there are no existing annotations, add the new ones
             if existing_annotations is None:
                 for annotation in new_annotations:
