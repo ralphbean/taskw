@@ -3,6 +3,9 @@ import os
 import re
 import time
 import uuid
+import subprocess
+import json
+import pprint
 
 import taskw.utils
 from six.moves import filter
@@ -23,6 +26,12 @@ class TaskWarrior(object):
     def __init__(self, config_filename="~/.taskrc"):
         self.config_filename = config_filename
         self.config = self.load_config()
+        global experimental
+        global bwtasks
+        experimental = False
+        if self.config[u'bwdata']:
+            experimental = True
+            bwtasks = self.config[u'bwdata'][u'location']
 
     def load_tasks(self):
         """ Load all tasks.
@@ -46,10 +55,25 @@ class TaskWarrior(object):
 
             return list(map(taskw.utils.decode_task, lines))
 
-        return dict(
-            (db, _load_tasks('%s.data' % db))
-            for db in ['completed', 'pending']
-        )
+        def _load_exported_tasks():
+            # Load tasks using `task export`
+            pending_tasks = list()
+            completed_tasks = list()
+            tasks = dict()
+            pending_tasks = json.loads(subprocess.Popen(['task', 'rc.json.array=TRUE', 'rc.verbose=nothing', 'status:pending', 'export'], stdout=subprocess.PIPE).communicate()[0])
+            completed_tasks = json.loads(subprocess.Popen(['task', 'rc.json.array=TRUE', 'rc.verbose=nothing', 'status:completed', 'export'], stdout=subprocess.PIPE).communicate()[0])
+            tasks['pending'] = pending_tasks
+            tasks['completed'] = completed_tasks
+            return tasks
+
+        if experimental is not True:
+            return dict(
+                (db, _load_tasks('%s.data' % db))
+                for db in ['completed', 'pending']
+            )
+        else:
+            return _load_exported_tasks()
+
 
     def load_config(self):
         """ Load ~/.taskrc into a python dict
