@@ -5,7 +5,6 @@ import time
 import uuid
 import subprocess
 import json
-import pprint
 
 import taskw.utils
 from six.moves import filter
