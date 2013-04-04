@@ -132,7 +132,8 @@ class TaskWarrior(object):
             task['due'] = str(task['due'])
 
         if experimental is True:
-            # Check if there are annotations
+            # @TODO Check if there are annotations, if so remove them from the
+            # task and add them after we've added the task.
             subprocess.call(['task', 'rc.verbose=nothing', 'add', taskw.utils.encode_task_experimental(task)])
             tasks = self.load_tasks()
             return tasks['pending'][-1]
@@ -218,6 +219,8 @@ class TaskWarrior(object):
             task_to_modify = _task
             del task_to_modify['uuid']
             del task_to_modify['id']
+            # @TODO Check if there are annotations, if so, look if they are
+            # in the existing task, otherwise annotate the task to add them.
             modification = taskw.utils.encode_task_experimental(task_to_modify)
             subprocess.call(['task', 'rc.verbose=nothing', task[u'uuid'], 'modify', modification])
         else:
