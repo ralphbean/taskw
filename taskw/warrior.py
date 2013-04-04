@@ -128,19 +128,24 @@ class TaskWarrior(object):
         if 'due' in kw:
             task['due'] = str(task['due'])
 
-        task['status'] = 'pending'
+        if experimental is True:
+            subprocess.call(['task', 'add', taskw.utils.encode_task_experimental(task)])
+            tasks = self.load_tasks()
+            return tasks['pending'][-1]
+        else:
+            task['status'] = 'pending'
 
-        # TODO -- check only valid keywords
+            # TODO -- check only valid keywords
 
-        if not 'entry' in task:
-            task['entry'] = str(int(time.time()))
+            if not 'entry' in task:
+                task['entry'] = str(int(time.time()))
 
-        if not 'uuid' in task:
-            task['uuid'] = str(uuid.uuid4())
+            if not 'uuid' in task:
+                task['uuid'] = str(uuid.uuid4())
 
-        id = self._task_add(task, 'pending')
-        task['id'] = id
-        return task
+            id = self._task_add(task, 'pending')
+            task['id'] = id
+            return task
 
     def get_task(self, **kw):
         valid_keys = set(['id', 'uuid', 'description'])
@@ -184,6 +189,11 @@ class TaskWarrior(object):
 
     def task_done(self, **kw):
         id, task = self.get_task(**kw)
+
+        if experimental is True:
+            subprocess.Popen(['task', str(id), 'do'], stdout=subprocess.PIPE).communicate()[0]
+            tasks = self.load_tasks()
+            return tasks['completed'][-1]
 
         task['status'] = 'completed'
         task['end'] = kw.get('end') or str(int(time.time()))
