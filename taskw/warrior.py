@@ -111,6 +111,11 @@ class TaskWarrior(object):
 
         return d
 
+    def task_annotate(self, task, annotation):
+        """ Annotates a task. """
+        subprocess.call(['task', 'rc.verbose=nothing', str(task[u'uuid']), 'annotate', annotation])
+        return self.get_task(uuid=task[u'uuid'])
+
     def task_add(self, description, tags=None, **kw):
         """ Add a new task.
 
@@ -127,6 +132,7 @@ class TaskWarrior(object):
             task['due'] = str(task['due'])
 
         if experimental is True:
+            # Check if there are annotations
             subprocess.call(['task', 'rc.verbose=nothing', 'add', taskw.utils.encode_task_experimental(task)])
             tasks = self.load_tasks()
             return tasks['pending'][-1]
