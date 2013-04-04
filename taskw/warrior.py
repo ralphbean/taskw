@@ -115,7 +115,8 @@ class TaskWarrior(object):
     def task_annotate(self, task, annotation):
         """ Annotates a task. """
         subprocess.call(['task', 'rc.verbose=nothing', str(task[u'uuid']), 'annotate', annotation])
-        return self.get_task(uuid=task[u'uuid'])
+        id, annotated_task = self.get_task(uuid=task[u'uuid'])
+        return annotated_task
 
     def _extract_annotations_from_task(self, task):
         """ Removes annotations from a task and returns a list of annotations """
@@ -147,11 +148,12 @@ class TaskWarrior(object):
             # task and add them after we've added the task.
             annotations = self._extract_annotations_from_task(task)
             subprocess.call(['task', 'rc.verbose=nothing', 'add', taskw.utils.encode_task_experimental(task)])
-            added_task = self.get_task(description=task['description'])
+            id, added_task = self.get_task(description=task['description'])
             if annotations:
                 for annotation in annotations:
                     self.task_annotate(added_task, annotation)
-            return self.get_task(uuid=added_task[u'uuid'])
+            id, added_task = self.get_task(uuid=added_task[u'uuid'])
+            return added_task
         else:
             task['status'] = 'pending'
 
@@ -234,16 +236,24 @@ class TaskWarrior(object):
             task_to_modify = _task
             del task_to_modify['uuid']
             del task_to_modify['id']
-            # @TODO Check if there are annotations, if so, look if they are
+            # Check if there are annotations, if so, look if they are
             # in the existing task, otherwise annotate the task to add them.
             new_annotations = self._extract_annotations_from_task(task)
-            existing_annotations = self._extract_annotations_from_task(_task)
-            print 'update annotations'
-            pprint.pprint(new_annotations)
-            pprint.pprint(existing_annotations)
-
+            existing_annotations = self._extract_annotations_from_task(task_to_modify)
+            if 'annotations' in task_to_modify:
+                del task_to_modify['annotations']
             modification = taskw.utils.encode_task_experimental(task_to_modify)
             subprocess.call(['task', 'rc.verbose=nothing', task[u'uuid'], 'modify', modification])
+            # If there are no existing annotations, add the new ones
+            if existing_annotations is None:
+                for annotation in new_annotations:
+                    self.task_annotate(task_to_modify, annotation)
+            # If there are existing annotations and new annotations, add only
+            # the new annotations
+            if existing_annotations is not None and new_annotations is not None:
+                for annotation in new_annotations:
+                    if annotation not in existing_annotations:
+                        self.task_annotate(task_to_modify, annotation)
         else:
             self._task_replace(id, 'pending', _task)
         return id, _task
