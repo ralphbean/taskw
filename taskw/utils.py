@@ -27,6 +27,24 @@ def clean_task(task):
     return task
 
 
+def encode_task_experimental(task):
+    """ Convert a dict-like task to its string representation
+        Used for adding a task via `task add`
+    """
+    # First, clean the task:
+    task = task.copy()
+    if 'tags' in task:
+        task['tags'] = ','.join(task['tags'])
+    for k in task:
+        for unsafe, safe in six.iteritems(encode_replacements):
+            task[k] = task[k].replace(unsafe, safe)
+
+    # Then, format it as a string
+    return "%s\n" % " ".join([
+        "%s:\"%s\"" % (k, v)
+        for k, v in sorted(task.items(), key=itemgetter(0))
+    ])
+
 def encode_task(task):
     """ Convert a dict-like task to its string representation """
     # First, clean the task:
