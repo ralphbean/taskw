@@ -27,11 +27,9 @@ class TaskWarrior(object):
         self.config_filename = config_filename
         self.config = self.load_config()
         global experimental
-        global bwtasks
         experimental = False
-        if self.config[u'bwdata']:
+        if 'taskw' in self.config and 'experimental' in self.config[u'taskw']:
             experimental = True
-            bwtasks = self.config[u'bwdata'][u'location']
 
     def load_tasks(self):
         """ Load all tasks.
@@ -209,7 +207,15 @@ class TaskWarrior(object):
             del task['id']
 
         _task.update(task)
-        self._task_replace(id, 'pending', _task)
+        if experimental is True:
+            # Unset task attributes that should not be updated
+            task_to_modify = _task
+            del task_to_modify['uuid']
+            del task_to_modify['id']
+            modification = taskw.utils.encode_task_experimental(task_to_modify)
+            subprocess.call(['task', task[u'uuid'], 'modify', modification])
+        else:
+            self._task_replace(id, 'pending', _task)
         return id, _task
 
     def _task_replace(self, id, category, task):
