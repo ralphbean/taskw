@@ -29,7 +29,8 @@ class TaskWarrior(object):
         global experimental
         experimental = False
         if 'taskw' in self.config and 'experimental' in self.config[u'taskw']:
-            experimental = True
+            if self.config[u'taskw'][u'experimental'] == 'true':
+                experimental = True
 
     def load_tasks(self):
         """ Load all tasks.
@@ -127,7 +128,7 @@ class TaskWarrior(object):
             task['due'] = str(task['due'])
 
         if experimental is True:
-            subprocess.call(['task', 'add', taskw.utils.encode_task_experimental(task)])
+            subprocess.call(['task', 'rc.verbose=nothing', 'add', taskw.utils.encode_task_experimental(task)])
             tasks = self.load_tasks()
             return tasks['pending'][-1]
         else:
@@ -189,7 +190,7 @@ class TaskWarrior(object):
         id, task = self.get_task(**kw)
 
         if experimental is True:
-            subprocess.Popen(['task', str(id), 'do'], stdout=subprocess.PIPE).communicate()[0]
+            subprocess.Popen(['task', 'rc.verbose=nothing', str(id), 'do'], stdout=subprocess.PIPE).communicate()[0]
             tasks = self.load_tasks()
             return tasks['completed'][-1]
 
@@ -213,7 +214,7 @@ class TaskWarrior(object):
             del task_to_modify['uuid']
             del task_to_modify['id']
             modification = taskw.utils.encode_task_experimental(task_to_modify)
-            subprocess.call(['task', task[u'uuid'], 'modify', modification])
+            subprocess.call(['task', 'rc.verbose=nothing', task[u'uuid'], 'modify', modification])
         else:
             self._task_replace(id, 'pending', _task)
         return id, _task
