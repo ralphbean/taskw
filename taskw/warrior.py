@@ -224,6 +224,14 @@ class TaskWarrior(object):
         self._task_remove(id, 'pending')
         return task
 
+    def task_info(self, **kw):
+        id, task = self.get_task(**kw)
+        info = subprocess.Popen(['task', 'rc:%s' % self.config_filename, 'rc.verbose=nothing', str(id), 'info'], stderr=subprocess.STDOUT, stdout = subprocess.PIPE)
+        out, err = info.communicate()
+        if err:
+            return err
+        return out
+
     def task_update(self, task):
         id, _task = self.get_task(uuid=task['uuid'])
 
