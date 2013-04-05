@@ -180,27 +180,38 @@ class TaskWarrior(object):
         if key not in valid_keys:
             raise KeyError("Argument must be one of %r" % valid_keys)
 
+        statuses = list()
+        if 'status' in kw:
+            statuses.append(kw[u'status'])
+            # @TODO: Valid options are 'pending' or 'completed'
+        else:
+            statuses = ['pending', 'completed']
+
         tasks = self.load_tasks()
 
-        if key == 'id':
-            id = kw[key]
+        id = None
+        task = dict()
 
-            if len(tasks['pending']) < id:
-                raise ValueError("No such pending task with id %i." % id)
+        for status in statuses:
+            # Check only pending or completed tasks
+            if key == 'id':
+                id = kw[key]
 
-            task = tasks['pending'][id - 1]
-        else:
-            matching = list(filter(
-                lambda t: t[key] == kw[key],
-                tasks['pending']
-            ))
+                if len(tasks[status]) < id:
+                    continue
 
-            if not matching:
-                raise ValueError("No such pending task with %s %r." % (
-                    key, kw[key]))
+                task = tasks[status][id - 1]
+            else:
+                matching = list(filter(
+                    lambda t: t[key] == kw[key],
+                    tasks[status]
+                ))
 
-            task = matching[0]
-            id = tasks['pending'].index(task) + 1
+                if not matching:
+                    continue
+
+                task = matching[0]
+                id = tasks[status].index(task) + 1
 
         return id, task
 
