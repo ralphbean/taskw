@@ -193,14 +193,13 @@ class TaskWarrior(object):
         task = dict()
 
         for status in statuses:
-            # Check only pending or completed tasks
             if key == 'id':
                 id = kw[key]
-
-                if len(tasks[status]) < id:
+                if len(tasks[status]) < int(id):
                     continue
 
-                task = tasks[status][id - 1]
+                task = tasks[status][int(id) - 1]
+                return id, task
             else:
                 matching = list(filter(
                     lambda t: t[key] == kw[key],
@@ -212,6 +211,7 @@ class TaskWarrior(object):
 
                 task = matching[0]
                 id = tasks[status].index(task) + 1
+                return id, task
 
         return id, task
 
