@@ -21,9 +21,6 @@ if sys.version_info[0] == 2 and sys.version_info[1] < 7:
     install_requires.extend([
         'ordereddict',
     ])
-    tests_require.extend([
-        'unittest2',
-    ])
 
 setup(name='taskw',
       version=version,

@@ -1,17 +1,12 @@
+import nose
 from nose.tools import eq_, ok_, raises
 import os
 import sys
 import shutil
 import tempfile
-import unittest
 
 from taskw import TaskWarrior, TaskWarriorExperimental
 
-# Python 2.6 can't handle fancy unit test stuff.
-if sys.version_info[0] == 2 and sys.version_info[1] < 7:
-    import unittest2 as unittest
-else:
-    import unittest
 
 TASK = {'description': "task 2 http://www.google.com/",
         'entry': "1325011643",
@@ -26,7 +21,7 @@ class _BaseTestDB(object):
         # We can't run the TaskWarriorExperimental tests on travis-ci,
         # because the 'task' command line tool is not installed.
         if self.should_skip():
-            raise unittest.SkipTest(
+            raise nose.SkipTest(
                 "%r unsupported on this system" % (self.class_to_test)
             )
 
