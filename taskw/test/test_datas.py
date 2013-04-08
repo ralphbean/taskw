@@ -1,5 +1,6 @@
 from nose.tools import eq_, ok_, raises
 import os
+import sys
 import shutil
 import tempfile
 import unittest
