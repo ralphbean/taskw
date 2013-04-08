@@ -66,7 +66,7 @@ class TestDB(object):
         eq_(len(tasks['pending']), 0)
         eq_(len(tasks['completed']), 1)
         eq_(len(sum(tasks.values(), [])), 1)
-        ok_(tasks['completed'][0]['end'] != None)
+        ok_(tasks['completed'][0]['end'] is not None)
 
     def test_completing_task_with_date(self):
         self.tw.task_add("foobar")
