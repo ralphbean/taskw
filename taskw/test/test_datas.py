@@ -2,8 +2,9 @@ from nose.tools import eq_, ok_, raises
 import os
 import shutil
 import tempfile
+import unittest
 
-from taskw import TaskWarrior
+from taskw import TaskWarrior, TaskWarriorExperimental
 
 TASK = {'description': "task 2 http://www.google.com/",
         'entry': "1325011643",
@@ -12,8 +13,16 @@ TASK = {'description': "task 2 http://www.google.com/",
         'uuid': "c1c431ea-f0dc-4683-9a20-e64fcfa65fd1"}
 
 
-class TestDB(object):
+class _BaseTestDB(object):
     def setup(self):
+
+        # We can't run the TaskWarriorExperimental tests on travis-ci,
+        # because the 'task' command line tool is not installed.
+        if self.should_skip():
+            raise unittest.SkipTest(
+                "%r unsupported on this system" % (self.class_to_test)
+            )
+
         # Create some temporary config stuff
         fd, fname = tempfile.mkstemp(prefix='taskw-testsrc')
         dname = tempfile.mkdtemp(prefix='taskw-tests-data')
@@ -30,7 +39,7 @@ class TestDB(object):
         self.fname, self.dname = fname, dname
 
         # Create the taskwarrior db object that each test will use.
-        self.tw = TaskWarrior(config_filename=fname)
+        self.tw = self.class_to_test(config_filename=fname)
 
     def tearDown(self):
         os.remove(self.fname)
@@ -127,3 +136,18 @@ class TestDB(object):
     def test_update_exc(self):
         task = dict(description="lol")
         self.tw.task_update(task)
+
+
+class TestDBNormal(_BaseTestDB):
+    class_to_test = TaskWarrior
+
+    def should_skip(self):
+        return False
+
+
+class TestDBExperimental(_BaseTestDB):
+    class_to_test = TaskWarriorExperimental
+
+    def should_skip(self):
+        """ If 'task' is not installed, we can't run these tests. """
+        return not os.path.exists("/usr/bin/task")
