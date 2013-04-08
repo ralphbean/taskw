@@ -132,6 +132,20 @@ class _BaseTestDB(object):
 
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 1)
+
+        # For compatibility with the normal and experimental modes.
+        # Experimental returns more information.
+        try:
+            # Experimental mode returns the correct urgency, so,
+            # let's just not compare for now.
+            del tasks['pending'][0]['urgency']
+            del task['urgency']
+
+            # Also, experimental mode returns the id.  So, avoid comparing.
+            del tasks['pending'][0]['id']
+        except:
+            pass
+
         eq_(tasks['pending'][0], task)
 
     @raises(KeyError)
