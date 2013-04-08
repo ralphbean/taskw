@@ -1,3 +1,10 @@
+""" Code to interact with taskwarrior
+
+This module contains an abstract base class and two different implementations
+for interacting with taskwarrior:  TaskWarrior and TaskWarriorExperimental.
+
+"""
+
 import abc
 import codecs
 import os
@@ -178,6 +185,14 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
 
 
 class TaskWarrior(TaskWarriorBase):
+    """ Interacts with taskwarrior by directly manipulating the ~/.task/ db.
+
+    Currently this is the supported implementation, but will be phased out in
+    time due to taskwarrior's guidelines:  http://bit.ly/16I9VN4
+
+    See https://github.com/ralphbean/taskw/pull/15 for discussion.
+    """
+
     def load_tasks(self):
         def _load_tasks(filename):
             filename = os.path.join(self.config['data']['location'], filename)
@@ -286,6 +301,16 @@ class TaskWarrior(TaskWarriorBase):
 
 
 class TaskWarriorExperimental(TaskWarriorBase):
+    """ Interacts with taskwarrior by invoking shell commands.
+
+    This is currently experimental and is not necessarily stable.  Please help
+    us test and report any issues.
+
+    Some day this will become the primary supported implementation due to
+    taskwarrior's guidelines:  http://bit.ly/16I9VN4
+
+    See https://github.com/ralphbean/taskw/pull/15 for discussion.
+    """
 
     def load_tasks(self):
         # Load tasks using `task export`
