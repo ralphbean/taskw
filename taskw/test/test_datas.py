@@ -6,6 +6,12 @@ import unittest
 
 from taskw import TaskWarrior, TaskWarriorExperimental
 
+# Python 2.6 can't handle fancy unit test stuff.
+if sys.version_info[0] == 2 and sys.version_info[1] < 7:
+    import unittest2 as unittest
+else:
+    import unittest
+
 TASK = {'description': "task 2 http://www.google.com/",
         'entry': "1325011643",
         'project': "work",

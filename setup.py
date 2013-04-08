@@ -13,10 +13,16 @@ f.close()
 install_requires = [
     "six",
 ]
+tests_require = [
+    'nose',
+]
 
-if sys.version_info[0] ==2 and sys.version_info[1] < 7:
+if sys.version_info[0] == 2 and sys.version_info[1] < 7:
     install_requires.extend([
         'ordereddict',
+    ])
+    tests_require.extend([
+        'unittest2',
     ])
 
 setup(name='taskw',
@@ -44,7 +50,7 @@ setup(name='taskw',
       zip_safe=False,
       install_requires=install_requires,
       test_suite='nose.collector',
-      tests_require=['nose'],
+      tests_require=tests_require,
       entry_points="""
       # -*- Entry points: -*-
       """,
