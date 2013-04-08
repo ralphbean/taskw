@@ -1,3 +1,4 @@
+import abc
 import codecs
 import os
 import re
@@ -8,6 +9,8 @@ import json
 import pprint
 
 import taskw.utils
+
+from six import with_metaclass
 from six.moves import filter
 from six.moves import map
 from six.moves import zip
@@ -16,7 +19,7 @@ from six.moves import zip
 open = lambda fname, mode: codecs.open(fname, mode, "utf-8")
 
 
-class TaskWarrior(object):
+class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
     """ The task warrior
 
     Really though, a python object with methods allowing you to interact
@@ -26,53 +29,22 @@ class TaskWarrior(object):
     def __init__(self, config_filename="~/.taskrc"):
         self.config_filename = config_filename
         self.config = self.load_config()
-        global experimental
-        experimental = False
-        if 'taskw' in self.config and 'experimental' in self.config[u'taskw']:
-            if self.config[u'taskw'][u'experimental'] == 'true':
-                experimental = True
 
-    def load_tasks(self):
-        """ Load all tasks.
+    def _stub_task(self, description, tags=None, **kw):
+        """ Given a description, stub out a task dict. """
 
-        >>> w = Warrior()
-        >>> tasks = w.load_tasks()
-        >>> tasks.keys()
-        ['completed', 'pending']
-        >>> type(tasks['pending'])
-        <type 'list'>
-        >>> type(tasks['pending'][0])
-        <type 'dict'>
+        task = {"description": description}
 
-        """
+        if tags is not None:
+            task['tags'] = tags
 
-        def _load_tasks(filename):
-            filename = os.path.join(self.config['data']['location'], filename)
-            filename = os.path.expanduser(filename)
-            with open(filename, 'r') as f:
-                lines = f.readlines()
+        task.update(kw)
 
-            return list(map(taskw.utils.decode_task, lines))
+        # Only UNIX timestamps are currently supported.
+        if 'due' in kw:
+            task['due'] = str(task['due'])
 
-        def _load_exported_tasks():
-            # Load tasks using `task export`
-            pending_tasks = list()
-            completed_tasks = list()
-            tasks = dict()
-            pending_tasks = json.loads(subprocess.Popen(['task', 'rc:%s' % self.config_filename, 'rc.json.array=TRUE', 'rc.verbose=nothing', 'status:pending', 'export'], stdout=subprocess.PIPE).communicate()[0])
-            completed_tasks = json.loads(subprocess.Popen(['task', 'rc:%s' % self.config_filename, 'rc.json.array=TRUE', 'rc.verbose=nothing', 'status:completed', 'export'], stdout=subprocess.PIPE).communicate()[0])
-            tasks['pending'] = pending_tasks
-            tasks['completed'] = completed_tasks
-            return tasks
-
-        if experimental is not True:
-            return dict(
-                (db, _load_tasks('%s.data' % db))
-                for db in ['completed', 'pending']
-            )
-        else:
-            return _load_exported_tasks()
-
+        return task
 
     def load_config(self):
         """ Load ~/.taskrc into a python dict
@@ -112,14 +84,9 @@ class TaskWarrior(object):
 
         return d
 
-    def task_annotate(self, task, annotation):
-        """ Annotates a task. """
-        subprocess.call(['task', 'rc:%s' % self.config_filename, 'rc.verbose=nothing', str(task[u'uuid']), 'annotate', annotation])
-        id, annotated_task = self.get_task(uuid=task[u'uuid'])
-        return annotated_task
-
     def _extract_annotations_from_task(self, task):
-        """ Removes annotations from a task and returns a list of annotations """
+        """ Removes annotations from a task and returns a list of annotations
+        """
         annotations = list()
         for key in task.keys():
             if key.startswith('annotation_'):
@@ -127,47 +94,36 @@ class TaskWarrior(object):
                 del(task[key])
         return annotations
 
+    @abc.abstractmethod
+    def load_tasks(self):
+        """ Load all tasks.
+
+        >>> w = Warrior()
+        >>> tasks = w.load_tasks()
+        >>> tasks.keys()
+        ['completed', 'pending']
+        >>> type(tasks['pending'])
+        <type 'list'>
+        >>> type(tasks['pending'][0])
+        <type 'dict'>
+
+        """
+
+    @abc.abstractmethod
     def task_add(self, description, tags=None, **kw):
         """ Add a new task.
 
         Takes any of the keywords allowed by taskwarrior like proj or prior.
         """
+        pass
 
-        task = {"description": description}
-        if tags != None:
-            task['tags'] = tags
+    @abc.abstractmethod
+    def task_done(self, **kw):
+        pass
 
-        task.update(kw)
-
-        # Only UNIX timestamps are currently supported.
-        if 'due' in kw:
-            task['due'] = str(task['due'])
-
-        if experimental is True:
-            # Check if there are annotations, if so remove them from the
-            # task and add them after we've added the task.
-            annotations = self._extract_annotations_from_task(task)
-            subprocess.call(['task', 'rc:%s' % self.config_filename, 'rc.verbose=nothing', 'add', taskw.utils.encode_task_experimental(task)])
-            id, added_task = self.get_task(description=task['description'])
-            if annotations:
-                for annotation in annotations:
-                    self.task_annotate(added_task, annotation)
-            id, added_task = self.get_task(uuid=added_task[u'uuid'])
-            return added_task
-        else:
-            task['status'] = 'pending'
-
-            # TODO -- check only valid keywords
-
-            if not 'entry' in task:
-                task['entry'] = str(int(time.time()))
-
-            if not 'uuid' in task:
-                task['uuid'] = str(uuid.uuid4())
-
-            id = self._task_add(task, 'pending')
-            task['id'] = id
-            return task
+    @abc.abstractmethod
+    def task_update(self, task):
+        pass
 
     def get_task(self, **kw):
         valid_keys = set(['id', 'uuid', 'description'])
@@ -220,13 +176,46 @@ class TaskWarrior(object):
         filtered = filter(func, tasks)
         return filtered
 
+
+class TaskWarrior(TaskWarriorBase):
+    def load_tasks(self):
+        def _load_tasks(filename):
+            filename = os.path.join(self.config['data']['location'], filename)
+            filename = os.path.expanduser(filename)
+            with open(filename, 'r') as f:
+                lines = f.readlines()
+
+            return list(map(taskw.utils.decode_task, lines))
+
+        return dict(
+            (db, _load_tasks('%s.data' % db))
+            for db in ['completed', 'pending']
+        )
+
+    def task_add(self, description, tags=None, **kw):
+        """ Add a new task.
+
+        Takes any of the keywords allowed by taskwarrior like proj or prior.
+        """
+
+        task = self._stub_task(description, tags, **kw)
+
+        task['status'] = 'pending'
+
+        # TODO -- check only valid keywords
+
+        if not 'entry' in task:
+            task['entry'] = str(int(time.time()))
+
+        if not 'uuid' in task:
+            task['uuid'] = str(uuid.uuid4())
+
+        id = self._task_add(task, 'pending')
+        task['id'] = id
+        return task
+
     def task_done(self, **kw):
         id, task = self.get_task(**kw)
-
-        if experimental is True:
-            subprocess.Popen(['task', 'rc:%s' % self.config_filename, 'rc.verbose=nothing', str(id), 'do'], stdout=subprocess.PIPE).communicate()[0]
-            tasks = self.load_tasks()
-            return tasks['completed'][-1]
 
         task['status'] = 'completed'
         task['end'] = kw.get('end') or str(int(time.time()))
@@ -235,14 +224,6 @@ class TaskWarrior(object):
         self._task_remove(id, 'pending')
         return task
 
-    def task_info(self, **kw):
-        id, task = self.get_task(**kw)
-        info = subprocess.Popen(['task', 'rc:%s' % self.config_filename, 'rc.verbose=nothing', str(id), 'info'], stderr=subprocess.STDOUT, stdout = subprocess.PIPE)
-        out, err = info.communicate()
-        if err:
-            return err
-        return out
-
     def task_update(self, task):
         id, _task = self.get_task(uuid=task['uuid'])
 
@@ -250,31 +231,7 @@ class TaskWarrior(object):
             del task['id']
 
         _task.update(task)
-        if experimental is True:
-            # Unset task attributes that should not be updated
-            task_to_modify = _task
-            del task_to_modify['uuid']
-            del task_to_modify['id']
-            # Check if there are annotations, if so, look if they are
-            # in the existing task, otherwise annotate the task to add them.
-            new_annotations = self._extract_annotations_from_task(task)
-            existing_annotations = self._extract_annotations_from_task(task_to_modify)
-            if 'annotations' in task_to_modify:
-                del task_to_modify['annotations']
-            modification = taskw.utils.encode_task_experimental(task_to_modify)
-            subprocess.call(['task', 'rc:%s' % self.config_filename, 'rc.verbose=nothing', task[u'uuid'], 'modify', modification])
-            # If there are no existing annotations, add the new ones
-            if existing_annotations is None:
-                for annotation in new_annotations:
-                    self.task_annotate(task_to_modify, annotation)
-            # If there are existing annotations and new annotations, add only
-            # the new annotations
-            if existing_annotations is not None and new_annotations is not None:
-                for annotation in new_annotations:
-                    if annotation not in existing_annotations:
-                        self.task_annotate(task_to_modify, annotation)
-        else:
-            self._task_replace(id, 'pending', _task)
+        self._task_replace(id, 'pending', _task)
         return id, _task
 
     def _task_replace(self, id, category, task):
@@ -326,3 +283,116 @@ class TaskWarrior(object):
         with open(os.path.join(location, filename), "r") as f:
             # The 'id' of this latest added task.
             return len(f.readlines())
+
+
+class TaskWarriorExperimental(TaskWarriorBase):
+
+    def load_tasks(self):
+        # Load tasks using `task export`
+        pending_tasks = list()
+        completed_tasks = list()
+        tasks = dict()
+        pending_tasks = json.loads(subprocess.Popen([
+            'task', 'rc:%s' % self.config_filename,
+            'rc.json.array=TRUE', 'rc.verbose=nothing', 'status:pending',
+            'export'], stdout=subprocess.PIPE).communicate()[0])
+        completed_tasks = json.loads(subprocess.Popen([
+            'task', 'rc:%s' % self.config_filename,
+            'rc.json.array=TRUE', 'rc.verbose=nothing', 'status:completed',
+            'export'], stdout=subprocess.PIPE).communicate()[0])
+        tasks['pending'] = pending_tasks
+        tasks['completed'] = completed_tasks
+        return tasks
+
+    def task_add(self, description, tags=None, **kw):
+        """ Add a new task.
+
+        Takes any of the keywords allowed by taskwarrior like proj or prior.
+        """
+
+        task = self._stub_task(description, tags, **kw)
+
+        # Check if there are annotations, if so remove them from the
+        # task and add them after we've added the task.
+        annotations = self._extract_annotations_from_task(task)
+        subprocess.call([
+            'task', 'rc:%s' % self.config_filename,
+            'rc.verbose=nothing',
+            'add', taskw.utils.encode_task_experimental(task)])
+        id, added_task = self.get_task(description=task['description'])
+        if annotations:
+            for annotation in annotations:
+                self.task_annotate(added_task, annotation)
+        id, added_task = self.get_task(uuid=added_task[u'uuid'])
+        return added_task
+
+    def task_annotate(self, task, annotation):
+        """ Annotates a task. """
+        subprocess.call([
+            'task', 'rc:%s' % self.config_filename,
+            'rc.verbose=nothing', str(task[u'uuid']), 'annotate', annotation])
+        id, annotated_task = self.get_task(uuid=task[u'uuid'])
+        return annotated_task
+
+    def task_done(self, **kw):
+        id, task = self.get_task(**kw)
+
+        subprocess.Popen([
+            'task', 'rc:%s' % self.config_filename,
+            'rc.verbose=nothing', str(id),
+            'do'], stdout=subprocess.PIPE).communicate()[0]
+        tasks = self.load_tasks()
+        return tasks['completed'][-1]
+
+    def task_update(self, task):
+        id, _task = self.get_task(uuid=task['uuid'])
+
+        if 'id' in task:
+            del task['id']
+
+        _task.update(task)
+
+        # Unset task attributes that should not be updated
+        task_to_modify = _task
+        del task_to_modify['uuid']
+        del task_to_modify['id']
+
+        # Check if there are annotations, if so, look if they are
+        # in the existing task, otherwise annotate the task to add them.
+        new_annotations = self._extract_annotations_from_task(task)
+        existing_annotations = \
+            self._extract_annotations_from_task(task_to_modify)
+
+        if 'annotations' in task_to_modify:
+            del task_to_modify['annotations']
+
+        modification = taskw.utils.encode_task_experimental(task_to_modify)
+        subprocess.call([
+            'task', 'rc:%s' % self.config_filename,
+            'rc.verbose=nothing', task[u'uuid'], 'modify', modification])
+
+        # If there are no existing annotations, add the new ones
+        if existing_annotations is None:
+            for annotation in new_annotations:
+                self.task_annotate(task_to_modify, annotation)
+
+        # If there are existing annotations and new annotations, add only
+        # the new annotations
+        if existing_annotations is not None and new_annotations is not None:
+            for annotation in new_annotations:
+                if annotation not in existing_annotations:
+                    self.task_annotate(task_to_modify, annotation)
+
+        return id, _task
+
+    def task_info(self, **kw):
+        id, task = self.get_task(**kw)
+        info = subprocess.Popen([
+            'task', 'rc:%s' % self.config_filename,
+            'rc.verbose=nothing', str(id),
+            'info'],
+            stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+        out, err = info.communicate()
+        if err:
+            return err
+        return out
