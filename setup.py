@@ -1,4 +1,5 @@
-import multiprocessing, logging
+import multiprocessing
+import logging
 import sys
 from setuptools import setup, find_packages
 
@@ -47,4 +48,4 @@ setup(name='taskw',
       entry_points="""
       # -*- Entry points: -*-
       """,
-)
+      )
