@@ -17,6 +17,7 @@ import pprint
 
 import taskw.utils
 
+import six
 from six import with_metaclass
 from six.moves import filter
 from six.moves import map
