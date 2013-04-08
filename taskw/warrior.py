@@ -35,7 +35,7 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
 
     def __init__(self, config_filename="~/.taskrc"):
         self.config_filename = config_filename
-        self.config = self.load_config()
+        self.config = TaskWarriorBase.load_config(config_filename)
 
     def _stub_task(self, description, tags=None, **kw):
         """ Given a description, stub out a task dict. """
@@ -52,44 +52,6 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
             task['due'] = str(task['due'])
 
         return task
-
-    def load_config(self):
-        """ Load ~/.taskrc into a python dict
-
-        >>> w = Warrior()
-        >>> config = w.load_config()
-        >>> config['data']['location']
-        '/home/threebean/.task'
-        >>> config['_forcecolor']
-        'yes'
-
-        """
-
-        with open(os.path.expanduser(self.config_filename), 'r') as f:
-            lines = f.readlines()
-
-        _usable = lambda l: not(l.startswith('#') or l.strip() == '')
-        lines = filter(_usable, lines)
-
-        def _build_config(key, value, d):
-            """ Called recursively to split up keys """
-            pieces = key.split('.', 1)
-            if len(pieces) == 1:
-                d[pieces[0]] = value.strip()
-            else:
-                d[pieces[0]] = _build_config(pieces[1], value, {})
-
-            return d
-
-        d = {}
-        for line in lines:
-            if '=' not in line:
-                continue
-
-            key, value = line.split('=')
-            d = _build_config(key, value, d)
-
-        return d
 
     def _extract_annotations_from_task(self, task):
         """ Removes annotations from a task and returns a list of annotations
@@ -182,6 +144,44 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
         tasks = self.load_tasks()
         filtered = filter(func, tasks)
         return filtered
+
+    @classmethod
+    def load_config(self, config_filename="~/.taskrc"):
+        """ Load ~/.taskrc into a python dict
+
+        >>> config = TaskWarrior.load_config()
+        >>> config['data']['location']
+        '/home/threebean/.task'
+        >>> config['_forcecolor']
+        'yes'
+
+        """
+
+        with open(os.path.expanduser(config_filename), 'r') as f:
+            lines = f.readlines()
+
+        _usable = lambda l: not(l.startswith('#') or l.strip() == '')
+        lines = filter(_usable, lines)
+
+        def _build_config(key, value, d):
+            """ Called recursively to split up keys """
+            pieces = key.split('.', 1)
+            if len(pieces) == 1:
+                d[pieces[0]] = value.strip()
+            else:
+                d[pieces[0]] = _build_config(pieces[1], value, {})
+
+            return d
+
+        d = {}
+        for line in lines:
+            if '=' not in line:
+                continue
+
+            key, value = line.split('=')
+            d = _build_config(key, value, d)
+
+        return d
 
 
 class TaskWarrior(TaskWarriorBase):
