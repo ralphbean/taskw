@@ -107,7 +107,7 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
 
         statuses = list()
         if 'status' in kw:
-            statuses.append(kw[u'status'])
+            statuses.append(kw[six.u('status')])
             # @TODO: Valid options are 'pending' or 'completed'
         else:
             statuses = ['pending', 'completed']
@@ -348,15 +348,16 @@ class TaskWarriorExperimental(TaskWarriorBase):
         if annotations:
             for annotation in annotations:
                 self.task_annotate(added_task, annotation)
-        id, added_task = self.get_task(uuid=added_task[u'uuid'])
+        id, added_task = self.get_task(uuid=added_task[six.u('uuid')])
         return added_task
 
     def task_annotate(self, task, annotation):
         """ Annotates a task. """
         subprocess.call([
             'task', 'rc:%s' % self.config_filename,
-            'rc.verbose=nothing', str(task[u'uuid']), 'annotate', annotation])
-        id, annotated_task = self.get_task(uuid=task[u'uuid'])
+            'rc.verbose=nothing', str(task[six.u('uuid')]),
+            'annotate', annotation])
+        id, annotated_task = self.get_task(uuid=task[six.u('uuid')])
         return annotated_task
 
     def task_done(self, **kw):
@@ -394,7 +395,7 @@ class TaskWarriorExperimental(TaskWarriorBase):
         modification = taskw.utils.encode_task_experimental(task_to_modify)
         subprocess.call([
             'task', 'rc:%s' % self.config_filename,
-            'rc.verbose=nothing', task[u'uuid'], 'modify', modification])
+            'rc.verbose=nothing', task[six.u('uuid')], 'modify', modification])
 
         # If there are no existing annotations, add the new ones
         if existing_annotations is None:
