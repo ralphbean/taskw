@@ -16,6 +16,15 @@ encode_replacements = OrderedDict([
     ('\n', ' '),
     ('/', '\\/'),
 ])
+
+encode_replacements_experimental = OrderedDict([
+    ('\"', '&dquot;'),
+    ('"', '&dquot;'),
+    ('[', '&open;'),
+    (']', '&close;'),
+    ('\n', ' '),
+])
+
 decode_replacements = OrderedDict([
     [v, k] for k, v in encode_replacements.items()
     if k not in ('\n')  # We skip these.
@@ -36,7 +45,7 @@ def encode_task_experimental(task):
     if 'tags' in task:
         task['tags'] = ','.join(task['tags'])
     for k in task:
-        for unsafe, safe in six.iteritems(encode_replacements):
+        for unsafe, safe in six.iteritems(encode_replacements_experimental):
             task[k] = task[k].replace(unsafe, safe)
 
     # Then, format it as a string
