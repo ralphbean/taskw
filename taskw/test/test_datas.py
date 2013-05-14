@@ -60,6 +60,16 @@ class _BaseTestDB(object):
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 1)
 
+    def test_add_complicated(self):
+        self.tw.task_add(
+            "foobar",
+            uuid="1234-1234",
+            annotate_123457="awesome",
+            project="some_project"
+        )
+        tasks = self.tw.load_tasks()
+        eq_(len(tasks['pending']), 1)
+
     def test_unchanging_load_tasks(self):
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 0)
