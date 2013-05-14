@@ -313,6 +313,20 @@ class TaskWarriorExperimental(TaskWarriorBase):
     See https://github.com/ralphbean/taskw/pull/15 for discussion.
     """
 
+    @classmethod
+    def can_use(cls):
+        """ Returns true if runtime requirements of experimental mode are met
+        """
+        if not os.path.exists('/usr/bin/task'):
+            return False
+
+        taskwarrior_version = subprocess.Popen(
+            ['task', '--version'],
+            stdout=subprocess.PIPE
+        ).communicate()[0]
+        taskwarrior_version = map(int, taskwarrior_version.split('.'))
+        return taskwarrior_version >= [2, 0, 0]
+
     def load_tasks(self):
         # Load tasks using `task export`
         pending_tasks = list()

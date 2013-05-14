@@ -182,4 +182,4 @@ class TestDBExperimental(_BaseTestDB):
 
     def should_skip(self):
         """ If 'task' is not installed, we can't run these tests. """
-        return not os.path.exists("/usr/bin/task")
+        return not TaskWarriorExperimental.can_use()
