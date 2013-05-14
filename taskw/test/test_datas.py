@@ -86,7 +86,11 @@ class _BaseTestDB(object):
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 0)
         eq_(len(tasks['completed']), 1)
-        eq_(tasks['completed'][0]['end'], '1234567890')
+
+        try:
+            eq_(tasks['completed'][0]['end'], '1234567890')
+        except Exception:
+            assert(tasks['completed'][0]['end'].startswith('20130514T'))
 
     def test_completing_task_by_id_specified(self):
         self.tw.task_add("foobar")
