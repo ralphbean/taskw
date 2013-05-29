@@ -46,13 +46,15 @@ def encode_task_experimental(task):
         task['tags'] = ','.join(task['tags'])
     for k in task:
         for unsafe, safe in six.iteritems(encode_replacements_experimental):
-            task[k] = task[k].replace(unsafe, safe)
+            if type(task[k]) is str:
+                task[k] = task[k].replace(unsafe, safe)
 
     # Then, format it as a string
     return "%s\n" % " ".join([
         "%s:\"%s\"" % (k, v)
         for k, v in sorted(task.items(), key=itemgetter(0))
     ])
+
 
 def encode_task(task):
     """ Convert a dict-like task to its string representation """
@@ -91,4 +93,3 @@ def decode_task(line):
     if 'tags' in task:
         task['tags'] = task['tags'].split(',')
     return task
-
