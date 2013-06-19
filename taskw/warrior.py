@@ -398,13 +398,14 @@ class TaskWarriorExperimental(TaskWarriorBase):
 
     def _load_task(self, **kw):
 
-        if len(kw.keys()) != 1:
-            raise KeyError("Only 1 ID keyword argument may be specified")
-        key = list(kw.keys())[0]
-
+        key = kw.keys()[0]
+        if key is not 'id' or key is not 'uuid' or key is not 'description':
+            search = key + ":" + str(kw[key])
+        else:
+            search = kw.keys()[0]
         task = subprocess.Popen([
             'task', 'rc:%s' % self.config_filename,
-            'rc.verbose=nothing', str(kw[key]),
+            'rc.verbose=nothing', search,
             'export'], stdout=subprocess.PIPE).communicate()[0]
         if task:
             try:
