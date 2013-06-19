@@ -465,6 +465,10 @@ class TaskWarriorExperimental(TaskWarriorBase):
         return tasks['completed'][-1]
 
     def task_update(self, task):
+
+        if 'uuid' not in task:
+            return None, dict()
+
         id, _task = self.get_task(uuid=task['uuid'])
 
         if 'id' in task:
