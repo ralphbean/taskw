@@ -387,7 +387,6 @@ class TaskWarriorExperimental(TaskWarriorBase):
         task = dict()
         task_id = None
         task_id, task = self._load_task(**kw)
-
         id = None
         # The ID going back only makes sense if the task is pending.
         if 'status' in task:
@@ -435,13 +434,20 @@ class TaskWarriorExperimental(TaskWarriorBase):
         # Check if there are annotations, if so remove them from the
         # task and add them after we've added the task.
         annotations = self._extract_annotations_from_task(task)
+
         subprocess.call([
             'task', 'rc:%s' % self.config_filename,
             'rc.verbose=nothing',
             'add', taskw.utils.encode_task_experimental(task)])
         id, added_task = self.get_task(description=task['description'])
 
-        if annotations:
+        # Check if 'uuid' is in the task we just added.
+        if not 'uuid' in added_task:
+            print('No uuid! uh oh.')
+            print(id)
+            pprint.pprint(added_task)
+            return
+        if annotations and 'uuid' in added_task:
             for annotation in annotations:
                 self.task_annotate(added_task, annotation)
         id, added_task = self.get_task(uuid=added_task[six.u('uuid')])
