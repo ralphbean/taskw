@@ -407,12 +407,20 @@ class TaskWarriorExperimental(TaskWarriorBase):
         if key not in valid_keys:
             raise KeyError("Argument must be one of %r" % valid_keys)
 
-        task = json.loads(subprocess.Popen([
+        task = subprocess.Popen([
             'task', 'rc:%s' % self.config_filename,
             'rc.verbose=nothing', str(kw[key]),
-            'export'], stdout=subprocess.PIPE).communicate()[0])
+            'export'], stdout=subprocess.PIPE).communicate()[0]
+        if task:
+            try:
+                task_data = json.loads(task)
+                return task_data[0][u'id'], task_data[0]
+                pass
+            except:
+                pass
 
-        return task[0][u'id'], task[0]
+        return None, dict()
+
 
 
     def task_add(self, description, tags=None, **kw):
