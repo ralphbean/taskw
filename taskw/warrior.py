@@ -399,10 +399,15 @@ class TaskWarriorExperimental(TaskWarriorBase):
     def _load_task(self, **kw):
 
         key = kw.keys()[0]
-        if key is not 'id' or key is not 'uuid' or key is not 'description':
+        if key is not 'id' and key is not 'uuid' and key is not 'description':
             search = key + ":" + str(kw[key])
         else:
-            search = kw.keys()[0]
+            if key is 'description' and "(bw)" in kw[key]:
+                # Strip (bw) from issue description so that get_task() does not
+                # fail in taskw.
+                search = kw[key][4:]
+            else:
+                search = kw[key][0]
         task = subprocess.Popen([
             'task', 'rc:%s' % self.config_filename,
             'rc.verbose=nothing', search,
@@ -435,6 +440,7 @@ class TaskWarriorExperimental(TaskWarriorBase):
             'rc.verbose=nothing',
             'add', taskw.utils.encode_task_experimental(task)])
         id, added_task = self.get_task(description=task['description'])
+
         if annotations:
             for annotation in annotations:
                 self.task_annotate(added_task, annotation)
