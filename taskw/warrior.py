@@ -99,19 +99,16 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
         pass
 
     @abc.abstractmethod
+    def _load_task(self, **kw):
+        pass
+
+    @abc.abstractmethod
     def task_update(self, task):
         pass
 
+    @abc.abstractmethod
     def get_task(self, **kw):
-        line, task = self._load_task(**kw)
-
-        id = None
-        # The ID going back only makes sense if the task is pending.
-        if _TaskStatus.is_pending(task['status']):
-            id = line
-
-        return id, task
-
+        pass
 
     def filter_by(self, func):
         tasks = self.load_tasks()
@@ -156,6 +153,40 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
 
         return d
 
+
+class TaskWarrior(TaskWarriorBase):
+    """ Interacts with taskwarrior by directly manipulating the ~/.task/ db.
+
+    Currently this is the supported implementation, but will be phased out in
+    time due to taskwarrior's guidelines:  http://bit.ly/16I9VN4
+
+    See https://github.com/ralphbean/taskw/pull/15 for discussion.
+    """
+
+    def load_tasks(self, command='all'):
+        def _load_tasks(filename):
+            filename = os.path.join(self.config['data']['location'], filename)
+            filename = os.path.expanduser(filename)
+            with open(filename, 'r') as f:
+                lines = f.readlines()
+
+            return list(map(taskw.utils.decode_task, lines))
+
+        return dict(
+            (db, _load_tasks(_DataFile.filename(db)))
+            for db in _Command.files(command)
+        )
+
+    def get_task(self, **kw):
+        line, task = self._load_task(**kw)
+
+        id = None
+        # The ID going back only makes sense if the task is pending.
+        if _TaskStatus.is_pending(task['status']):
+            id = line
+
+        return id, task
+
     def _load_task(self, **kw):
         valid_keys = set(['id', 'uuid', 'description'])
         id_keys = valid_keys.intersection(kw.keys())
@@ -191,30 +222,6 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
                 line = tasks[_TaskStatus.to_file(task['status'])].index(task) + 1
 
         return line, task
-
-
-class TaskWarrior(TaskWarriorBase):
-    """ Interacts with taskwarrior by directly manipulating the ~/.task/ db.
-
-    Currently this is the supported implementation, but will be phased out in
-    time due to taskwarrior's guidelines:  http://bit.ly/16I9VN4
-
-    See https://github.com/ralphbean/taskw/pull/15 for discussion.
-    """
-
-    def load_tasks(self, command='all'):
-        def _load_tasks(filename):
-            filename = os.path.join(self.config['data']['location'], filename)
-            filename = os.path.expanduser(filename)
-            with open(filename, 'r') as f:
-                lines = f.readlines()
-
-            return list(map(taskw.utils.decode_task, lines))
-
-        return dict(
-            (db, _load_tasks(_DataFile.filename(db)))
-            for db in _Command.files(command)
-        )
 
     def task_add(self, description, tags=None, **kw):
         """ Add a new task.
@@ -375,6 +382,35 @@ class TaskWarriorExperimental(TaskWarriorBase):
         tasks['pending'] = pending_tasks
         tasks['completed'] = completed_tasks
         return tasks
+
+    def get_task(self, **kw):
+        task_id, task = self._load_task(**kw)
+
+        id = None
+        # The ID going back only makes sense if the task is pending.
+        if _TaskStatus.is_pending(task['status']):
+            id = task_id
+
+        return id, task
+
+    def _load_task(self, **kw):
+        valid_keys = set(['id', 'uuid', 'description'])
+        id_keys = valid_keys.intersection(kw.keys())
+
+        if len(id_keys) != 1:
+            raise KeyError("Only 1 ID keyword argument may be specified")
+
+        key = list(id_keys)[0]
+        if key not in valid_keys:
+            raise KeyError("Argument must be one of %r" % valid_keys)
+
+        task = json.loads(subprocess.Popen([
+            'task', 'rc:%s' % self.config_filename,
+            'rc.verbose=nothing', str(kw[key]),
+            'export'], stdout=subprocess.PIPE).communicate()[0])
+
+        return task[0][u'id'], task[0]
+
 
     def task_add(self, description, tags=None, **kw):
         """ Add a new task.
