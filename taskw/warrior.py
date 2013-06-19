@@ -384,12 +384,15 @@ class TaskWarriorExperimental(TaskWarriorBase):
         return tasks
 
     def get_task(self, **kw):
+        task = dict()
+        task_id = None
         task_id, task = self._load_task(**kw)
 
         id = None
         # The ID going back only makes sense if the task is pending.
-        if _TaskStatus.is_pending(task['status']):
-            id = task_id
+        if 'status' in task:
+            if _TaskStatus.is_pending(task['status']):
+                id = task_id
 
         return id, task
 
