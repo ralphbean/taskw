@@ -397,15 +397,10 @@ class TaskWarriorExperimental(TaskWarriorBase):
         return id, task
 
     def _load_task(self, **kw):
-        valid_keys = set(['id', 'uuid', 'description'])
-        id_keys = valid_keys.intersection(kw.keys())
 
-        if len(id_keys) != 1:
+        if len(kw.keys()) != 1:
             raise KeyError("Only 1 ID keyword argument may be specified")
-
-        key = list(id_keys)[0]
-        if key not in valid_keys:
-            raise KeyError("Argument must be one of %r" % valid_keys)
+        key = list(kw.keys())[0]
 
         task = subprocess.Popen([
             'task', 'rc:%s' % self.config_filename,
