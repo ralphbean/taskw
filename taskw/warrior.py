@@ -489,7 +489,8 @@ class TaskWarriorExperimental(TaskWarriorBase):
         modification = taskw.utils.encode_task_experimental(task_to_modify)
         subprocess.call([
             'task', 'rc:%s' % self.config_filename,
-            'rc.verbose=nothing', task[six.u('uuid')], 'modify', modification])
+            'rc.verbose=nothing', 'rc.confirmation=no', task[six.u('uuid')],
+            'modify', modification])
 
         # If there are no existing annotations, add the new ones
         if existing_annotations is None:
