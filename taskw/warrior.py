@@ -408,7 +408,7 @@ class TaskWarriorExperimental(TaskWarriorBase):
                 # fail in taskw.
                 search = kw[key][4:]
             else:
-                search = str(kw[key])
+                search = six.text_type(kw[key])
         task = subprocess.Popen([
             'task', 'rc:%s' % self.config_filename,
             'rc.verbose=nothing', search,
