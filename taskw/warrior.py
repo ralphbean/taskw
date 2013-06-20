@@ -41,7 +41,9 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
     def _stub_task(self, description, tags=None, **kw):
         """ Given a description, stub out a task dict. """
 
-        task = {"description": description}
+        # If whitespace is not removed here, TW will do it when we pass the
+        # task to it.
+        task = {"description": description.strip()}
 
         if tags is not None:
             task['tags'] = tags
