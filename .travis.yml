@@ -5,6 +5,7 @@ python:
  - "3.2"
  - "3.3"
 before_install:
+  - sudo add-apt-repository ppa:ultrafredde/ppa
   - sudo apt-get update -qq
   - sudo apt-get install -qq task
   - task --version
