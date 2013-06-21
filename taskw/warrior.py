@@ -405,7 +405,7 @@ class TaskWarriorExperimental(TaskWarriorBase):
         if len(kw) != 1:
             raise KeyError("Only 1 ID keyword argument may be specified")
 
-        key = kw.keys()[0]
+        key = list(kw.keys())[0]
         if key is not 'id' and key is not 'uuid' and key is not 'description':
             search = key + ":" + str(kw[key])
         else:
