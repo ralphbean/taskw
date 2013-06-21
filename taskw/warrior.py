@@ -375,14 +375,15 @@ class TaskWarriorExperimental(TaskWarriorBase):
         pending_tasks = list()
         completed_tasks = list()
         tasks = dict()
+        encoding = locale.getdefaultlocale()[1]
         pending_tasks = json.loads(subprocess.Popen([
             'task', 'rc:%s' % self.config_filename,
             'rc.json.array=TRUE', 'rc.verbose=nothing', 'status:pending',
-            'export'], stdout=subprocess.PIPE).communicate()[0])
+            'export'], stdout=subprocess.PIPE).communicate()[0].decode(encoding))
         completed_tasks = json.loads(subprocess.Popen([
             'task', 'rc:%s' % self.config_filename,
             'rc.json.array=TRUE', 'rc.verbose=nothing', 'status:completed',
-            'export'], stdout=subprocess.PIPE).communicate()[0])
+            'export'], stdout=subprocess.PIPE).communicate()[0].decode(encoding))
         tasks['pending'] = pending_tasks
         tasks['completed'] = completed_tasks
         return tasks
