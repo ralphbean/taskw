@@ -3,7 +3,7 @@ import logging
 import sys
 from setuptools import setup, find_packages
 
-version = '0.5.1'
+version = '0.6.0'
 
 f = open('README.rst')
 long_description = f.read().strip()
