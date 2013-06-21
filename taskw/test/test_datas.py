@@ -93,6 +93,7 @@ class _BaseTestDB(object):
         eq_(tasks['completed'][0]['status'], 'completed')
 
     def test_completing_task_with_date(self):
+        # TODO: TaskWarriorExperimental doesn't support this, so should skip.
         self.tw.task_add("foobar")
         uuid = self.tw.load_tasks()['pending'][0]['uuid']
         self.tw.task_done(uuid=uuid, end="1234567890")

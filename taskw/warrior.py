@@ -401,6 +401,10 @@ class TaskWarriorExperimental(TaskWarriorBase):
 
     def _load_task(self, **kw):
 
+        # TODO: Change this, because we can actually use multiple args.
+        if len(kw) != 1:
+            raise KeyError("Only 1 ID keyword argument may be specified")
+
         key = kw.keys()[0]
         if key is not 'id' and key is not 'uuid' and key is not 'description':
             search = key + ":" + str(kw[key])
@@ -418,7 +422,12 @@ class TaskWarriorExperimental(TaskWarriorBase):
         if task:
             try:
                 task_data = json.loads(task)
-                return task_data[0][six.u('id')], task_data[0]
+                if type(task_data) is dict:
+                    # Only one item was returned from search
+                    return task_data[six.u('id')], task_data
+                else:
+                    # Multiple items returned from search, return just the 1st
+                    return task_data[0][six.u('id')], task_data[0]
                 pass
             except:
                 pass
@@ -447,10 +456,7 @@ class TaskWarriorExperimental(TaskWarriorBase):
 
         # Check if 'uuid' is in the task we just added.
         if not 'uuid' in added_task:
-            print('No uuid! uh oh.')
-            print(id)
-            pprint.pprint(added_task)
-            return
+            raise ValueError('No uuid! uh oh.')
         if annotations and 'uuid' in added_task:
             for annotation in annotations:
                 self.task_annotate(added_task, annotation)
@@ -467,6 +473,8 @@ class TaskWarriorExperimental(TaskWarriorBase):
         return annotated_task
 
     def task_done(self, **kw):
+        if not kw:
+            raise ValueError('No key was passed.')
         id, task = self.get_task(**kw)
 
         subprocess.Popen([
@@ -479,7 +487,7 @@ class TaskWarriorExperimental(TaskWarriorBase):
     def task_update(self, task):
 
         if 'uuid' not in task:
-            return None, dict()
+            raise ValueError('Task must have a UUID.')
 
         id, _task = self.get_task(uuid=task['uuid'])
 
