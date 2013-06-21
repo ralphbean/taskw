@@ -416,10 +416,11 @@ class TaskWarriorExperimental(TaskWarriorBase):
                 search = kw[key][4:]
             else:
                 search = six.text_type(kw[key])
+        encoding = locale.getdefaultlocale()[1]
         task = subprocess.Popen([
             'task', 'rc:%s' % self.config_filename,
             'rc.verbose=nothing', search,
-            'export'], stdout=subprocess.PIPE).communicate()[0]
+            'export'], stdout=subprocess.PIPE).communicate()[0].decode(encoding)
         if task:
             try:
                 task_data = json.loads(task)
