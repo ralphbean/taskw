@@ -1,8 +1,9 @@
-import multiprocessing, logging
+import multiprocessing
+import logging
 import sys
 from setuptools import setup, find_packages
 
-version = '0.5.1'
+version = '0.6.0'
 
 f = open('README.rst')
 long_description = f.read().strip()
@@ -12,8 +13,11 @@ f.close()
 install_requires = [
     "six",
 ]
+tests_require = [
+    'nose',
+]
 
-if sys.version_info[0] ==2 and sys.version_info[1] < 7:
+if sys.version_info[0] == 2 and sys.version_info[1] < 7:
     install_requires.extend([
         'ordereddict',
     ])
@@ -29,6 +33,7 @@ setup(name='taskw',
           "Programming Language :: Python :: 2.7",
           "Programming Language :: Python :: 3",
           "Programming Language :: Python :: 3.2",
+          "Programming Language :: Python :: 3.3",
           "License :: OSI Approved :: GNU General Public License (GPL)",
           "Intended Audience :: Developers",
       ],
@@ -42,8 +47,8 @@ setup(name='taskw',
       zip_safe=False,
       install_requires=install_requires,
       test_suite='nose.collector',
-      tests_require=['nose'],
+      tests_require=tests_require,
       entry_points="""
       # -*- Entry points: -*-
       """,
-)
+      )
