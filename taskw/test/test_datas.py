@@ -62,16 +62,6 @@ class _BaseTestDB(object):
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 1)
 
-    def test_add_complicated(self):
-        self.tw.task_add(
-            "foobar",
-            uuid="1234-1234",
-            annotate_123457="awesome",
-            project="some_project"
-        )
-        tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 1)
-
     def test_unchanging_load_tasks(self):
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 0)
@@ -90,22 +80,6 @@ class _BaseTestDB(object):
         eq_(len(tasks['completed']), 1)
         eq_(len(sum(tasks.values(), [])), 1)
         ok_(tasks['completed'][0]['end'] is not None)
-        eq_(tasks['completed'][0]['status'], 'completed')
-
-    def test_completing_task_with_date(self):
-        # TODO: TaskWarriorExperimental doesn't support this, so should skip.
-        self.tw.task_add("foobar")
-        uuid = self.tw.load_tasks()['pending'][0]['uuid']
-        self.tw.task_done(uuid=uuid, end="1234567890")
-        tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 0)
-        eq_(len(tasks['completed']), 1)
-
-        try:
-            eq_(tasks['completed'][0]['end'], '1234567890')
-        except Exception:
-            assert(tasks['completed'][0]['end'].startswith('20130514T'))
-
         eq_(tasks['completed'][0]['status'], 'completed')
 
     def test_completing_task_by_id_specified(self):
@@ -185,6 +159,16 @@ class _BaseTestDB(object):
 class TestDBNormal(_BaseTestDB):
     class_to_test = TaskWarrior
 
+    def test_add_complicated(self):
+        self.tw.task_add(
+            "foobar",
+            uuid="1234-1234",
+            annotate_123457="awesome",
+            project="some_project"
+        )
+        tasks = self.tw.load_tasks()
+        eq_(len(tasks['pending']), 1)
+
     @raises(ValueError)
     def test_completing_completed_task(self):
         task = self.tw.task_add("foobar")
@@ -244,6 +228,21 @@ class TestDBNormal(_BaseTestDB):
         eq_(len(tasks['completed']), 1)
         eq_(tasks['completed'][0]['end'], '1234567890')
         eq_(tasks['completed'][0]['status'], 'deleted')
+
+    def test_completing_task_with_date(self):
+        self.tw.task_add("foobar")
+        uuid = self.tw.load_tasks()['pending'][0]['uuid']
+        self.tw.task_done(uuid=uuid, end="1234567890")
+        tasks = self.tw.load_tasks()
+        eq_(len(tasks['pending']), 0)
+        eq_(len(tasks['completed']), 1)
+
+        try:
+            eq_(tasks['completed'][0]['end'], '1234567890')
+        except Exception:
+            assert(tasks['completed'][0]['end'].startswith('20130514T'))
+
+        eq_(tasks['completed'][0]['status'], 'completed')
 
     def test_delete_completed(self):
         task = self.tw.task_add("foobar")

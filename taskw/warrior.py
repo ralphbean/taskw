@@ -456,7 +456,7 @@ class TaskWarriorExperimental(TaskWarriorBase):
 
         # Check if 'uuid' is in the task we just added.
         if not 'uuid' in added_task:
-            raise ValueError('No uuid! uh oh.')
+            raise KeyError('No uuid! uh oh.')
         if annotations and 'uuid' in added_task:
             for annotation in annotations:
                 self.task_annotate(added_task, annotation)
@@ -474,7 +474,7 @@ class TaskWarriorExperimental(TaskWarriorBase):
 
     def task_done(self, **kw):
         if not kw:
-            raise ValueError('No key was passed.')
+            raise KeyError('No key was passed.')
         id, task = self.get_task(**kw)
 
         subprocess.Popen([
@@ -487,7 +487,7 @@ class TaskWarriorExperimental(TaskWarriorBase):
     def task_update(self, task):
 
         if 'uuid' not in task:
-            raise ValueError('Task must have a UUID.')
+            raise KeyError('Task must have a UUID.')
 
         id, _task = self.get_task(uuid=task['uuid'])
 
