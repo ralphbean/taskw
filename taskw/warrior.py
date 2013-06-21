@@ -14,6 +14,7 @@ import uuid
 import subprocess
 import json
 import pprint
+import locale
 
 import taskw.utils
 
@@ -365,8 +366,9 @@ class TaskWarriorExperimental(TaskWarriorBase):
             ['task', '--version'],
             stdout=subprocess.PIPE
         ).communicate()[0]
-        taskwarrior_version = map(int, taskwarrior_version.split('.'))
-        return taskwarrior_version >= [2, 0, 0]
+        encoding = locale.getdefaultlocale()[1]
+        taskwarrior_major_version = int(taskwarrior_version.decode(encoding).split('.')[0])
+        return taskwarrior_major_version >= 2
 
     def load_tasks(self, **kw):
         # Load tasks using `task export`
