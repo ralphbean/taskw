@@ -67,6 +67,19 @@ Looking at tasks
     >>> type(tasks['pending'][0])
     <type 'dict'>
 
+    Experimental mode
+
+    >>> from taskw import TaskWarriorExperimental
+    >>> w = TaskWarriorExperimental()
+    >>> tasks = w.load_tasks()
+    >>> tasks.keys()
+    ['completed', 'pending']
+    >>> type(tasks['pending'])
+    <type 'list'>
+    >>> type(tasks['pending'][0])
+    <type 'dict'>
+
+
 Adding tasks
 ++++++++++++
 
