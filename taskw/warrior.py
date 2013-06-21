@@ -416,7 +416,7 @@ class TaskWarriorExperimental(TaskWarriorBase):
         if task:
             try:
                 task_data = json.loads(task)
-                return task_data[0][u'id'], task_data[0]
+                return task_data[0][six.u('id')], task_data[0]
                 pass
             except:
                 pass
