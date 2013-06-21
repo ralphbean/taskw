@@ -41,7 +41,9 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
     def _stub_task(self, description, tags=None, **kw):
         """ Given a description, stub out a task dict. """
 
-        task = {"description": description}
+        # If whitespace is not removed here, TW will do it when we pass the
+        # task to it.
+        task = {"description": description.strip()}
 
         if tags is not None:
             task['tags'] = tags
@@ -99,19 +101,16 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
         pass
 
     @abc.abstractmethod
+    def _load_task(self, **kw):
+        pass
+
+    @abc.abstractmethod
     def task_update(self, task):
         pass
 
+    @abc.abstractmethod
     def get_task(self, **kw):
-        line, task = self._load_task(**kw)
-
-        id = None
-        # The ID going back only makes sense if the task is pending.
-        if _TaskStatus.is_pending(task['status']):
-            id = line
-
-        return id, task
-
+        pass
 
     def filter_by(self, func):
         tasks = self.load_tasks()
@@ -156,6 +155,40 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
 
         return d
 
+
+class TaskWarrior(TaskWarriorBase):
+    """ Interacts with taskwarrior by directly manipulating the ~/.task/ db.
+
+    Currently this is the supported implementation, but will be phased out in
+    time due to taskwarrior's guidelines:  http://bit.ly/16I9VN4
+
+    See https://github.com/ralphbean/taskw/pull/15 for discussion.
+    """
+
+    def load_tasks(self, command='all'):
+        def _load_tasks(filename):
+            filename = os.path.join(self.config['data']['location'], filename)
+            filename = os.path.expanduser(filename)
+            with open(filename, 'r') as f:
+                lines = f.readlines()
+
+            return list(map(taskw.utils.decode_task, lines))
+
+        return dict(
+            (db, _load_tasks(_DataFile.filename(db)))
+            for db in _Command.files(command)
+        )
+
+    def get_task(self, **kw):
+        line, task = self._load_task(**kw)
+
+        id = None
+        # The ID going back only makes sense if the task is pending.
+        if _TaskStatus.is_pending(task['status']):
+            id = line
+
+        return id, task
+
     def _load_task(self, **kw):
         valid_keys = set(['id', 'uuid', 'description'])
         id_keys = valid_keys.intersection(kw.keys())
@@ -191,30 +224,6 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
                 line = tasks[_TaskStatus.to_file(task['status'])].index(task) + 1
 
         return line, task
-
-
-class TaskWarrior(TaskWarriorBase):
-    """ Interacts with taskwarrior by directly manipulating the ~/.task/ db.
-
-    Currently this is the supported implementation, but will be phased out in
-    time due to taskwarrior's guidelines:  http://bit.ly/16I9VN4
-
-    See https://github.com/ralphbean/taskw/pull/15 for discussion.
-    """
-
-    def load_tasks(self, command='all'):
-        def _load_tasks(filename):
-            filename = os.path.join(self.config['data']['location'], filename)
-            filename = os.path.expanduser(filename)
-            with open(filename, 'r') as f:
-                lines = f.readlines()
-
-            return list(map(taskw.utils.decode_task, lines))
-
-        return dict(
-            (db, _load_tasks(_DataFile.filename(db)))
-            for db in _Command.files(command)
-        )
 
     def task_add(self, description, tags=None, **kw):
         """ Add a new task.
@@ -376,6 +385,46 @@ class TaskWarriorExperimental(TaskWarriorBase):
         tasks['completed'] = completed_tasks
         return tasks
 
+    def get_task(self, **kw):
+        task = dict()
+        task_id = None
+        task_id, task = self._load_task(**kw)
+        id = None
+        # The ID going back only makes sense if the task is pending.
+        if 'status' in task:
+            if _TaskStatus.is_pending(task['status']):
+                id = task_id
+
+        return id, task
+
+    def _load_task(self, **kw):
+
+        key = kw.keys()[0]
+        if key is not 'id' and key is not 'uuid' and key is not 'description':
+            search = key + ":" + str(kw[key])
+        else:
+            if key is 'description' and "(bw)" in kw[key]:
+                # Strip (bw) from issue description so that get_task() does not
+                # fail in taskw.
+                search = kw[key][4:]
+            else:
+                search = six.text_type(kw[key])
+        task = subprocess.Popen([
+            'task', 'rc:%s' % self.config_filename,
+            'rc.verbose=nothing', search,
+            'export'], stdout=subprocess.PIPE).communicate()[0]
+        if task:
+            try:
+                task_data = json.loads(task)
+                return task_data[0][u'id'], task_data[0]
+                pass
+            except:
+                pass
+
+        return None, dict()
+
+
+
     def task_add(self, description, tags=None, **kw):
         """ Add a new task.
 
@@ -387,12 +436,20 @@ class TaskWarriorExperimental(TaskWarriorBase):
         # Check if there are annotations, if so remove them from the
         # task and add them after we've added the task.
         annotations = self._extract_annotations_from_task(task)
+
         subprocess.call([
             'task', 'rc:%s' % self.config_filename,
             'rc.verbose=nothing',
             'add', taskw.utils.encode_task_experimental(task)])
         id, added_task = self.get_task(description=task['description'])
-        if annotations:
+
+        # Check if 'uuid' is in the task we just added.
+        if not 'uuid' in added_task:
+            print('No uuid! uh oh.')
+            print(id)
+            pprint.pprint(added_task)
+            return
+        if annotations and 'uuid' in added_task:
             for annotation in annotations:
                 self.task_annotate(added_task, annotation)
         id, added_task = self.get_task(uuid=added_task[six.u('uuid')])
@@ -418,6 +475,10 @@ class TaskWarriorExperimental(TaskWarriorBase):
         return tasks['completed'][-1]
 
     def task_update(self, task):
+
+        if 'uuid' not in task:
+            return None, dict()
+
         id, _task = self.get_task(uuid=task['uuid'])
 
         if 'id' in task:
@@ -442,7 +503,8 @@ class TaskWarriorExperimental(TaskWarriorBase):
         modification = taskw.utils.encode_task_experimental(task_to_modify)
         subprocess.call([
             'task', 'rc:%s' % self.config_filename,
-            'rc.verbose=nothing', task[six.u('uuid')], 'modify', modification])
+            'rc.verbose=nothing', 'rc.confirmation=no', task[six.u('uuid')],
+            'modify', modification])
 
         # If there are no existing annotations, add the new ones
         if existing_annotations is None:
