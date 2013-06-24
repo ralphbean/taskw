@@ -14,7 +14,6 @@ import uuid
 import subprocess
 import json
 import pprint
-import locale
 
 import taskw.utils
 
@@ -366,8 +365,7 @@ class TaskWarriorExperimental(TaskWarriorBase):
             ['task', '--version'],
             stdout=subprocess.PIPE
         ).communicate()[0]
-        encoding = locale.getdefaultlocale()[1]
-        taskwarrior_major_version = int(taskwarrior_version.decode(encoding).split('.')[0])
+        taskwarrior_major_version = int(taskwarrior_version.decode().split('.')[0])
         return taskwarrior_major_version >= 2
 
     def load_tasks(self, **kw):
@@ -375,15 +373,14 @@ class TaskWarriorExperimental(TaskWarriorBase):
         pending_tasks = list()
         completed_tasks = list()
         tasks = dict()
-        encoding = locale.getdefaultlocale()[1]
         pending_tasks = json.loads(subprocess.Popen([
             'task', 'rc:%s' % self.config_filename,
             'rc.json.array=TRUE', 'rc.verbose=nothing', 'status:pending',
-            'export'], stdout=subprocess.PIPE).communicate()[0].decode(encoding))
+            'export'], stdout=subprocess.PIPE).communicate()[0].decode())
         completed_tasks = json.loads(subprocess.Popen([
             'task', 'rc:%s' % self.config_filename,
             'rc.json.array=TRUE', 'rc.verbose=nothing', 'status:completed',
-            'export'], stdout=subprocess.PIPE).communicate()[0].decode(encoding))
+            'export'], stdout=subprocess.PIPE).communicate()[0].decode())
         tasks['pending'] = pending_tasks
         tasks['completed'] = completed_tasks
         return tasks
@@ -416,11 +413,10 @@ class TaskWarriorExperimental(TaskWarriorBase):
                 search = kw[key][4:]
             else:
                 search = six.text_type(kw[key])
-        encoding = locale.getdefaultlocale()[1]
         task = subprocess.Popen([
             'task', 'rc:%s' % self.config_filename,
             'rc.verbose=nothing', search,
-            'export'], stdout=subprocess.PIPE).communicate()[0].decode(encoding)
+            'export'], stdout=subprocess.PIPE).communicate()[0].decode()
         if task:
             try:
                 task_data = json.loads(task)
