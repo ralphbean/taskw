@@ -46,7 +46,7 @@ def encode_task_experimental(task):
         task['tags'] = ','.join(task['tags'])
     for k in task:
         for unsafe, safe in six.iteritems(encode_replacements_experimental):
-            if isinstance(task[k], basestring):
+            if isinstance(task[k], str):
                 task[k] = task[k].replace(unsafe, safe)
 
     # Then, format it as a string
