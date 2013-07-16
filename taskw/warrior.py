@@ -470,6 +470,15 @@ class TaskWarriorExperimental(TaskWarriorBase):
         id, annotated_task = self.get_task(uuid=task[six.u('uuid')])
         return annotated_task
 
+    def task_denotate(self, task, annotation):
+        """ Removes an annotation from a task. """
+        subprocess.call([
+            'task', 'rc:%s' % self.config_filename,
+            'rc.verbose=nothing', str(task[six.u('uuid')]),
+            'denotate', annotation])
+        id, denotated_task = self.get_task(uuid=task[six.u('uuid')])
+        return denotated_task
+
     def task_done(self, **kw):
         if not kw:
             raise KeyError('No key was passed.')
