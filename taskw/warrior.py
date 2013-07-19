@@ -45,6 +45,11 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
         # task to it.
         task = {"description": description.strip()}
 
+        # Allow passing "tags" in as part of kw.
+        if 'tags' in kw and tags is None:
+            task['tags'] = tags
+            del(kw['tags'])
+
         if tags is not None:
             task['tags'] = tags
 
