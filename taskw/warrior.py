@@ -150,7 +150,7 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
             if '=' not in line:
                 continue
 
-            key, value = line.split('=')
+            key, value = line.split('=', 1)
             d = _build_config(key, value, d)
 
         return d
