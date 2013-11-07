@@ -150,8 +150,15 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
             if '=' not in line:
                 continue
 
-            key, value = line.split('=')
+            key, value = line.split('=', 1)
             d = _build_config(key, value, d)
+
+        # Set a default data location if one is not specified.
+        if d.get('data') is None:
+            d['data'] = {}
+
+        if d['data'].get('location') is None:
+            d['data']['location'] = os.path.expanduser("~/.task/")
 
         return d
 
@@ -214,8 +221,9 @@ class TaskWarrior(TaskWarriorBase):
         else:
             # Search all tasks for the specified key.
             tasks = self.load_tasks(command=_Command.ALL)
+
             matching = list(filter(
-                lambda t: t[key] == kw[key],
+                lambda t: t.get(key, None) == kw[key],
                 sum(tasks.values(), [])
             ))
 
@@ -365,8 +373,8 @@ class TaskWarriorExperimental(TaskWarriorBase):
             ['task', '--version'],
             stdout=subprocess.PIPE
         ).communicate()[0]
-        taskwarrior_version = map(int, taskwarrior_version.split('.'))
-        return taskwarrior_version >= [2, 0, 0]
+        taskwarrior_major_version = int(taskwarrior_version.decode().split('.')[0])
+        return taskwarrior_major_version >= 2
 
     def load_tasks(self, **kw):
         # Load tasks using `task export`
@@ -376,11 +384,11 @@ class TaskWarriorExperimental(TaskWarriorBase):
         pending_tasks = json.loads(subprocess.Popen([
             'task', 'rc:%s' % self.config_filename,
             'rc.json.array=TRUE', 'rc.verbose=nothing', 'status:pending',
-            'export'], stdout=subprocess.PIPE).communicate()[0])
+            'export'], stdout=subprocess.PIPE).communicate()[0].decode())
         completed_tasks = json.loads(subprocess.Popen([
             'task', 'rc:%s' % self.config_filename,
             'rc.json.array=TRUE', 'rc.verbose=nothing', 'status:completed',
-            'export'], stdout=subprocess.PIPE).communicate()[0])
+            'export'], stdout=subprocess.PIPE).communicate()[0].decode())
         tasks['pending'] = pending_tasks
         tasks['completed'] = completed_tasks
         return tasks
@@ -399,7 +407,11 @@ class TaskWarriorExperimental(TaskWarriorBase):
 
     def _load_task(self, **kw):
 
-        key = kw.keys()[0]
+        # TODO: Change this, because we can actually use multiple args.
+        if len(kw) != 1:
+            raise KeyError("Only 1 ID keyword argument may be specified")
+
+        key = list(kw.keys())[0]
         if key is not 'id' and key is not 'uuid' and key is not 'description':
             search = key + ":" + str(kw[key])
         else:
@@ -412,11 +424,16 @@ class TaskWarriorExperimental(TaskWarriorBase):
         task = subprocess.Popen([
             'task', 'rc:%s' % self.config_filename,
             'rc.verbose=nothing', search,
-            'export'], stdout=subprocess.PIPE).communicate()[0]
+            'export'], stdout=subprocess.PIPE).communicate()[0].decode()
         if task:
             try:
                 task_data = json.loads(task)
-                return task_data[0][six.u('id')], task_data[0]
+                if type(task_data) is dict:
+                    # Only one item was returned from search
+                    return task_data[six.u('id')], task_data
+                else:
+                    # Multiple items returned from search, return just the 1st
+                    return task_data[0][six.u('id')], task_data[0]
                 pass
             except:
                 pass
@@ -445,10 +462,7 @@ class TaskWarriorExperimental(TaskWarriorBase):
 
         # Check if 'uuid' is in the task we just added.
         if not 'uuid' in added_task:
-            print('No uuid! uh oh.')
-            print(id)
-            pprint.pprint(added_task)
-            return
+            raise KeyError('No uuid! uh oh.')
         if annotations and 'uuid' in added_task:
             for annotation in annotations:
                 self.task_annotate(added_task, annotation)
@@ -464,7 +478,18 @@ class TaskWarriorExperimental(TaskWarriorBase):
         id, annotated_task = self.get_task(uuid=task[six.u('uuid')])
         return annotated_task
 
+    def task_denotate(self, task, annotation):
+        """ Removes an annotation from a task. """
+        subprocess.call([
+            'task', 'rc:%s' % self.config_filename,
+            'rc.verbose=nothing', str(task[six.u('uuid')]),
+            'denotate', annotation])
+        id, denotated_task = self.get_task(uuid=task[six.u('uuid')])
+        return denotated_task
+
     def task_done(self, **kw):
+        if not kw:
+            raise KeyError('No key was passed.')
         id, task = self.get_task(**kw)
 
         subprocess.Popen([
@@ -477,7 +502,7 @@ class TaskWarriorExperimental(TaskWarriorBase):
     def task_update(self, task):
 
         if 'uuid' not in task:
-            return None, dict()
+            raise KeyError('Task must have a UUID.')
 
         id, _task = self.get_task(uuid=task['uuid'])
 
