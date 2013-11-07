@@ -214,8 +214,9 @@ class TaskWarrior(TaskWarriorBase):
         else:
             # Search all tasks for the specified key.
             tasks = self.load_tasks(command=_Command.ALL)
+
             matching = list(filter(
-                lambda t: t[key] == kw[key],
+                lambda t: t.get(key, None) == kw[key],
                 sum(tasks.values(), [])
             ))
 
