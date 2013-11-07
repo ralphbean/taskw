@@ -117,7 +117,6 @@ class _BaseTestDB(object):
         uuid = self.tw.load_tasks()['pending'][0]['uuid']
         self.tw.get_task(id=2, uuid=uuid)  # which one?
 
-
     def test_updating_task(self):
         self.tw.task_add("foobar")
 
@@ -147,8 +146,6 @@ class _BaseTestDB(object):
             pass
 
         eq_(tasks['pending'][0], task)
-
-
 
     @raises(KeyError)
     def test_update_exc(self):
@@ -259,6 +256,16 @@ class TestDBNormal(_BaseTestDB):
         self.tw.task_delete(uuid=task['uuid'], end="1234567890")
         self.tw.task_delete(uuid=task['uuid'], end="1234567890")
 
+    def test_load_tasks_with_one_each(self):
+        task1 = self.tw.task_add("foobar1")
+        task2 = self.tw.task_add("foobar2")
+        task2 = self.tw.task_done(uuid=task2['uuid'])
+        tasks = self.tw.load_tasks()
+        eq_(len(tasks['pending']), 1)
+        eq_(len(tasks['completed']), 1)
+
+        # For issue #26, I thought this would raise an exception...
+        task = self.tw.get_task(description='foobar1')
 
     def should_skip(self):
         return False
