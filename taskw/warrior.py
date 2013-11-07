@@ -153,6 +153,13 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
             key, value = line.split('=', 1)
             d = _build_config(key, value, d)
 
+        # Set a default data location if one is not specified.
+        if d.get('data') is None:
+            d['data'] = {}
+
+        if d['data'].get('location') is None:
+            d['data']['location'] = os.path.expanduser("~/.task/")
+
         return d
 
 
