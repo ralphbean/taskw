@@ -367,10 +367,12 @@ class TaskWarriorExperimental(TaskWarriorBase):
     def can_use(cls):
         """ Returns true if runtime requirements of experimental mode are met
         """
-        if not os.path.exists('/usr/bin/task'):
+        try:
+            return cls.get_version() > LooseVersion('2')
+        except OSError:
+            # OSError is raised if subprocess.Popen fails to find
+            # the executable.
             return False
-
-        return cls.get_version() > LooseVersion('2')
 
     @classmethod
     def get_version(cls):
