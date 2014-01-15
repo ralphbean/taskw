@@ -7,6 +7,7 @@ for interacting with taskwarrior:  TaskWarrior and TaskWarriorExperimental.
 
 import abc
 import codecs
+from distutils.version import LooseVersion
 import os
 import re
 import time
@@ -171,6 +172,11 @@ class TaskWarrior(TaskWarriorBase):
 
     See https://github.com/ralphbean/taskw/pull/15 for discussion.
     """
+
+    def sync(self):
+        raise NotImplementedError(
+            "You must use TaskWarriorExperimental to use 'sync'"
+        )
 
     def load_tasks(self, command='all'):
         def _load_tasks(filename):
@@ -366,15 +372,31 @@ class TaskWarriorExperimental(TaskWarriorBase):
     def can_use(cls):
         """ Returns true if runtime requirements of experimental mode are met
         """
-        if not os.path.exists('/usr/bin/task'):
+        try:
+            return cls.get_version() > LooseVersion('2')
+        except OSError:
+            # OSError is raised if subprocess.Popen fails to find
+            # the executable.
             return False
 
+    @classmethod
+    def get_version(cls):
         taskwarrior_version = subprocess.Popen(
             ['task', '--version'],
             stdout=subprocess.PIPE
         ).communicate()[0]
-        taskwarrior_major_version = int(taskwarrior_version.decode().split('.')[0])
-        return taskwarrior_major_version >= 2
+        return LooseVersion(taskwarrior_version.decode())
+
+    def sync(self):
+        if self.get_version() < LooseVersion('2.3'):
+            raise UnsupportedVersionException(
+                "'sync' requires version 2.3 of taskwarrior or later."
+            )
+        subprocess.Popen([
+            'task',
+            'rc:%s' % self.config_filename,
+            'sync',
+        ])
 
     def load_tasks(self, **kw):
         # Load tasks using `task export`
@@ -614,3 +636,6 @@ class _TaskStatus(object):
                 _TaskStatus.DELETED : _DataFile.COMPLETED
         }[status]
 
+
+class UnsupportedVersionException(object):
+    pass
