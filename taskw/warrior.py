@@ -173,6 +173,11 @@ class TaskWarrior(TaskWarriorBase):
     See https://github.com/ralphbean/taskw/pull/15 for discussion.
     """
 
+    def sync(self):
+        raise NotImplementedError(
+            "You must use TaskWarriorExperimental to use 'sync'"
+        )
+
     def load_tasks(self, command='all'):
         def _load_tasks(filename):
             filename = os.path.join(self.config['data']['location'], filename)
