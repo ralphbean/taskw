@@ -371,8 +371,7 @@ class TaskWarriorExperimental(TaskWarriorBase):
     def _execute(self, *args):
         """ Execute a given taskwarrior command with arguments
 
-        Returns a 2-tuple having stdout and stderr results as its
-        elements in the first and second index respectively.
+        Returns a 2-tuple of stdout and stderr (respectively).
 
         """
         command = [
