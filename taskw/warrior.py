@@ -462,7 +462,7 @@ class TaskWarriorExperimental(TaskWarriorBase):
         for key, value in six.iteritems(kwargs):
             if key not in ['id', 'uuid', 'description']:
                 search.append(
-                    u'%s:%s' % (
+                    '%s:%s' % (
                         key,
                         value,
                     )
