@@ -10,6 +10,7 @@ import codecs
 from distutils.version import LooseVersion
 import os
 import re
+import sys
 import time
 import uuid
 import subprocess
@@ -389,7 +390,7 @@ class TaskWarriorExperimental(TaskWarriorBase):
     def _get_json(self, *args):
         try:
             return json.loads(
-                self._execute(*args)[0]
+                self._execute(*args)[0].decode(sys.getdefaultencoding())
             )
         except ValueError:
             # An empty string causes json.loads to raise a ValueError
