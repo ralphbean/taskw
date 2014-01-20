@@ -452,6 +452,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         task_id = None
         task_id, task = self._load_task(**kw)
         id = None
+
         # The ID going back only makes sense if the task is pending.
         if 'status' in task:
             if Status.is_pending(task['status']):
