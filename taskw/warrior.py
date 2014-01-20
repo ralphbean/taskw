@@ -657,6 +657,11 @@ class UnsupportedVersionException(object):
     pass
 
 
+# It is not really experimental anymore, but we provide this rename for
+# backwards compatibility.  It will eventually be removed.
+TaskWarriorExperimental = TaskWarriorShellout
+
+
 # Set a default based on what is available on the system.
 if TaskWarriorShellout.can_use():
     TaskWarrior = TaskWarriorShellout
