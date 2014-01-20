@@ -434,20 +434,13 @@ class TaskWarriorShellout(TaskWarriorBase):
             'sync',
         ])
 
-    def load_tasks(self, statuses=None, **kw):
-        """ Returns a dictionary of tasks for a list of statuses."""
-        if statuses is None:
-            statuses = ['pending', 'completed']
+    def load_tasks(self, command='all'):
+        """ Returns a dictionary of tasks for a list of command."""
 
-        tasks = {}
-
-        for status in statuses:
-            tasks[status] = self._get_json(
-                'status:%s' % status,
-                'export'
-            )
-
-        return tasks
+        return dict(
+            (db, self._get_json('status:%s' % db, 'export'))
+            for db in Command.files(command)
+        )
 
     def get_task(self, **kw):
         task = dict()
