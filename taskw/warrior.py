@@ -1,7 +1,12 @@
 """ Code to interact with taskwarrior
 
 This module contains an abstract base class and two different implementations
-for interacting with taskwarrior:  TaskWarrior and TaskWarriorExperimental.
+for interacting with taskwarrior:  TaskWarriorDirect and TaskWarriorShellout.
+
+If it is determined that there is a binary 'task' on the system and that it is
+of a sufficiently advanced version, then TaskWarriorShellout will be made the
+default TaskWarrior class.  If not, then the default TaskWarrior class will
+fall back to the older TaskWarriorDirect implementation.
 
 """
 
@@ -169,18 +174,19 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
         return d
 
 
-class TaskWarrior(TaskWarriorBase):
+class TaskWarriorDirect(TaskWarriorBase):
     """ Interacts with taskwarrior by directly manipulating the ~/.task/ db.
 
-    Currently this is the supported implementation, but will be phased out in
+    This is the deprecated implementation and will be phased out in
     time due to taskwarrior's guidelines:  http://bit.ly/16I9VN4
 
-    See https://github.com/ralphbean/taskw/pull/15 for discussion.
+    See https://github.com/ralphbean/taskw/pull/15 for discussion
+    and https://github.com/ralphbean/taskw/issues/30 for more.
     """
 
     def sync(self):
         raise NotImplementedError(
-            "You must use TaskWarriorExperimental to use 'sync'"
+            "You must use TaskWarriorShellout to use 'sync'"
         )
 
     def load_tasks(self, command='all'):
@@ -361,16 +367,13 @@ class TaskWarrior(TaskWarriorBase):
         return task
 
 
-class TaskWarriorExperimental(TaskWarriorBase):
+class TaskWarriorShellout(TaskWarriorBase):
     """ Interacts with taskwarrior by invoking shell commands.
 
-    This is currently experimental and is not necessarily stable.  Please help
-    us test and report any issues.
+    This is currently the supported version and should be considered stable.
 
-    Some day this will become the primary supported implementation due to
-    taskwarrior's guidelines:  http://bit.ly/16I9VN4
-
-    See https://github.com/ralphbean/taskw/pull/15 for discussion.
+    See https://github.com/ralphbean/taskw/pull/15 for discussion
+    and https://github.com/ralphbean/taskw/issues/30 for more.
     """
 
     @classmethod
@@ -644,3 +647,10 @@ class _TaskStatus(object):
 
 class UnsupportedVersionException(object):
     pass
+
+
+# Set a default based on what is available on the system.
+if TaskWarriorShellout.can_use():
+    TaskWarrior = TaskWarriorShellout
+else:
+    TaskWarrior = TaskWarriorDirect

@@ -5,7 +5,7 @@ import sys
 import shutil
 import tempfile
 
-from taskw import TaskWarrior, TaskWarriorExperimental
+from taskw import TaskWarriorDirect, TaskWarriorShellout
 
 
 TASK = {'description': "task 2 http://www.google.com/",
@@ -18,7 +18,7 @@ TASK = {'description': "task 2 http://www.google.com/",
 class _BaseTestDB(object):
     def setup(self):
 
-        # We can't run the TaskWarriorExperimental tests on travis-ci,
+        # We can't run the TaskWarriorShellout tests on travis-ci,
         # because the 'task' command line tool is not installed.
         if self.should_skip():
             raise nose.SkipTest(
@@ -130,10 +130,10 @@ class _BaseTestDB(object):
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 1)
 
-        # For compatibility with the normal and experimental modes.
-        # Experimental returns more information.
+        # For compatibility with the direct and shellout modes.
+        # Shellout returns more information.
         try:
-            # Experimental mode returns the correct urgency, so,
+            # Shellout mode returns the correct urgency, so,
             # let's just not compare for now.
             del tasks['pending'][0]['urgency']
             del task['urgency']
@@ -153,8 +153,8 @@ class _BaseTestDB(object):
         self.tw.task_update(task)
 
 
-class TestDBNormal(_BaseTestDB):
-    class_to_test = TaskWarrior
+class TestDBDirect(_BaseTestDB):
+    class_to_test = TaskWarriorDirect
 
     def test_add_complicated(self):
         self.tw.task_add(
@@ -271,9 +271,9 @@ class TestDBNormal(_BaseTestDB):
         return False
 
 
-class TestDBExperimental(_BaseTestDB):
-    class_to_test = TaskWarriorExperimental
+class TestDBShellout(_BaseTestDB):
+    class_to_test = TaskWarriorShellout
 
     def should_skip(self):
         """ If 'task' is not installed, we can't run these tests. """
-        return not TaskWarriorExperimental.can_use()
+        return not TaskWarriorShellout.can_use()
