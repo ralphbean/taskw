@@ -113,6 +113,10 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
         pass
 
     @abc.abstractmethod
+    def task_delete(self, **kw):
+        pass
+
+    @abc.abstractmethod
     def _load_task(self, **kw):
         pass
 
@@ -585,6 +589,17 @@ class TaskWarriorShellout(TaskWarriorBase):
                     self.task_annotate(task_to_modify, annotation)
 
         return id, _task
+
+    def task_delete(self, **kw):
+        """ Marks a task as deleted.  """
+
+        id, task = self.get_task(**kw)
+
+        if task['status'] == Status.DELETED:
+            raise ValueError("Task is already deleted.")
+
+        self._execute(id, 'delete')
+        return self.get_task(uuid=task['uuid'])[1]
 
     def task_info(self, **kw):
         id, task = self.get_task(**kw)
