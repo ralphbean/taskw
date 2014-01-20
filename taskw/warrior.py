@@ -446,7 +446,8 @@ class TaskWarriorShellout(TaskWarriorBase):
         # 'waiting' tasks are returned separately from 'pending' tasks
         # Here we merge the waiting list back into the pending list.
         if 'pending' in results:
-            results['pending'] = self._get_json('status:waiting', 'export')
+            results['pending'].extend(
+                self._get_json('status:waiting', 'export'))
 
         return results
 
