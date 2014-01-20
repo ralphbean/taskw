@@ -392,11 +392,12 @@ class TaskWarriorShellout(TaskWarriorBase):
             'rc:%s' % self.config_filename,
             'rc.json.array=TRUE',
             'rc.verbose=nothing',
+            'rc.confirmation=no',
         ] + [six.text_type(arg) for arg in args]
         return subprocess.Popen(
             command,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            stderr=subprocess.PIPE,
         ).communicate()
 
     def _get_json(self, *args):
