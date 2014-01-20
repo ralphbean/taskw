@@ -401,13 +401,9 @@ class TaskWarriorShellout(TaskWarriorBase):
         ).communicate()
 
     def _get_json(self, *args):
-        try:
-            return json.loads(
-                self._execute(*args)[0].decode(sys.getdefaultencoding())
-            )
-        except ValueError:
-            # An empty string causes json.loads to raise a ValueError
-            return None
+        encoded = self._execute(*args)[0]
+        decoded = encoded.decode(self.config.get('encoding', 'utf-8'))
+        return json.loads(decoded)
 
     @classmethod
     def can_use(cls):
