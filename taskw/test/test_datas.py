@@ -156,7 +156,6 @@ class _BaseTestDB(object):
         self.tw.task_add(
             "foobar",
             uuid="1234-1234",
-            annotate_123457="awesome",
             project="some_project"
         )
         tasks = self.tw.load_tasks()

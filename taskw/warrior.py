@@ -536,9 +536,13 @@ class TaskWarriorShellout(TaskWarriorBase):
     def task_done(self, **kw):
         if not kw:
             raise KeyError('No key was passed.')
+
         id, task = self.get_task(**kw)
 
-        self._execute(id, 'do')
+        if not Status.is_pending(task['status']):
+            raise ValueError("Task is not pending.")
+
+        self._execute(id, 'done')
         return self.get_task(uuid=task['uuid'])
 
     def task_update(self, task):
