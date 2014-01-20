@@ -549,7 +549,7 @@ class TaskWarriorShellout(TaskWarriorBase):
             raise ValueError("Task is not pending.")
 
         self._execute(id, 'done')
-        return self.get_task(uuid=task['uuid'])
+        return self.get_task(uuid=task['uuid'])[1]
 
     def task_update(self, task):
         if 'uuid' not in task:
