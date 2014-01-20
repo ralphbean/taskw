@@ -199,8 +199,8 @@ class TaskWarriorDirect(TaskWarriorBase):
             return list(map(taskw.utils.decode_task, lines))
 
         return dict(
-            (db, _load_tasks(_DataFile.filename(db)))
-            for db in _Command.files(command)
+            (db, _load_tasks(DataFile.filename(db)))
+            for db in Command.files(command)
         )
 
     def get_task(self, **kw):
@@ -208,7 +208,7 @@ class TaskWarriorDirect(TaskWarriorBase):
 
         id = None
         # The ID going back only makes sense if the task is pending.
-        if _TaskStatus.is_pending(task['status']):
+        if Status.is_pending(task['status']):
             id = line
 
         return id, task
@@ -227,17 +227,18 @@ class TaskWarriorDirect(TaskWarriorBase):
         line = None
         task = dict()
 
-        # If the key is an id, assume the task is pending (completed tasks don't have IDs).
+        # If the key is an id, assume the task is pending (completed tasks
+        # don't have IDs).
         if key == 'id':
-            tasks = self.load_tasks(command=_TaskStatus.PENDING)
+            tasks = self.load_tasks(command=Status.PENDING)
             line = kw[key]
 
-            if len(tasks[_TaskStatus.PENDING]) >= line:
-                task = tasks[_TaskStatus.PENDING][line - 1]
+            if len(tasks[Status.PENDING]) >= line:
+                task = tasks[Status.PENDING][line - 1]
 
         else:
             # Search all tasks for the specified key.
-            tasks = self.load_tasks(command=_Command.ALL)
+            tasks = self.load_tasks(command=Command.ALL)
 
             matching = list(filter(
                 lambda t: t.get(key, None) == kw[key],
@@ -246,7 +247,7 @@ class TaskWarriorDirect(TaskWarriorBase):
 
             if matching:
                 task = matching[0]
-                line = tasks[_TaskStatus.to_file(task['status'])].index(task) + 1
+                line = tasks[Status.to_file(task['status'])].index(task) + 1
 
         return line, task
 
@@ -258,7 +259,7 @@ class TaskWarriorDirect(TaskWarriorBase):
 
         task = self._stub_task(description, tags, **kw)
 
-        task['status'] = _TaskStatus.PENDING
+        task['status'] = Status.PENDING
 
         # TODO -- check only valid keywords
 
@@ -268,7 +269,7 @@ class TaskWarriorDirect(TaskWarriorBase):
         if not 'uuid' in task:
             task['uuid'] = str(uuid.uuid4())
 
-        id = self._task_add(task, _TaskStatus.PENDING)
+        id = self._task_add(task, Status.PENDING)
         task['id'] = id
         return task
 
@@ -278,10 +279,10 @@ class TaskWarriorDirect(TaskWarriorBase):
         date with the 'end' argument.
         """
         def validate(task):
-            if not _TaskStatus.is_pending(task['status']):
+            if not Status.is_pending(task['status']):
                 raise ValueError("Task is not pending.")
 
-        return self._task_change_status(_TaskStatus.COMPLETED, validate, **kw)
+        return self._task_change_status(Status.COMPLETED, validate, **kw)
 
     def task_update(self, task):
         line, _task = self._load_task(uuid=task['uuid'])
@@ -290,7 +291,7 @@ class TaskWarriorDirect(TaskWarriorBase):
             del task['id']
 
         _task.update(task)
-        self._task_replace(line, _TaskStatus.to_file(task['status']), _task)
+        self._task_replace(line, Status.to_file(task['status']), _task)
         return line, _task
 
     def task_delete(self, **kw):
@@ -299,10 +300,10 @@ class TaskWarriorDirect(TaskWarriorBase):
         date with the 'end' argument.
         """
         def validate(task):
-            if task['status'] == _TaskStatus.DELETED:
+            if task['status'] == Status.DELETED:
                 raise ValueError("Task is already deleted.")
 
-        return self._task_change_status(_TaskStatus.DELETED, validate, **kw)
+        return self._task_change_status(Status.DELETED, validate, **kw)
 
     def _task_replace(self, id, category, task):
         def modification(lines):
@@ -322,7 +323,7 @@ class TaskWarriorDirect(TaskWarriorBase):
 
     def _apply_modification(self, id, category, modification):
         location = self.config['data']['location']
-        filename = _DataFile.filename(category)
+        filename = DataFile.filename(category)
         filename = os.path.join(self.config['data']['location'], filename)
         filename = os.path.expanduser(filename)
 
@@ -362,8 +363,8 @@ class TaskWarriorDirect(TaskWarriorBase):
         task['status'] = status
         task['end'] = kw.get('end') or str(int(time.time()))
 
-        self._task_add(task, _TaskStatus.to_file(status))
-        self._task_remove(line, _TaskStatus.to_file(original_status))
+        self._task_add(task, Status.to_file(status))
+        self._task_remove(line, Status.to_file(original_status))
         return task
 
 
@@ -430,7 +431,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         id = None
         # The ID going back only makes sense if the task is pending.
         if 'status' in task:
-            if _TaskStatus.is_pending(task['status']):
+            if Status.is_pending(task['status']):
                 id = task_id
 
         return id, task
@@ -469,8 +470,6 @@ class TaskWarriorShellout(TaskWarriorBase):
                 pass
 
         return None, dict()
-
-
 
     def task_add(self, description, tags=None, **kw):
         """ Add a new task.
@@ -588,10 +587,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         return out
 
 
-
-
-
-class _DataFile(object):
+class DataFile(object):
     """ Encapsulates data file names. """
     PENDING = 'pending'
     COMPLETED = 'completed'
@@ -601,7 +597,7 @@ class _DataFile(object):
         return "%s.data" % name
 
 
-class _Command(object):
+class Command(object):
     """ Encapsulates available commands. """
     PENDING = 'pending'
     COMPLETED = 'completed'
@@ -610,19 +606,20 @@ class _Command(object):
     @classmethod
     def files(cls, command):
         known_commands = {
-                _Command.PENDING : [_DataFile.PENDING],
-                _Command.COMPLETED : [_DataFile.COMPLETED],
-                _Command.ALL : [_DataFile.PENDING, _DataFile.COMPLETED]
-                }
+            Command.PENDING: [DataFile.PENDING],
+            Command.COMPLETED: [DataFile.COMPLETED],
+            Command.ALL: [DataFile.PENDING, DataFile.COMPLETED]
+        }
 
         if not command in known_commands:
-            raise ValueError("Unknown command, %s. Command must be one of %s." %
-                    (command, known_commands.keys()))
+            raise ValueError(
+                "Unknown command, %s. Command must be one of %s." %
+                (command, known_commands.keys()))
 
         return known_commands[command]
 
 
-class _TaskStatus(object):
+class Status(object):
     """ Encapsulates task status values. """
     PENDING = 'pending'
     COMPLETED = 'completed'
@@ -632,16 +629,16 @@ class _TaskStatus(object):
     @classmethod
     def is_pending(cls, status):
         """ Identifies if the specified status is a 'pending' state. """
-        return status == _TaskStatus.PENDING or status == _TaskStatus.WAITING
+        return status == Status.PENDING or status == Status.WAITING
 
     @classmethod
     def to_file(cls, status):
         """ Returns the file in which this task is stored. """
         return {
-                _TaskStatus.PENDING : _DataFile.PENDING,
-                _TaskStatus.WAITING : _DataFile.PENDING,
-                _TaskStatus.COMPLETED : _DataFile.COMPLETED,
-                _TaskStatus.DELETED : _DataFile.COMPLETED
+            Status.PENDING: DataFile.PENDING,
+            Status.WAITING: DataFile.PENDING,
+            Status.COMPLETED: DataFile.COMPLETED,
+            Status.DELETED: DataFile.COMPLETED
         }[status]
 
 
