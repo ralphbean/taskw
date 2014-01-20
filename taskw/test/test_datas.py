@@ -152,10 +152,6 @@ class _BaseTestDB(object):
         task = dict(description="lol")
         self.tw.task_update(task)
 
-
-class TestDBDirect(_BaseTestDB):
-    class_to_test = TaskWarriorDirect
-
     def test_add_complicated(self):
         self.tw.task_add(
             "foobar",
@@ -266,6 +262,10 @@ class TestDBDirect(_BaseTestDB):
 
         # For issue #26, I thought this would raise an exception...
         task = self.tw.get_task(description='foobar1')
+
+
+class TestDBDirect(_BaseTestDB):
+    class_to_test = TaskWarriorDirect
 
     def should_skip(self):
         return False
