@@ -438,10 +438,17 @@ class TaskWarriorShellout(TaskWarriorBase):
     def load_tasks(self, command='all'):
         """ Returns a dictionary of tasks for a list of command."""
 
-        return dict(
+        results = dict(
             (db, self._get_json('status:%s' % db, 'export'))
             for db in Command.files(command)
         )
+
+        # 'waiting' tasks are returned separately from 'pending' tasks
+        # Here we merge the waiting list back into the pending list.
+        if 'pending' in results:
+            results['pending'] = self._get_json('status:waiting', 'export')
+
+        return results
 
     def get_task(self, **kw):
         task = dict()
