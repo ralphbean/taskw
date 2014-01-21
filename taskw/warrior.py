@@ -1,7 +1,12 @@
 """ Code to interact with taskwarrior
 
 This module contains an abstract base class and two different implementations
-for interacting with taskwarrior:  TaskWarrior and TaskWarriorExperimental.
+for interacting with taskwarrior:  TaskWarriorDirect and TaskWarriorShellout.
+
+If it is determined that there is a binary 'task' on the system and that it is
+of a sufficiently advanced version, then TaskWarriorShellout will be made the
+default TaskWarrior class.  If not, then the default TaskWarrior class will
+fall back to the older TaskWarriorDirect implementation.
 
 """
 
@@ -108,6 +113,10 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
         pass
 
     @abc.abstractmethod
+    def task_delete(self, **kw):
+        pass
+
+    @abc.abstractmethod
     def _load_task(self, **kw):
         pass
 
@@ -170,18 +179,19 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
         return d
 
 
-class TaskWarrior(TaskWarriorBase):
+class TaskWarriorDirect(TaskWarriorBase):
     """ Interacts with taskwarrior by directly manipulating the ~/.task/ db.
 
-    Currently this is the supported implementation, but will be phased out in
+    This is the deprecated implementation and will be phased out in
     time due to taskwarrior's guidelines:  http://bit.ly/16I9VN4
 
-    See https://github.com/ralphbean/taskw/pull/15 for discussion.
+    See https://github.com/ralphbean/taskw/pull/15 for discussion
+    and https://github.com/ralphbean/taskw/issues/30 for more.
     """
 
     def sync(self):
         raise NotImplementedError(
-            "You must use TaskWarriorExperimental to use 'sync'"
+            "You must use TaskWarriorShellout to use 'sync'"
         )
 
     def load_tasks(self, command='all'):
@@ -194,8 +204,8 @@ class TaskWarrior(TaskWarriorBase):
             return list(map(taskw.utils.decode_task, lines))
 
         return dict(
-            (db, _load_tasks(_DataFile.filename(db)))
-            for db in _Command.files(command)
+            (db, _load_tasks(DataFile.filename(db)))
+            for db in Command.files(command)
         )
 
     def get_task(self, **kw):
@@ -203,7 +213,7 @@ class TaskWarrior(TaskWarriorBase):
 
         id = None
         # The ID going back only makes sense if the task is pending.
-        if _TaskStatus.is_pending(task['status']):
+        if Status.is_pending(task['status']):
             id = line
 
         return id, task
@@ -222,17 +232,18 @@ class TaskWarrior(TaskWarriorBase):
         line = None
         task = dict()
 
-        # If the key is an id, assume the task is pending (completed tasks don't have IDs).
+        # If the key is an id, assume the task is pending (completed tasks
+        # don't have IDs).
         if key == 'id':
-            tasks = self.load_tasks(command=_TaskStatus.PENDING)
+            tasks = self.load_tasks(command=Status.PENDING)
             line = kw[key]
 
-            if len(tasks[_TaskStatus.PENDING]) >= line:
-                task = tasks[_TaskStatus.PENDING][line - 1]
+            if len(tasks[Status.PENDING]) >= line:
+                task = tasks[Status.PENDING][line - 1]
 
         else:
             # Search all tasks for the specified key.
-            tasks = self.load_tasks(command=_Command.ALL)
+            tasks = self.load_tasks(command=Command.ALL)
 
             matching = list(filter(
                 lambda t: t.get(key, None) == kw[key],
@@ -241,7 +252,7 @@ class TaskWarrior(TaskWarriorBase):
 
             if matching:
                 task = matching[0]
-                line = tasks[_TaskStatus.to_file(task['status'])].index(task) + 1
+                line = tasks[Status.to_file(task['status'])].index(task) + 1
 
         return line, task
 
@@ -253,7 +264,7 @@ class TaskWarrior(TaskWarriorBase):
 
         task = self._stub_task(description, tags, **kw)
 
-        task['status'] = _TaskStatus.PENDING
+        task['status'] = Status.PENDING
 
         # TODO -- check only valid keywords
 
@@ -263,7 +274,7 @@ class TaskWarrior(TaskWarriorBase):
         if not 'uuid' in task:
             task['uuid'] = str(uuid.uuid4())
 
-        id = self._task_add(task, _TaskStatus.PENDING)
+        id = self._task_add(task, Status.PENDING)
         task['id'] = id
         return task
 
@@ -273,10 +284,10 @@ class TaskWarrior(TaskWarriorBase):
         date with the 'end' argument.
         """
         def validate(task):
-            if not _TaskStatus.is_pending(task['status']):
+            if not Status.is_pending(task['status']):
                 raise ValueError("Task is not pending.")
 
-        return self._task_change_status(_TaskStatus.COMPLETED, validate, **kw)
+        return self._task_change_status(Status.COMPLETED, validate, **kw)
 
     def task_update(self, task):
         line, _task = self._load_task(uuid=task['uuid'])
@@ -285,7 +296,7 @@ class TaskWarrior(TaskWarriorBase):
             del task['id']
 
         _task.update(task)
-        self._task_replace(line, _TaskStatus.to_file(task['status']), _task)
+        self._task_replace(line, Status.to_file(task['status']), _task)
         return line, _task
 
     def task_delete(self, **kw):
@@ -294,10 +305,10 @@ class TaskWarrior(TaskWarriorBase):
         date with the 'end' argument.
         """
         def validate(task):
-            if task['status'] == _TaskStatus.DELETED:
+            if task['status'] == Status.DELETED:
                 raise ValueError("Task is already deleted.")
 
-        return self._task_change_status(_TaskStatus.DELETED, validate, **kw)
+        return self._task_change_status(Status.DELETED, validate, **kw)
 
     def _task_replace(self, id, category, task):
         def modification(lines):
@@ -317,7 +328,7 @@ class TaskWarrior(TaskWarriorBase):
 
     def _apply_modification(self, id, category, modification):
         location = self.config['data']['location']
-        filename = _DataFile.filename(category)
+        filename = DataFile.filename(category)
         filename = os.path.join(self.config['data']['location'], filename)
         filename = os.path.expanduser(filename)
 
@@ -357,21 +368,18 @@ class TaskWarrior(TaskWarriorBase):
         task['status'] = status
         task['end'] = kw.get('end') or str(int(time.time()))
 
-        self._task_add(task, _TaskStatus.to_file(status))
-        self._task_remove(line, _TaskStatus.to_file(original_status))
+        self._task_add(task, Status.to_file(status))
+        self._task_remove(line, Status.to_file(original_status))
         return task
 
 
-class TaskWarriorExperimental(TaskWarriorBase):
+class TaskWarriorShellout(TaskWarriorBase):
     """ Interacts with taskwarrior by invoking shell commands.
 
-    This is currently experimental and is not necessarily stable.  Please help
-    us test and report any issues.
+    This is currently the supported version and should be considered stable.
 
-    Some day this will become the primary supported implementation due to
-    taskwarrior's guidelines:  http://bit.ly/16I9VN4
-
-    See https://github.com/ralphbean/taskw/pull/15 for discussion.
+    See https://github.com/ralphbean/taskw/pull/15 for discussion
+    and https://github.com/ralphbean/taskw/issues/30 for more.
     """
     def _execute(self, *args):
         """ Execute a given taskwarrior command with arguments
@@ -384,21 +392,18 @@ class TaskWarriorExperimental(TaskWarriorBase):
             'rc:%s' % self.config_filename,
             'rc.json.array=TRUE',
             'rc.verbose=nothing',
+            'rc.confirmation=no',
         ] + [six.text_type(arg) for arg in args]
         return subprocess.Popen(
             command,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            stderr=subprocess.PIPE,
         ).communicate()
 
     def _get_json(self, *args):
-        try:
-            return json.loads(
-                self._execute(*args)[0].decode(sys.getdefaultencoding())
-            )
-        except ValueError:
-            # An empty string causes json.loads to raise a ValueError
-            return None
+        encoded = self._execute(*args)[0]
+        decoded = encoded.decode(self.config.get('encoding', 'utf-8'))
+        return json.loads(decoded)
 
     @classmethod
     def can_use(cls):
@@ -430,29 +435,31 @@ class TaskWarriorExperimental(TaskWarriorBase):
             'sync',
         ])
 
-    def load_tasks(self, statuses=None, **kw):
-        """ Returns a dictionary of tasks for a list of statuses."""
-        if statuses is None:
-            statuses = ['pending', 'completed']
+    def load_tasks(self, command='all'):
+        """ Returns a dictionary of tasks for a list of command."""
 
-        tasks = {}
+        results = dict(
+            (db, self._get_json('status:%s' % db, 'export'))
+            for db in Command.files(command)
+        )
 
-        for status in statuses:
-            tasks[status] = self._get_json(
-                'status:%s' % status,
-                'export'
-            )
+        # 'waiting' tasks are returned separately from 'pending' tasks
+        # Here we merge the waiting list back into the pending list.
+        if 'pending' in results:
+            results['pending'].extend(
+                self._get_json('status:waiting', 'export'))
 
-        return tasks
+        return results
 
     def get_task(self, **kw):
         task = dict()
         task_id = None
         task_id, task = self._load_task(**kw)
         id = None
+
         # The ID going back only makes sense if the task is pending.
         if 'status' in task:
-            if _TaskStatus.is_pending(task['status']):
+            if Status.is_pending(task['status']):
                 id = task_id
 
         return id, task
@@ -539,10 +546,14 @@ class TaskWarriorExperimental(TaskWarriorBase):
     def task_done(self, **kw):
         if not kw:
             raise KeyError('No key was passed.')
+
         id, task = self.get_task(**kw)
 
-        self._execute(id, 'do')
-        return self.get_task(uuid=task['uuid'])
+        if not Status.is_pending(task['status']):
+            raise ValueError("Task is not pending.")
+
+        self._execute(id, 'done')
+        return self.get_task(uuid=task['uuid'])[1]
 
     def task_update(self, task):
         if 'uuid' not in task:
@@ -585,6 +596,17 @@ class TaskWarriorExperimental(TaskWarriorBase):
 
         return id, _task
 
+    def task_delete(self, **kw):
+        """ Marks a task as deleted.  """
+
+        id, task = self.get_task(**kw)
+
+        if task['status'] == Status.DELETED:
+            raise ValueError("Task is already deleted.")
+
+        self._execute(id, 'delete')
+        return self.get_task(uuid=task['uuid'])[1]
+
     def task_info(self, **kw):
         id, task = self.get_task(**kw)
         self._get_json('info', id)
@@ -594,7 +616,7 @@ class TaskWarriorExperimental(TaskWarriorBase):
         return out
 
 
-class _DataFile(object):
+class DataFile(object):
     """ Encapsulates data file names. """
     PENDING = 'pending'
     COMPLETED = 'completed'
@@ -604,7 +626,7 @@ class _DataFile(object):
         return "%s.data" % name
 
 
-class _Command(object):
+class Command(object):
     """ Encapsulates available commands. """
     PENDING = 'pending'
     COMPLETED = 'completed'
@@ -613,19 +635,20 @@ class _Command(object):
     @classmethod
     def files(cls, command):
         known_commands = {
-                _Command.PENDING : [_DataFile.PENDING],
-                _Command.COMPLETED : [_DataFile.COMPLETED],
-                _Command.ALL : [_DataFile.PENDING, _DataFile.COMPLETED]
-                }
+            Command.PENDING: [DataFile.PENDING],
+            Command.COMPLETED: [DataFile.COMPLETED],
+            Command.ALL: [DataFile.PENDING, DataFile.COMPLETED]
+        }
 
         if not command in known_commands:
-            raise ValueError("Unknown command, %s. Command must be one of %s." %
-                    (command, known_commands.keys()))
+            raise ValueError(
+                "Unknown command, %s. Command must be one of %s." %
+                (command, known_commands.keys()))
 
         return known_commands[command]
 
 
-class _TaskStatus(object):
+class Status(object):
     """ Encapsulates task status values. """
     PENDING = 'pending'
     COMPLETED = 'completed'
@@ -635,18 +658,30 @@ class _TaskStatus(object):
     @classmethod
     def is_pending(cls, status):
         """ Identifies if the specified status is a 'pending' state. """
-        return status == _TaskStatus.PENDING or status == _TaskStatus.WAITING
+        return status == Status.PENDING or status == Status.WAITING
 
     @classmethod
     def to_file(cls, status):
         """ Returns the file in which this task is stored. """
         return {
-                _TaskStatus.PENDING : _DataFile.PENDING,
-                _TaskStatus.WAITING : _DataFile.PENDING,
-                _TaskStatus.COMPLETED : _DataFile.COMPLETED,
-                _TaskStatus.DELETED : _DataFile.COMPLETED
+            Status.PENDING: DataFile.PENDING,
+            Status.WAITING: DataFile.PENDING,
+            Status.COMPLETED: DataFile.COMPLETED,
+            Status.DELETED: DataFile.COMPLETED
         }[status]
 
 
 class UnsupportedVersionException(object):
     pass
+
+
+# It is not really experimental anymore, but we provide this rename for
+# backwards compatibility.  It will eventually be removed.
+TaskWarriorExperimental = TaskWarriorShellout
+
+
+# Set a default based on what is available on the system.
+if TaskWarriorShellout.can_use():
+    TaskWarrior = TaskWarriorShellout
+else:
+    TaskWarrior = TaskWarriorDirect

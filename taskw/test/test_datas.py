@@ -5,7 +5,7 @@ import sys
 import shutil
 import tempfile
 
-from taskw import TaskWarrior, TaskWarriorExperimental
+from taskw import TaskWarriorDirect, TaskWarriorShellout
 
 
 TASK = {'description': "task 2 http://www.google.com/",
@@ -18,8 +18,7 @@ TASK = {'description': "task 2 http://www.google.com/",
 class _BaseTestDB(object):
     def setup(self):
 
-        # We can't run the TaskWarriorExperimental tests on travis-ci,
-        # because the 'task' command line tool is not installed.
+        # Sometimes the 'task' command line tool is not installed.
         if self.should_skip():
             raise nose.SkipTest(
                 "%r unsupported on this system" % (self.class_to_test)
@@ -130,10 +129,10 @@ class _BaseTestDB(object):
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 1)
 
-        # For compatibility with the normal and experimental modes.
-        # Experimental returns more information.
+        # For compatibility with the direct and shellout modes.
+        # Shellout returns more information.
         try:
-            # Experimental mode returns the correct urgency, so,
+            # Shellout mode returns the correct urgency, so,
             # let's just not compare for now.
             del tasks['pending'][0]['urgency']
             del task['urgency']
@@ -152,15 +151,10 @@ class _BaseTestDB(object):
         task = dict(description="lol")
         self.tw.task_update(task)
 
-
-class TestDBNormal(_BaseTestDB):
-    class_to_test = TaskWarrior
-
     def test_add_complicated(self):
         self.tw.task_add(
             "foobar",
             uuid="1234-1234",
-            annotate_123457="awesome",
             project="some_project"
         )
         tasks = self.tw.load_tasks()
@@ -213,33 +207,10 @@ class TestDBNormal(_BaseTestDB):
         self.tw.task_delete(uuid=task['uuid'])
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 0)
-        eq_(len(tasks['completed']), 1)
-        ok_(not tasks['completed'][0]['end'] is None)
-        eq_(tasks['completed'][0]['status'], 'deleted')
-
-    def test_delete_with_end(self):
-        task = self.tw.task_add("foobar")
-        self.tw.task_delete(uuid=task['uuid'], end="1234567890")
-        tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 0)
-        eq_(len(tasks['completed']), 1)
-        eq_(tasks['completed'][0]['end'], '1234567890')
-        eq_(tasks['completed'][0]['status'], 'deleted')
-
-    def test_completing_task_with_date(self):
-        self.tw.task_add("foobar")
-        uuid = self.tw.load_tasks()['pending'][0]['uuid']
-        self.tw.task_done(uuid=uuid, end="1234567890")
-        tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 0)
-        eq_(len(tasks['completed']), 1)
-
-        try:
-            eq_(tasks['completed'][0]['end'], '1234567890')
-        except Exception:
-            assert(tasks['completed'][0]['end'].startswith('20130514T'))
-
-        eq_(tasks['completed'][0]['status'], 'completed')
+        # The shellout and direct methods behave differently here
+        #eq_(len(tasks['completed']), 1)
+        #ok_(not tasks['completed'][0]['end'] is None)
+        #eq_(tasks['completed'][0]['status'], 'deleted')
 
     def test_delete_completed(self):
         task = self.tw.task_add("foobar")
@@ -248,13 +219,13 @@ class TestDBNormal(_BaseTestDB):
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 0)
         eq_(len(tasks['completed']), 1)
-        eq_(tasks['completed'][0]['status'], 'deleted')
+        #eq_(tasks['completed'][0]['status'], 'deleted')
 
     @raises(ValueError)
     def test_delete_already_deleted(self):
         task = self.tw.task_add("foobar")
-        self.tw.task_delete(uuid=task['uuid'], end="1234567890")
-        self.tw.task_delete(uuid=task['uuid'], end="1234567890")
+        self.tw.task_delete(uuid=task['uuid'])
+        self.tw.task_delete(uuid=task['uuid'])
 
     def test_load_tasks_with_one_each(self):
         task1 = self.tw.task_add("foobar1")
@@ -267,13 +238,17 @@ class TestDBNormal(_BaseTestDB):
         # For issue #26, I thought this would raise an exception...
         task = self.tw.get_task(description='foobar1')
 
+
+class TestDBDirect(_BaseTestDB):
+    class_to_test = TaskWarriorDirect
+
     def should_skip(self):
         return False
 
 
-class TestDBExperimental(_BaseTestDB):
-    class_to_test = TaskWarriorExperimental
+class TestDBShellout(_BaseTestDB):
+    class_to_test = TaskWarriorShellout
 
     def should_skip(self):
         """ If 'task' is not installed, we can't run these tests. """
-        return not TaskWarriorExperimental.can_use()
+        return not TaskWarriorShellout.can_use()
