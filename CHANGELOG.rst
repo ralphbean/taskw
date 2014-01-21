@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.7.1
+-----
+
+- Add back forgotten import. `6e3bf593e <https://github.com/ralphbean/taskw/commit/6e3bf593ee253cbefb10900aaee41daed8f1e17f>`_
+
 0.7.0
 -----
 
