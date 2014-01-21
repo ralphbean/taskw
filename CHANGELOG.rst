@@ -1,6 +1,40 @@
 Changelog
 =========
 
+0.7.0
+-----
+
+- Allow passing tags as part of the task `60ca9d39f <https://github.com/ralphbean/taskw/commit/60ca9d39f449c5db1b180e13857e9d067a1f5440>`_
+- Adding 'sync' capability; cleaning-up version checking. `1acb2cb9e <https://github.com/ralphbean/taskw/commit/1acb2cb9e2c99ca54ee0b335e225ff221a8e8ab7>`_
+- Make taskwarrior version gathering support taskwarrior residing at a non-standard path. `6359d79e3 <https://github.com/ralphbean/taskw/commit/6359d79e35c75af404f27a778ca2b9d9f13baaee>`_
+- Adding TaskWarrior.sync (raises NotImplementedError). `a628990bf <https://github.com/ralphbean/taskw/commit/a628990bf96ce516bbb28c5f657cc122f12e1e4e>`_
+- Merge pull request #28 from latestrevision/add_sync_capability `647f3378e <https://github.com/ralphbean/taskw/commit/647f3378e484c58ff81749f6036d75f91463a106>`_
+- Refactor such that all commands share a single interface. `9cb4edf11 <https://github.com/ralphbean/taskw/commit/9cb4edf118fe1e264657c75e10ff7eb0472f409b>`_
+- Merge pull request #24 from kostajh/develop `b5f90f73b <https://github.com/ralphbean/taskw/commit/b5f90f73b969a0caff62b56cc074d9105745811d>`_
+- Replacing string literal with variable. `25fedee85 <https://github.com/ralphbean/taskw/commit/25fedee850b0f9cd56e2bada7926a2e488387e8a>`_
+- Removing unicode literal. `344a354ea <https://github.com/ralphbean/taskw/commit/344a354eae4d9574df357a44474edcb490a408ee>`_
+- Decode incoming strings using default encoding before deserialization. `d5a1b5ab7 <https://github.com/ralphbean/taskw/commit/d5a1b5ab794cb5e362bb9523d0f345a15d91fd6e>`_
+- There is no reason for me to have written such a complicated sentence. `84bc5f9b7 <https://github.com/ralphbean/taskw/commit/84bc5f9b70b55b7e24ae7af05502d232079f3882>`_
+- Merge pull request #29 from latestrevision/rearchitect_twe `9b43c38e4 <https://github.com/ralphbean/taskw/commit/9b43c38e4ea3bf7fd985b71fe02e72709991b010>`_
+- Make TaskWarriorShellout our default. `df9be4a41 <https://github.com/ralphbean/taskw/commit/df9be4a410d4e0a7b22d122445a37c30644e33d4>`_
+- PEP8. `c222da89e <https://github.com/ralphbean/taskw/commit/c222da89e4cbf4c6e32866fe476c433de5f33e2d>`_
+- Merge branch 'develop' of github.com:ralphbean/taskw into feature/switchover `f2a3c0b28 <https://github.com/ralphbean/taskw/commit/f2a3c0b2824cc5770c09ccb65bbcc551557aebab>`_
+- Provide a backwards compatibility rename. `2a548993f <https://github.com/ralphbean/taskw/commit/2a548993fbfa21810abe6189eac9d4f0d4ec4bb4>`_
+- Add a lot more tests to the shellout implementation. `f1c4e7706 <https://github.com/ralphbean/taskw/commit/f1c4e770650faa50a98aaa000e994a16b6cabfb6>`_
+- Standardize the load_tasks method. `143b69a0a <https://github.com/ralphbean/taskw/commit/143b69a0a022bf20b46b436f44cfdba8b3a896dd>`_
+- You cannot fake annotations like this with the shellout approach. `2e4d674ac <https://github.com/ralphbean/taskw/commit/2e4d674ac888a876e2e7e34cf6fe9a09cdf13a34>`_
+- These tests no longer make sense. `a9b53d911 <https://github.com/ralphbean/taskw/commit/a9b53d911a954ab506585e75c034fd96585f2451>`_
+- We never had a task_delete method for shellout.  Here it is. `d9ddd9c79 <https://github.com/ralphbean/taskw/commit/d9ddd9c79903902fa1b0a436b445cf6b1e7e4387>`_
+- deletes, though, require confirmation.... `5c01dab4c <https://github.com/ralphbean/taskw/commit/5c01dab4c60a0c8b3b857a80b00b86d5bbf3523e>`_
+- Cosmetic. `9240706e4 <https://github.com/ralphbean/taskw/commit/9240706e43141c4f6ac2beb4e20daec0cbaebed7>`_
+- Make this return signature standard. `1a868b9b3 <https://github.com/ralphbean/taskw/commit/1a868b9b39603450a70e6fc596c035e02a802f9d>`_
+- Allow user to specify the encoding. `ddf4df91a <https://github.com/ralphbean/taskw/commit/ddf4df91ab830b8b33dcc0cd883c25f0a4c557f5>`_
+- Merge the "waiting" list back into the "pending" list. `3d9f050f9 <https://github.com/ralphbean/taskw/commit/3d9f050f9825ff2d423efc6ef0b480d68c20d7c6>`_
+- Really merge.. not overwrite. `a4bfb5e88 <https://github.com/ralphbean/taskw/commit/a4bfb5e8872c4dca5c3a23d946554069e6d9f75a>`_
+- Add TaskWarriorExperimental back to __all__ `ac7b227c2 <https://github.com/ralphbean/taskw/commit/ac7b227c2a3b607d07d0c564502716324cc5cf61>`_
+- We actually do install 'task' in our travis environment. `7518d0aeb <https://github.com/ralphbean/taskw/commit/7518d0aeb3634700897c99550ce9be1d5e5a86a5>`_
+- Merge pull request #31 from ralphbean/feature/switchover `d63bb0f43 <https://github.com/ralphbean/taskw/commit/d63bb0f43d8889cbc2485c33e743953ff0144745>`_
+
 0.6.1
 -----
 
