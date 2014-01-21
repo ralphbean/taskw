@@ -18,8 +18,7 @@ TASK = {'description': "task 2 http://www.google.com/",
 class _BaseTestDB(object):
     def setup(self):
 
-        # We can't run the TaskWarriorShellout tests on travis-ci,
-        # because the 'task' command line tool is not installed.
+        # Sometimes the 'task' command line tool is not installed.
         if self.should_skip():
             raise nose.SkipTest(
                 "%r unsupported on this system" % (self.class_to_test)
