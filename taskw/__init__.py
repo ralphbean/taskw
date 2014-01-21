@@ -6,6 +6,7 @@ __all__ = [
     TaskWarrior,
     TaskWarriorShellout,
     TaskWarriorDirect,
+    TaskWarriorExperimental,  # This is deprecated.  Use TaskWarriorShellout
     clean_task,
     encode_task,
     decode_task,
