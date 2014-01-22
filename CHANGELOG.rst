@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.7.2
+-----
+
+- Add some failing test cases based on a report from @lmacken. `807eebdfc <https://github.com/ralphbean/taskw/commit/807eebdfca9c8475e3399c56240e0995c3492630>`_
+- This should fix it. `ad5ad2f70 <https://github.com/ralphbean/taskw/commit/ad5ad2f708db26f96999c6b6ed5a71f767d9379f>`_
+- Merge branch 'feature/backslashes-omg' into develop `8b44795d9 <https://github.com/ralphbean/taskw/commit/8b44795d942d1d7477ab69a27f50a017393491be>`_
+
 0.7.1
 -----
 
