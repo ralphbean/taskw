@@ -46,6 +46,22 @@ class TestUtils(object):
         r = encode_task(decode_task(line))
         eq_(r, r)
 
+    def test_with_backticks(self):
+        expected = {'this': r'has a fucking `backtick` in it'}
+        line = r'[this:"has a fucking `backtick` in it"]'
+        r = decode_task(line)
+        eq_(r, expected)
+        r = decode_task(encode_task(decode_task(line)))
+        eq_(r, expected)
+
+    def test_with_backslashes(self):
+        expected = {'andthis': r'has a fucking \backslash in it'}
+        line = r'[andthis:"has a fucking \\backslash in it"]'
+        r = decode_task(line)
+        eq_(r, expected)
+        r = decode_task(encode_task(decode_task(line)))
+        eq_(r, expected)
+
     def test_decode(self):
         r = decode_task(encode_task(TASK))
         eq_(r, TASK)
