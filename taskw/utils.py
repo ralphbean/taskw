@@ -9,6 +9,7 @@ except ImportError:
     from ordereddict import OrderedDict
 
 encode_replacements = OrderedDict([
+    ('\\', '\\\\'),
     ('\"', '&dquot;'),
     ('"', '&dquot;'),
     ('[', '&open;'),
