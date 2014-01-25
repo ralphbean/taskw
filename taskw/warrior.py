@@ -429,11 +429,7 @@ class TaskWarriorShellout(TaskWarriorBase):
             raise UnsupportedVersionException(
                 "'sync' requires version 2.3 of taskwarrior or later."
             )
-        subprocess.Popen([
-            'task',
-            'rc:%s' % self.config_filename,
-            'sync',
-        ])
+        self._execute('sync')
 
     def load_tasks(self, command='all'):
         """ Returns a dictionary of tasks for a list of command."""
