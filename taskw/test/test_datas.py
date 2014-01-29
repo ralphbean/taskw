@@ -4,6 +4,7 @@ import os
 import sys
 import shutil
 import tempfile
+import datetime
 
 from taskw import TaskWarriorDirect, TaskWarriorShellout
 
@@ -159,6 +160,28 @@ class _BaseTestDB(object):
         )
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 1)
+
+    def test_add_timestamp(self):
+        self.tw.task_add(
+            "foobar",
+            uuid="1234-1234",
+            project="some_project",
+            entry="20110101T000000Z",
+        )
+        tasks = self.tw.load_tasks()
+        eq_(len(tasks['pending']), 1)
+        eq_(tasks['pending'][0]['entry'], "20110101T000000Z")
+
+    def test_add_datetime(self):
+        self.tw.task_add(
+            "foobar",
+            uuid="1234-1234",
+            project="some_project",
+            entry=datetime.datetime(2011, 01, 01),
+        )
+        tasks = self.tw.load_tasks()
+        eq_(len(tasks['pending']), 1)
+        eq_(tasks['pending'][0]['entry'], "20110101T000000Z")
 
     @raises(ValueError)
     def test_completing_completed_task(self):

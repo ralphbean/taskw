@@ -3,6 +3,8 @@
 import re
 from operator import itemgetter
 import six
+import datetime
+
 try:
     from collections import OrderedDict
 except ImportError:
@@ -50,6 +52,9 @@ def encode_task_experimental(task):
             if isinstance(task[k], str):
                 task[k] = task[k].replace(unsafe, safe)
 
+        if isinstance(task[k], datetime.datetime):
+            task[k] = task[k].strftime("%Y%m%dT%M%H%SZ")
+
     # Then, format it as a string
     return "%s\n" % " ".join([
         "%s:\"%s\"" % (k, v)
@@ -65,7 +70,11 @@ def encode_task(task):
         task['tags'] = ','.join(task['tags'])
     for k in task:
         for unsafe, safe in six.iteritems(encode_replacements):
-            task[k] = task[k].replace(unsafe, safe)
+            if isinstance(task[k], str):
+                task[k] = task[k].replace(unsafe, safe)
+
+        if isinstance(task[k], datetime.datetime):
+            task[k] = task[k].strftime("%Y%m%dT%M%H%SZ")
 
     # Then, format it as a string
     return "[%s]\n" % " ".join([
