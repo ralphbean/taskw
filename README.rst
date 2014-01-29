@@ -6,12 +6,13 @@ taskw - Python API for the taskwarrior DB
 This is a python API for the `taskwarrior <http://taskwarrior.org>`_ command
 line tool.
 
-It contains two implementations: ``taskw.TaskWarrior`` and
-``taskw.TaskWarriorExperimental``.  The first implementation is relatively
-stable.  It manipulates the ``~/.task/`` dbs directly.  The second
-implementation is in alpha and will be made default some day.  It interacts
-with taskwarrior by shelling out to taskwarrior import and export commands
-as per the upstream guidelines.
+It contains two implementations: ``taskw.TaskWarriorShellout`` and
+``taskw.TaskWarriorDirect``.  The first implementation is the supported one
+recommended by the upstream taskwarrior core project.  It uses the ``task
+export`` and ``task import`` commands to manipulate the task database.  The
+second implementation opens the task db file itself and directly manipulates
+it.  It exists for backwards compatibility, but should only be used when
+necessary.
 
 Build Status
 ------------
@@ -66,19 +67,6 @@ Looking at tasks
     <type 'list'>
     >>> type(tasks['pending'][0])
     <type 'dict'>
-
-    Experimental mode
-
-    >>> from taskw import TaskWarriorExperimental
-    >>> w = TaskWarriorExperimental()
-    >>> tasks = w.load_tasks()
-    >>> tasks.keys()
-    ['completed', 'pending']
-    >>> type(tasks['pending'])
-    <type 'list'>
-    >>> type(tasks['pending'][0])
-    <type 'dict'>
-
 
 Adding tasks
 ++++++++++++
