@@ -177,7 +177,7 @@ class _BaseTestDB(object):
             "foobar",
             uuid="1234-1234",
             project="some_project",
-            entry=datetime.datetime(2011, 01, 01),
+            entry=datetime.datetime(2011, 1, 1),
         )
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 1)
