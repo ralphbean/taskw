@@ -62,6 +62,14 @@ class TestUtils(object):
         r = decode_task(encode_task(decode_task(line)))
         eq_(r, expected)
 
+    def test_with_unicode(self):
+        expected = {u'andthis': u'has a fucking \\backslash in it'}
+        line = r'[andthis:"has a fucking \\backslash in it"]'
+        r = decode_task(line)
+        eq_(r, expected)
+        r = decode_task(encode_task(decode_task(line)))
+        eq_(r, expected)
+
     def test_decode(self):
         r = decode_task(encode_task(TASK))
         eq_(r, TASK)
