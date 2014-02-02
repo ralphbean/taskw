@@ -1,14 +1,20 @@
 """ Various utilties """
 
+import datetime
 import re
 from operator import itemgetter
-import six
-import datetime
 
 try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
+
+import dateutil.tz
+import pytz
+import six
+
+DATE_FORMAT = '%Y%m%dT%H%M%SZ'
+
 
 encode_replacements = OrderedDict([
     ('\\', '\\\\'),
@@ -48,12 +54,18 @@ def encode_task_experimental(task):
     if 'tags' in task:
         task['tags'] = ','.join(task['tags'])
     for k in task:
-        for unsafe, safe in six.iteritems(encode_replacements_experimental):
-            if isinstance(task[k], basestring):
-                task[k] = task[k].replace(unsafe, safe)
-
         if isinstance(task[k], datetime.datetime):
-            task[k] = task[k].strftime("%Y%m%dT%M%H%SZ")
+            if not task[k].tzinfo:
+                #  Dates not having timezone information should be
+                #  assumed to be in local time
+                task[k] = task[k].replace(tzinfo=dateutil.tz.tzlocal())
+            #  All times should be converted to UTC before serializing
+            task[k] = task[k].astimezone(pytz.utc).strftime(DATE_FORMAT)
+        elif isinstance(task[k], datetime.date):
+            task[k] = task[k].strftime(DATE_FORMAT)
+        elif isinstance(task[k], six.string_types):
+            for unsafe, safe in six.iteritems(encode_replacements_experimental):
+                task[k] = task[k].replace(unsafe, safe)
 
     # Then, format it as a string
     return "%s\n" % " ".join([
