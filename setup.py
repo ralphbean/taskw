@@ -12,7 +12,7 @@ f.close()
 
 install_requires = [
     "six",
-    "dateutil",
+    "python-dateutil",
     "pytz",
 ]
 tests_require = [
