@@ -4,6 +4,7 @@ import random
 import dateutil.tz
 from nose.tools import eq_
 import pytz
+import six
 
 from taskw.utils import (
     decode_task, encode_task, encode_task_experimental, DATE_FORMAT
@@ -68,7 +69,11 @@ class TestUtils(object):
         eq_(r, expected)
 
     def test_with_unicode(self):
-        expected = {u'andthis': u'has a fucking \\backslash in it'}
+        expected = {
+            six.text_type('andthis'): (
+                six.text_type('has a fucking \\backslash in it')
+            )
+        }
         line = r'[andthis:"has a fucking \\backslash in it"]'
         r = decode_task(line)
         eq_(r, expected)
