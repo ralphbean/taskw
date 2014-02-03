@@ -405,6 +405,25 @@ class TaskWarriorShellout(TaskWarriorBase):
         decoded = encoded.decode(self.config.get('encoding', 'utf-8'))
         return json.loads(decoded)
 
+    def _stub_task(self, description, tags=None, **kw):
+        """ Given a description, stub out a task dict. """
+
+        # If whitespace is not removed here, TW will do it when we pass the
+        # task to it.
+        task = {"description": description.strip()}
+
+        # Allow passing "tags" in as part of kw.
+        if 'tags' in kw and tags is None:
+            task['tags'] = tags
+            del(kw['tags'])
+
+        if tags is not None:
+            task['tags'] = tags
+
+        task.update(kw)
+
+        return task
+
     @classmethod
     def can_use(cls):
         """ Returns true if runtime requirements of experimental mode are met
@@ -504,7 +523,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         # task and add them after we've added the task.
         annotations = self._extract_annotations_from_task(task)
 
-        self._execute(
+        stdout, stderr = self._execute(
             'add',
             taskw.utils.encode_task_experimental(task),
         )
@@ -512,7 +531,14 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         # Check if 'uuid' is in the task we just added.
         if not 'uuid' in added_task:
-            raise KeyError('No uuid! uh oh.')
+            raise KeyError(
+                'Error encountered while creating task;'
+                'STDOUT: %s; STDERR: %s' % (
+                    stdout,
+                    stderr,
+                )
+            )
+
         if annotations and 'uuid' in added_task:
             for annotation in annotations:
                 self.task_annotate(added_task, annotation)
