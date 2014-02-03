@@ -569,8 +569,8 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         task_to_modify = copy.deepcopy(task)
 
-        del task_to_modify['uuid']
-        del task_to_modify['id']
+        task_to_modify.pop('uuid', None)
+        task_to_modify.pop('id', None)
 
         # Check if there are annotations, if so, look if they are
         # in the existing task, otherwise annotate the task to add them.
