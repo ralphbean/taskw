@@ -181,7 +181,9 @@ class _BaseTestDB(object):
         )
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 1)
-        eq_(tasks['pending'][0]['entry'], "20110101T000000Z")
+        # The exact string we get back is dependent on your current TZ
+        # ... we'll just "roughly" test it instead of mocking.
+        assert(tasks['pending'][0]['entry'].startswith("20110101T"))
 
     @raises(ValueError)
     def test_completing_completed_task(self):
