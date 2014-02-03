@@ -12,6 +12,7 @@ fall back to the older TaskWarriorDirect implementation.
 
 import abc
 import codecs
+import copy
 from distutils.version import LooseVersion
 import os
 import re
@@ -72,6 +73,15 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
         """ Removes annotations from a task and returns a list of annotations
         """
         annotations = list()
+
+        if 'annotations' in task:
+            existing_annotations = task.pop('annotations')
+            for v in existing_annotations:
+                if isinstance(v, dict):
+                    annotations.append(v['description'])
+                else:
+                    annotations.append(v)
+
         for key in task.keys():
             if key.startswith('annotation_'):
                 annotations.append(task[key])
@@ -497,7 +507,6 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         Takes any of the keywords allowed by taskwarrior like proj or prior.
         """
-
         task = self._stub_task(description, tags, **kw)
 
         # Check if there are annotations, if so remove them from the
@@ -513,9 +522,8 @@ class TaskWarriorShellout(TaskWarriorBase):
         # Check if 'uuid' is in the task we just added.
         if not 'uuid' in added_task:
             raise KeyError('No uuid! uh oh.')
-        if annotations and 'uuid' in added_task:
-            for annotation in annotations:
-                self.task_annotate(added_task, annotation)
+        for annotation in annotations:
+            self.task_annotate(added_task, annotation)
         id, added_task = self.get_task(uuid=added_task[six.u('uuid')])
         return added_task
 
@@ -554,23 +562,27 @@ class TaskWarriorShellout(TaskWarriorBase):
     def task_update(self, task):
         if 'uuid' not in task:
             raise KeyError('Task must have a UUID.')
-        id, _task = self.get_task(uuid=task['uuid'])
+        id, original_task = self.get_task(uuid=task['uuid'])
 
         if 'id' in task:
             del task['id']
 
-        _task.update(task)
+        task_to_modify = copy.deepcopy(task)
 
-        # Unset task attributes that should not be updated
-        task_to_modify = _task
-        del task_to_modify['uuid']
-        del task_to_modify['id']
+        task_to_modify.pop('uuid', None)
+        task_to_modify.pop('id', None)
 
         # Check if there are annotations, if so, look if they are
         # in the existing task, otherwise annotate the task to add them.
-        new_annotations = self._extract_annotations_from_task(task)
-        existing_annotations = \
+        new_annotations = set(
             self._extract_annotations_from_task(task_to_modify)
+        )
+        existing_annotations = set(
+            self._extract_annotations_from_task(original_task)
+        )
+
+        annotations_to_delete = existing_annotations - new_annotations
+        annotations_to_create = new_annotations - existing_annotations
 
         if 'annotations' in task_to_modify:
             del task_to_modify['annotations']
@@ -579,18 +591,12 @@ class TaskWarriorShellout(TaskWarriorBase):
         self._execute(task['uuid'], 'modify', modification)
 
         # If there are no existing annotations, add the new ones
-        if existing_annotations is None:
-            for annotation in new_annotations:
-                self.task_annotate(task_to_modify, annotation)
+        for annotation in annotations_to_create:
+            self.task_annotate(original_task, annotation)
+        for annotation in annotations_to_delete:
+            self.task_denotate(original_task, annotation)
 
-        # If there are existing annotations and new annotations, add only
-        # the new annotations
-        if existing_annotations is not None and new_annotations is not None:
-            for annotation in new_annotations:
-                if annotation not in existing_annotations:
-                    self.task_annotate(task_to_modify, annotation)
-
-        return id, _task
+        return self.get_task(uuid=original_task['uuid'])
 
     def task_delete(self, **kw):
         """ Marks a task as deleted.  """
