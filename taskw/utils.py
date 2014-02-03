@@ -82,7 +82,7 @@ def encode_task(task):
         task['tags'] = ','.join(task['tags'])
     for k in task:
         for unsafe, safe in six.iteritems(encode_replacements):
-            if isinstance(task[k], basestring):
+            if isinstance(task[k], six.string_types):
                 task[k] = task[k].replace(unsafe, safe)
 
         if isinstance(task[k], datetime.datetime):
