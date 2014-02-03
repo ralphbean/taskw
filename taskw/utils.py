@@ -54,6 +54,10 @@ def encode_task_experimental(task):
     if 'tags' in task:
         task['tags'] = ','.join(task['tags'])
     for k in task:
+        for unsafe, safe in six.iteritems(encode_replacements_experimental):
+            if isinstance(task[k], six.string_types):
+                task[k] = task[k].replace(unsafe, safe)
+
         if isinstance(task[k], datetime.datetime):
             if not task[k].tzinfo:
                 #  Dates not having timezone information should be
