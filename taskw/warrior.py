@@ -639,8 +639,7 @@ class TaskWarriorShellout(TaskWarriorBase):
 
     def task_info(self, **kw):
         id, task = self.get_task(**kw)
-        self._get_json('info', id)
-        out, err = info.communicate()
+        out, err = self._execute(id, 'info')
         if err:
             return err
         return out
