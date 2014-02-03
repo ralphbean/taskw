@@ -63,7 +63,7 @@ class TestUtils(object):
         eq_(r, expected)
 
     def test_with_unicode(self):
-        expected = {u'andthis': u'has a fucking \\backslash in it'}
+        expected = {'andthis': 'has a fucking \\backslash in it'}
         line = r'[andthis:"has a fucking \\backslash in it"]'
         r = decode_task(line)
         eq_(r, expected)
