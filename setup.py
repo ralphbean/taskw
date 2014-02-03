@@ -12,6 +12,8 @@ f.close()
 
 install_requires = [
     "six",
+    "python-dateutil",
+    "pytz",
 ]
 tests_require = [
     'nose',
