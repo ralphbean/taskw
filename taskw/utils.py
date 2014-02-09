@@ -54,7 +54,9 @@ def encode_task_experimental(task):
     if 'tags' in task:
         task['tags'] = ','.join(task['tags'])
     for k in task:
-        if isinstance(task[k], datetime.datetime):
+        if task[k] is None:
+            task[k] = ''
+        elif isinstance(task[k], datetime.datetime):
             if not task[k].tzinfo:
                 #  Dates not having timezone information should be
                 #  assumed to be in local time
