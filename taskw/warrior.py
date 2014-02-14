@@ -24,6 +24,7 @@ import json
 import pprint
 
 import taskw.utils
+from taskw.exceptions import TaskwarriorError
 
 import six
 from six import with_metaclass
@@ -420,11 +421,15 @@ class TaskWarriorShellout(TaskWarriorBase):
             'rc.verbose=nothing',
             'rc.confirmation=no',
         ] + [six.text_type(arg) for arg in args]
-        return subprocess.Popen(
+        proc = subprocess.Popen(
             command,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-        ).communicate()
+        )
+        stdout, stderr = proc.communicate()
+        if proc.returncode != 0:
+            raise TaskwarriorError(stderr, stdout, proc.returncode)
+        return stdout, stderr
 
     def _get_json(self, *args):
         encoded = self._execute(*args)[0]
