@@ -553,11 +553,12 @@ class TaskWarriorShellout(TaskWarriorBase):
         # task and add them after we've added the task.
         annotations = self._extract_annotations_from_task(task)
 
+        task['uuid'] = str(uuid.uuid4())
         stdout, stderr = self._execute(
             'add',
             taskw.utils.encode_task_experimental(task),
         )
-        id, added_task = self.get_task(description=task['description'])
+        id, added_task = self.get_task(uuid=task['uuid'])
 
         # Check if 'uuid' is in the task we just added.
         if not 'uuid' in added_task:
