@@ -408,19 +408,29 @@ class TaskWarriorShellout(TaskWarriorBase):
     See https://github.com/ralphbean/taskw/pull/15 for discussion
     and https://github.com/ralphbean/taskw/issues/30 for more.
     """
+    RC_OVERRIDES = [
+        'rc.json.array=TRUE',
+        'rc.verbose=nothing',
+        'rc.confirmation=no',
+    ]
+
+    def get_configuration_overrides(self):
+        return self.RC_OVERRIDES
+
     def _execute(self, *args):
         """ Execute a given taskwarrior command with arguments
 
         Returns a 2-tuple of stdout and stderr (respectively).
 
         """
-        command = [
-            'task',
-            'rc:%s' % self.config_filename,
-            'rc.json.array=TRUE',
-            'rc.verbose=nothing',
-            'rc.confirmation=no',
-        ] + [six.text_type(arg) for arg in args]
+        command = (
+            [
+                'task',
+                'rc:%s' % self.config_filename,
+            ]
+            + self.get_configuration_overrides()
+            + [six.text_type(arg) for arg in args]
+        )
         proc = subprocess.Popen(
             command,
             stdout=subprocess.PIPE,
