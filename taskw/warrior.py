@@ -424,7 +424,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         config_overrides.update(self.config_overrides)
         for key, value in six.iteritems(config_overrides):
             args.append(
-                u'rc.%s=%s' % (key, value)
+                'rc.%s=%s' % (key, value)
             )
         return args
 
