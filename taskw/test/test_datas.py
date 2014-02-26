@@ -237,15 +237,6 @@ class _BaseTestDB(object):
         #ok_(not tasks['completed'][0]['end'] is None)
         #eq_(tasks['completed'][0]['status'], 'deleted')
 
-    def test_delete_completed(self):
-        task = self.tw.task_add("foobar")
-        task = self.tw.task_done(uuid=task['uuid'])
-        self.tw.task_delete(uuid=task['uuid'])
-        tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 0)
-        eq_(len(tasks['completed']), 1)
-        #eq_(tasks['completed'][0]['status'], 'deleted')
-
     @raises(ValueError)
     def test_delete_already_deleted(self):
         task = self.tw.task_add("foobar")
@@ -266,6 +257,15 @@ class _BaseTestDB(object):
 
 class TestDBDirect(_BaseTestDB):
     class_to_test = TaskWarriorDirect
+
+    def test_delete_completed(self):
+        task = self.tw.task_add("foobar")
+        task = self.tw.task_done(uuid=task['uuid'])
+        self.tw.task_delete(uuid=task['uuid'])
+        tasks = self.tw.load_tasks()
+        eq_(len(tasks['pending']), 0)
+        eq_(len(tasks['completed']), 1)
+        #eq_(tasks['completed'][0]['status'], 'deleted')
 
     def should_skip(self):
         return False
