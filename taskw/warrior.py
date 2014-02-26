@@ -408,14 +408,25 @@ class TaskWarriorShellout(TaskWarriorBase):
     See https://github.com/ralphbean/taskw/pull/15 for discussion
     and https://github.com/ralphbean/taskw/issues/30 for more.
     """
-    RC_OVERRIDES = [
-        'rc.json.array=TRUE',
-        'rc.verbose=nothing',
-        'rc.confirmation=no',
-    ]
+    DEFAULT_CONFIG_OVERRIDES = {
+        'json.array': 'TRUE',
+        'verbose': 'nothing',
+        'confirmation': 'no',
+    }
 
-    def get_configuration_overrides(self):
-        return self.RC_OVERRIDES
+    def __init__(self, config_filename="~/.taskrc", config_overrides=None):
+        super(TaskWarriorShellout, self).__init__(config_filename)
+        self.config_overrides = config_overrides if config_overrides else {}
+
+    def get_configuration_override_args(self):
+        args = []
+        config_overrides = self.DEFAULT_CONFIG_OVERRIDES.copy()
+        config_overrides.update(self.config_overrides)
+        for key, value in six.iteritems(config_overrides):
+            args.append(
+                u'rc.%s=%s' % (key, value)
+            )
+        return args
 
     def _execute(self, *args):
         """ Execute a given taskwarrior command with arguments
@@ -428,7 +439,7 @@ class TaskWarriorShellout(TaskWarriorBase):
                 'task',
                 'rc:%s' % self.config_filename,
             ]
-            + self.get_configuration_overrides()
+            + self.get_configuration_override_args()
             + [six.text_type(arg) for arg in args]
         )
         proc = subprocess.Popen(
