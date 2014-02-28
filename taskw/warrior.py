@@ -501,6 +501,26 @@ class TaskWarriorShellout(TaskWarriorBase):
         return results
 
     def filter_tasks(self, filter_dict):
+        """ Return a filtered list of tasks from taskwarrior.
+
+        Filter dict should be a dictionary mapping filter constraints
+        with their values.  For example, to return only pending tasks,
+        you could use::
+
+            {'status': 'pending'}
+
+        Or, to return tasks that have the word "Abjad" in their description
+        that are also pending::
+
+            {
+                'status': 'pending',
+                'description.contains': 'Abjad',
+            }
+
+        Filters can be quite complex, and are documented on Taskwarrior's
+        website.
+        
+        """
         query_args = taskw.utils.encode_query(filter_dict)
         return self._get_json(
             'export',
