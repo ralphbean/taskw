@@ -337,6 +337,9 @@ class TaskWarriorDirect(TaskWarriorBase):
         """ Marks a task as stopped.  """
         raise NotImplementedError()
 
+    def filter_tasks(self, filter_dict):
+        raise NotImplementedError()
+
     def _task_replace(self, id, category, task):
         def modification(lines):
             lines[id - 1] = taskw.utils.encode_task(task)
@@ -496,6 +499,13 @@ class TaskWarriorShellout(TaskWarriorBase):
                 self._get_json('status:waiting', 'export'))
 
         return results
+
+    def filter_tasks(self, filter_dict):
+        query_args = taskw.utils.encode_query(filter_dict)
+        return self._get_json(
+            'export',
+            *query_args
+        )
 
     def get_task(self, **kw):
         task = dict()
