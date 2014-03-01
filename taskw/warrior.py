@@ -680,12 +680,15 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         # Check if there are annotations, if so, look if they are
         # in the existing task, otherwise annotate the task to add them.
-        new_annotations = set(
+        ttm_annotations = taskw.utils.annotation_list_to_comparison_map(
             self._extract_annotations_from_task(task_to_modify)
         )
-        existing_annotations = set(
+        original_annotations = taskw.utils.annotation_list_to_comparison_map(
             self._extract_annotations_from_task(original_task)
         )
+
+        new_annotations = set(ttm_annotations.keys())
+        existing_annotations = set(original_annotations.keys())
 
         annotations_to_delete = existing_annotations - new_annotations
         annotations_to_create = new_annotations - existing_annotations
@@ -697,10 +700,11 @@ class TaskWarriorShellout(TaskWarriorBase):
         self._execute(task['uuid'], 'modify', modification)
 
         # If there are no existing annotations, add the new ones
-        for annotation in annotations_to_create:
-            self.task_annotate(original_task, annotation)
-        for annotation in annotations_to_delete:
-            self.task_denotate(original_task, annotation)
+        ttm_annotations.update(original_annotations)
+        for annotation_key in annotations_to_create:
+            self.task_annotate(original_task, ttm_annotations[annotation_key])
+        for annotation_key in annotations_to_delete:
+            self.task_denotate(original_task, ttm_annotations[annotation_key])
 
         return self.get_task(uuid=original_task['uuid'])
 
