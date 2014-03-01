@@ -39,8 +39,15 @@ decode_replacements = OrderedDict([
     if k not in ('\n')  # We skip these.
 ])
 
+logical_replacements = OrderedDict([
+    ('(', '\\('),
+    (')', '\\)'),
+    ('[', '\\['),
+    (']', '\\]'),
+])
 
-def encode_task_value(value):
+
+def encode_task_value(value, query=False):
     if value is None:
         value = ''
     elif isinstance(value, datetime.datetime):
@@ -53,8 +60,16 @@ def encode_task_value(value):
     elif isinstance(value, datetime.date):
         value = value.strftime(DATE_FORMAT)
     elif isinstance(value, six.string_types):
-        for unsafe, safe in six.iteritems(encode_replacements_experimental):
-            value = value.replace(unsafe, safe)
+        if query:
+            # In some contexts, parentheses are interpreted for use in
+            # logical expressions.  They must *sometimes* be escaped.
+            for left, right in six.iteritems(logical_replacements):
+                value = value.replace(left, right)
+        else:
+            for unsafe, safe in six.iteritems(
+                encode_replacements_experimental
+            ):
+                value = value.replace(unsafe, safe)
     else:
         value = str(value)
     return value
@@ -66,7 +81,7 @@ def encode_query(value):
         args.append(
             '%s:\"%s\"' % (
                 k,
-                encode_task_value(v)
+                encode_task_value(v, query=True)
             )
         )
     return args

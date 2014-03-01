@@ -540,9 +540,11 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         Filters can be quite complex, and are documented on Taskwarrior's
         website.
-        
+
         """
-        query_args = taskw.utils.encode_query(filter_dict)
+        query_args = taskw.utils.encode_query(
+            filter_dict,
+        )
         return self._get_json(
             'export',
             *query_args
