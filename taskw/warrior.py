@@ -427,7 +427,10 @@ class TaskWarriorShellout(TaskWarriorBase):
         config_overrides.update(self.config_overrides)
         for key, value in six.iteritems(config_overrides):
             args.append(
-                'rc.%s=%s' % (key, value)
+                'rc.%s=%s' % (
+                    key,
+                    value if ' ' not in value else '"%s"' % value
+                )
             )
         return args
 
