@@ -498,12 +498,15 @@ class TaskWarriorShellout(TaskWarriorBase):
         ).communicate()[0]
         return LooseVersion(taskwarrior_version.decode())
 
-    def sync(self):
+    def sync(self, init=False):
         if self.get_version() < LooseVersion('2.3'):
             raise UnsupportedVersionException(
                 "'sync' requires version 2.3 of taskwarrior or later."
             )
-        self._execute('sync')
+        if init is True:
+            self._execute('sync', 'init')
+        else:
+            self._execute('sync')
 
     def load_tasks(self, command='all'):
         """ Returns a dictionary of tasks for a list of command."""
