@@ -151,3 +151,52 @@ def decode_task(line):
     if 'tags' in task:
         task['tags'] = task['tags'].split(',')
     return task
+
+
+def make_annotation_comparable(annotation):
+    """ Make an annotation comparable.
+
+    Some transformations occur internally when storing a message in
+    Taskwarrior.  Let's flatten those out.
+
+    """
+    return re.sub(
+        r'[\W_]',
+        '',
+        annotation
+    )
+
+
+def get_annotation_value(annotation):
+    """ Can either be a dictionary, or a string. """
+    if isinstance(annotation, dict):
+        return annotation['description']
+    return annotation
+
+
+def annotation_exists_in_list(authoritative, new):
+    comparable_annotations = []
+    for item in authoritative:
+        if not item:
+            continue
+        annotation = get_annotation_value(item)
+        comparable_annotations.append(
+            make_annotation_comparable(annotation)
+        )
+    return make_annotation_comparable(new) in comparable_annotations
+
+
+def merge_annotations(left, right):
+    for annotation in right:
+        if not annotation_exists_in_list(left, annotation):
+            left.append(right)
+
+    return left
+
+
+def annotation_list_to_comparison_map(annotations):
+    mapping = {}
+    for annotation in annotations:
+        comparable = make_annotation_comparable(annotation)
+        mapping[comparable] = annotation
+    return mapping

@@ -6,3 +6,13 @@ class TaskwarriorError(Exception):
         self.stdout = stdout.strip()
         self.code = code
         super(TaskwarriorError, self).__init__(self.stderr)
+
+    def __unicode__(self):
+        return "#%s; stderr:\"%s\"; stdout:\"%s\"" % (
+            self.code,
+            self.stderr,
+            self.stdout,
+        )
+
+    def __str__(self):
+        return self.__unicode__().encode('ascii', 'replace')
