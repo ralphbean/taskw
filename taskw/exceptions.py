@@ -1,3 +1,4 @@
+import sys
 
 
 class TaskwarriorError(Exception):
@@ -15,4 +16,4 @@ class TaskwarriorError(Exception):
         )
 
     def __str__(self):
-        return self.__unicode__().encode('ascii', 'replace')
+        return self.__unicode__().encode(sys.getdefaultencoding(), 'replace')
