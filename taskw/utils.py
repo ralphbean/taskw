@@ -40,6 +40,7 @@ decode_replacements = OrderedDict([
 ])
 
 logical_replacements = OrderedDict([
+    ('+', '\\+'),
     ('"', '\\"'),
     ('(', '\\('),
     (')', '\\)'),

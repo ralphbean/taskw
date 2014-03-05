@@ -304,3 +304,13 @@ class TestDBShellout(_BaseTestDB):
         })
         eq_(len(tasks), 1)
         eq_(tasks[0]['id'], 2)
+
+    def test_filtering_plus(self):
+        task1 = self.tw.task_add("foobar1")
+        task2 = self.tw.task_add("foobar2")
+        task2 = self.tw.task_add("foobar+")
+        tasks = self.tw.filter_tasks({
+            'description.contains': 'foobar+',
+        })
+        eq_(len(tasks), 1)
+        eq_(tasks[0]['id'], 3)
