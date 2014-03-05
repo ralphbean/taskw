@@ -455,7 +455,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         )
         stdout, stderr = proc.communicate()
         if proc.returncode != 0:
-            raise TaskwarriorError(stderr, stdout, proc.returncode)
+            raise TaskwarriorError(command, stderr, stdout, proc.returncode)
         return stdout, stderr
 
     def _get_json(self, *args):

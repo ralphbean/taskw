@@ -2,14 +2,16 @@ import sys
 
 
 class TaskwarriorError(Exception):
-    def __init__(self, stderr, stdout, code):
+    def __init__(self, command, stderr, stdout, code):
+        self.command = command.strip()
         self.stderr = stderr.strip()
         self.stdout = stdout.strip()
         self.code = code
         super(TaskwarriorError, self).__init__(self.stderr)
 
     def __unicode__(self):
-        return "#%s; stderr:\"%s\"; stdout:\"%s\"" % (
+        return "%r #%s; stderr:\"%s\"; stdout:\"%s\"" % (
+            self.command,
             self.code,
             self.stderr,
             self.stdout,
