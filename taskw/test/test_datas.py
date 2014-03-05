@@ -277,3 +277,21 @@ class TestDBShellout(_BaseTestDB):
     def should_skip(self):
         """ If 'task' is not installed, we can't run these tests. """
         return not TaskWarriorShellout.can_use()
+
+    def test_filtering_simple(self):
+        task1 = self.tw.task_add("foobar1")
+        task2 = self.tw.task_add("foobar2")
+        tasks = self.tw.filter_tasks({
+            'description.contains': 'foobar2',
+        })
+        eq_(len(tasks), 1)
+        eq_(tasks[0]['id'], 2)
+
+    def test_filtering_brace(self):
+        task1 = self.tw.task_add("[foobar1]")
+        task2 = self.tw.task_add("[foobar2]")
+        tasks = self.tw.filter_tasks({
+            'description.contains': '[foobar2]',
+        })
+        eq_(len(tasks), 1)
+        eq_(tasks[0]['id'], 2)
