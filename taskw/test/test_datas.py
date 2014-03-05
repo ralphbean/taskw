@@ -314,3 +314,33 @@ class TestDBShellout(_BaseTestDB):
         })
         eq_(len(tasks), 1)
         eq_(tasks[0]['id'], 3)
+
+    def test_filtering_minus(self):
+        task1 = self.tw.task_add("foobar1")
+        task2 = self.tw.task_add("foobar2")
+        task2 = self.tw.task_add("foobar-")
+        tasks = self.tw.filter_tasks({
+            'description.contains': 'foobar-',
+        })
+        eq_(len(tasks), 1)
+        eq_(tasks[0]['id'], 3)
+
+    def test_filtering_colon(self):
+        task1 = self.tw.task_add("foobar1")
+        task2 = self.tw.task_add("foobar2")
+        task2 = self.tw.task_add("foobar:")
+        tasks = self.tw.filter_tasks({
+            'description.contains': 'foobar:',
+        })
+        eq_(len(tasks), 1)
+        eq_(tasks[0]['id'], 3)
+
+    def test_filtering_semicolon(self):
+        task1 = self.tw.task_add("foobar1")
+        task2 = self.tw.task_add("foobar2")
+        task2 = self.tw.task_add("foo;bar")
+        tasks = self.tw.filter_tasks({
+            'description.contains': 'foo;bar',
+        })
+        eq_(len(tasks), 1)
+        eq_(tasks[0]['id'], 3)
