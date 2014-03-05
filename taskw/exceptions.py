@@ -3,7 +3,7 @@ import sys
 
 class TaskwarriorError(Exception):
     def __init__(self, command, stderr, stdout, code):
-        self.command = command.strip()
+        self.command = command
         self.stderr = stderr.strip()
         self.stdout = stdout.strip()
         self.code = code
