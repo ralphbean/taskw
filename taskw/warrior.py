@@ -12,6 +12,7 @@ fall back to the older TaskWarriorDirect implementation.
 
 import abc
 import codecs
+import copy
 from distutils.version import LooseVersion
 import os
 import re
@@ -23,6 +24,7 @@ import json
 import pprint
 
 import taskw.utils
+from taskw.exceptions import TaskwarriorError
 
 import six
 from six import with_metaclass
@@ -72,6 +74,15 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
         """ Removes annotations from a task and returns a list of annotations
         """
         annotations = list()
+
+        if 'annotations' in task:
+            existing_annotations = task.pop('annotations')
+            for v in existing_annotations:
+                if isinstance(v, dict):
+                    annotations.append(v['description'])
+                else:
+                    annotations.append(v)
+
         for key in task.keys():
             if key.startswith('annotation_'):
                 annotations.append(task[key])
@@ -177,6 +188,14 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
             d['data']['location'] = os.path.expanduser("~/.task/")
 
         return d
+
+    @abc.abstractmethod
+    def task_start(self, **kw):
+        pass
+
+    @abc.abstractmethod
+    def task_stop(self, **kw):
+        pass
 
 
 class TaskWarriorDirect(TaskWarriorBase):
@@ -310,6 +329,17 @@ class TaskWarriorDirect(TaskWarriorBase):
 
         return self._task_change_status(Status.DELETED, validate, **kw)
 
+    def task_start(self, **kw):
+        """ Marks a task as started.  """
+        raise NotImplementedError()
+
+    def task_stop(self, **kw):
+        """ Marks a task as stopped.  """
+        raise NotImplementedError()
+
+    def filter_tasks(self, filter_dict):
+        raise NotImplementedError()
+
     def _task_replace(self, id, category, task):
         def modification(lines):
             lines[id - 1] = taskw.utils.encode_task(task)
@@ -381,29 +411,76 @@ class TaskWarriorShellout(TaskWarriorBase):
     See https://github.com/ralphbean/taskw/pull/15 for discussion
     and https://github.com/ralphbean/taskw/issues/30 for more.
     """
+    DEFAULT_CONFIG_OVERRIDES = {
+        'json.array': 'TRUE',
+        'verbose': 'nothing',
+        'confirmation': 'no',
+    }
+
+    def __init__(self, config_filename="~/.taskrc", config_overrides=None):
+        super(TaskWarriorShellout, self).__init__(config_filename)
+        self.config_overrides = config_overrides if config_overrides else {}
+
+    def get_configuration_override_args(self):
+        args = []
+        config_overrides = self.DEFAULT_CONFIG_OVERRIDES.copy()
+        config_overrides.update(self.config_overrides)
+        for key, value in six.iteritems(config_overrides):
+            args.append(
+                'rc.%s=%s' % (
+                    key,
+                    value if ' ' not in value else '"%s"' % value
+                )
+            )
+        return args
+
     def _execute(self, *args):
         """ Execute a given taskwarrior command with arguments
 
         Returns a 2-tuple of stdout and stderr (respectively).
 
         """
-        command = [
-            'task',
-            'rc:%s' % self.config_filename,
-            'rc.json.array=TRUE',
-            'rc.verbose=nothing',
-            'rc.confirmation=no',
-        ] + [six.text_type(arg) for arg in args]
-        return subprocess.Popen(
+        command = (
+            [
+                'task',
+                'rc:%s' % self.config_filename,
+            ]
+            + self.get_configuration_override_args()
+            + [six.text_type(arg) for arg in args]
+        )
+        proc = subprocess.Popen(
             command,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-        ).communicate()
+        )
+        stdout, stderr = proc.communicate()
+        if proc.returncode != 0:
+            raise TaskwarriorError(stderr, stdout, proc.returncode)
+        return stdout, stderr
 
     def _get_json(self, *args):
         encoded = self._execute(*args)[0]
         decoded = encoded.decode(self.config.get('encoding', 'utf-8'))
         return json.loads(decoded)
+
+    def _stub_task(self, description, tags=None, **kw):
+        """ Given a description, stub out a task dict. """
+
+        # If whitespace is not removed here, TW will do it when we pass the
+        # task to it.
+        task = {"description": description.strip()}
+
+        # Allow passing "tags" in as part of kw.
+        if 'tags' in kw and tags is None:
+            task['tags'] = tags
+            del(kw['tags'])
+
+        if tags is not None:
+            task['tags'] = tags
+
+        task.update(kw)
+
+        return task
 
     @classmethod
     def can_use(cls):
@@ -424,16 +501,15 @@ class TaskWarriorShellout(TaskWarriorBase):
         ).communicate()[0]
         return LooseVersion(taskwarrior_version.decode())
 
-    def sync(self):
+    def sync(self, init=False):
         if self.get_version() < LooseVersion('2.3'):
             raise UnsupportedVersionException(
                 "'sync' requires version 2.3 of taskwarrior or later."
             )
-        subprocess.Popen([
-            'task',
-            'rc:%s' % self.config_filename,
-            'sync',
-        ])
+        if init is True:
+            self._execute('sync', 'init')
+        else:
+            self._execute('sync')
 
     def load_tasks(self, command='all'):
         """ Returns a dictionary of tasks for a list of command."""
@@ -450,6 +526,35 @@ class TaskWarriorShellout(TaskWarriorBase):
                 self._get_json('status:waiting', 'export'))
 
         return results
+
+    def filter_tasks(self, filter_dict):
+        """ Return a filtered list of tasks from taskwarrior.
+
+        Filter dict should be a dictionary mapping filter constraints
+        with their values.  For example, to return only pending tasks,
+        you could use::
+
+            {'status': 'pending'}
+
+        Or, to return tasks that have the word "Abjad" in their description
+        that are also pending::
+
+            {
+                'status': 'pending',
+                'description.contains': 'Abjad',
+            }
+
+        Filters can be quite complex, and are documented on Taskwarrior's
+        website.
+
+        """
+        query_args = taskw.utils.encode_query(
+            filter_dict,
+        )
+        return self._get_json(
+            'export',
+            *query_args
+        )
 
     def get_task(self, **kw):
         task = dict()
@@ -501,25 +606,33 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         Takes any of the keywords allowed by taskwarrior like proj or prior.
         """
-
         task = self._stub_task(description, tags, **kw)
 
         # Check if there are annotations, if so remove them from the
         # task and add them after we've added the task.
         annotations = self._extract_annotations_from_task(task)
 
-        self._execute(
+        task['uuid'] = str(uuid.uuid4())
+        stdout, stderr = self._execute(
             'add',
             taskw.utils.encode_task_experimental(task),
         )
-        id, added_task = self.get_task(description=task['description'])
+        id, added_task = self.get_task(uuid=task['uuid'])
 
         # Check if 'uuid' is in the task we just added.
         if not 'uuid' in added_task:
-            raise KeyError('No uuid! uh oh.')
+            raise KeyError(
+                'Error encountered while creating task;'
+                'STDOUT: %s; STDERR: %s' % (
+                    stdout,
+                    stderr,
+                )
+            )
+
         if annotations and 'uuid' in added_task:
             for annotation in annotations:
                 self.task_annotate(added_task, annotation)
+
         id, added_task = self.get_task(uuid=added_task[six.u('uuid')])
         return added_task
 
@@ -558,23 +671,30 @@ class TaskWarriorShellout(TaskWarriorBase):
     def task_update(self, task):
         if 'uuid' not in task:
             raise KeyError('Task must have a UUID.')
-        id, _task = self.get_task(uuid=task['uuid'])
+        id, original_task = self.get_task(uuid=task['uuid'])
 
         if 'id' in task:
             del task['id']
 
-        _task.update(task)
+        task_to_modify = copy.deepcopy(task)
 
-        # Unset task attributes that should not be updated
-        task_to_modify = _task
-        del task_to_modify['uuid']
-        del task_to_modify['id']
+        task_to_modify.pop('uuid', None)
+        task_to_modify.pop('id', None)
 
         # Check if there are annotations, if so, look if they are
         # in the existing task, otherwise annotate the task to add them.
-        new_annotations = self._extract_annotations_from_task(task)
-        existing_annotations = \
+        ttm_annotations = taskw.utils.annotation_list_to_comparison_map(
             self._extract_annotations_from_task(task_to_modify)
+        )
+        original_annotations = taskw.utils.annotation_list_to_comparison_map(
+            self._extract_annotations_from_task(original_task)
+        )
+
+        new_annotations = set(ttm_annotations.keys())
+        existing_annotations = set(original_annotations.keys())
+
+        annotations_to_delete = existing_annotations - new_annotations
+        annotations_to_create = new_annotations - existing_annotations
 
         if 'annotations' in task_to_modify:
             del task_to_modify['annotations']
@@ -583,18 +703,13 @@ class TaskWarriorShellout(TaskWarriorBase):
         self._execute(task['uuid'], 'modify', modification)
 
         # If there are no existing annotations, add the new ones
-        if existing_annotations is None:
-            for annotation in new_annotations:
-                self.task_annotate(task_to_modify, annotation)
+        ttm_annotations.update(original_annotations)
+        for annotation_key in annotations_to_create:
+            self.task_annotate(original_task, ttm_annotations[annotation_key])
+        for annotation_key in annotations_to_delete:
+            self.task_denotate(original_task, ttm_annotations[annotation_key])
 
-        # If there are existing annotations and new annotations, add only
-        # the new annotations
-        if existing_annotations is not None and new_annotations is not None:
-            for annotation in new_annotations:
-                if annotation not in existing_annotations:
-                    self.task_annotate(task_to_modify, annotation)
-
-        return id, _task
+        return self.get_task(uuid=original_task['uuid'])
 
     def task_delete(self, **kw):
         """ Marks a task as deleted.  """
@@ -607,10 +722,25 @@ class TaskWarriorShellout(TaskWarriorBase):
         self._execute(id, 'delete')
         return self.get_task(uuid=task['uuid'])[1]
 
+    def task_start(self, **kw):
+        """ Marks a task as started.  """
+
+        id, task = self.get_task(**kw)
+
+        self._execute(id, 'start')
+        return self.get_task(uuid=task['uuid'])[1]
+
+    def task_stop(self, **kw):
+        """ Marks a task as stopped.  """
+
+        id, task = self.get_task(**kw)
+
+        self._execute(id, 'stop')
+        return self.get_task(uuid=task['uuid'])[1]
+
     def task_info(self, **kw):
         id, task = self.get_task(**kw)
-        self._get_json('info', id)
-        out, err = info.communicate()
+        out, err = self._execute(id, 'info')
         if err:
             return err
         return out

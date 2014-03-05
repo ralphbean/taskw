@@ -1,8 +1,14 @@
+import datetime
 import random
 
+import dateutil.tz
 from nose.tools import eq_
+import pytz
+import six
 
-from taskw.utils import decode_task, encode_task
+from taskw.utils import (
+    decode_task, encode_task, encode_task_experimental, DATE_FORMAT
+)
 
 TASK = {'description': "task 2 http://www.google.com/",
         'entry': "1325011643",
@@ -62,6 +68,18 @@ class TestUtils(object):
         r = decode_task(encode_task(decode_task(line)))
         eq_(r, expected)
 
+    def test_with_unicode(self):
+        expected = {
+            six.text_type('andthis'): (
+                six.text_type('has a fucking \\backslash in it')
+            )
+        }
+        line = r'[andthis:"has a fucking \\backslash in it"]'
+        r = decode_task(line)
+        eq_(r, expected)
+        r = decode_task(encode_task(decode_task(line)))
+        eq_(r, expected)
+
     def test_decode(self):
         r = decode_task(encode_task(TASK))
         eq_(r, TASK)
@@ -80,3 +98,67 @@ class TestUtils(object):
         task1 = dict(shuffled(TASK.items()))
         task2 = dict(shuffled(TASK.items()))
         eq_(encode_task(task1), encode_task(task2))
+
+    def test_encodes_dates(self):
+        arbitrary_date = datetime.date(2014, 3, 2)
+        task = {
+            'arbitrary_field': arbitrary_date
+        }
+
+        actual_encoded_task = encode_task_experimental(task)
+        expected_encoded_task = encode_task_experimental(
+            {
+                'arbitrary_field': arbitrary_date.strftime(DATE_FORMAT)
+            }
+        )
+
+        eq_(
+            actual_encoded_task,
+            expected_encoded_task,
+        )
+
+    def test_encodes_naive_datetimes(self):
+        arbitrary_naive_datetime = datetime.datetime.now()
+        task = {
+            'arbitrary_field': arbitrary_naive_datetime
+        }
+
+        actual_encoded_task = encode_task_experimental(task)
+        expected_encoded_task = encode_task_experimental(
+            {
+                'arbitrary_field': (
+                    arbitrary_naive_datetime
+                    .replace(tzinfo=dateutil.tz.tzlocal())
+                    .astimezone(pytz.utc).strftime(DATE_FORMAT)
+                )
+            }
+        )
+
+        eq_(
+            actual_encoded_task,
+            expected_encoded_task,
+        )
+
+    def test_encodes_zoned_datetimes(self):
+        arbitrary_timezone = pytz.timezone('America/Los_Angeles')
+        arbitrary_zoned_datetime = datetime.datetime.now().replace(
+            tzinfo=arbitrary_timezone
+        )
+        task = {
+            'arbitrary_field': arbitrary_zoned_datetime
+        }
+
+        actual_encoded_task = encode_task_experimental(task)
+        expected_encoded_task = encode_task_experimental(
+            {
+                'arbitrary_field': (
+                    arbitrary_zoned_datetime
+                    .astimezone(pytz.utc).strftime(DATE_FORMAT)
+                )
+            }
+        )
+
+        eq_(
+            actual_encoded_task,
+            expected_encoded_task,
+        )

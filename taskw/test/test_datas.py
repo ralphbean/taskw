@@ -4,6 +4,7 @@ import os
 import sys
 import shutil
 import tempfile
+import datetime
 
 from taskw import TaskWarriorDirect, TaskWarriorShellout
 
@@ -160,6 +161,30 @@ class _BaseTestDB(object):
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 1)
 
+    def test_add_timestamp(self):
+        self.tw.task_add(
+            "foobar",
+            uuid="1234-1234",
+            project="some_project",
+            entry="20110101T000000Z",
+        )
+        tasks = self.tw.load_tasks()
+        eq_(len(tasks['pending']), 1)
+        eq_(tasks['pending'][0]['entry'], "20110101T000000Z")
+
+    def test_add_datetime(self):
+        self.tw.task_add(
+            "foobar",
+            uuid="1234-1234",
+            project="some_project",
+            entry=datetime.datetime(2011, 1, 1),
+        )
+        tasks = self.tw.load_tasks()
+        eq_(len(tasks['pending']), 1)
+        # The exact string we get back is dependent on your current TZ
+        # ... we'll just "roughly" test it instead of mocking.
+        assert(tasks['pending'][0]['entry'].startswith("20110101T"))
+
     @raises(ValueError)
     def test_completing_completed_task(self):
         task = self.tw.task_add("foobar")
@@ -212,15 +237,6 @@ class _BaseTestDB(object):
         #ok_(not tasks['completed'][0]['end'] is None)
         #eq_(tasks['completed'][0]['status'], 'deleted')
 
-    def test_delete_completed(self):
-        task = self.tw.task_add("foobar")
-        task = self.tw.task_done(uuid=task['uuid'])
-        self.tw.task_delete(uuid=task['uuid'])
-        tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 0)
-        eq_(len(tasks['completed']), 1)
-        #eq_(tasks['completed'][0]['status'], 'deleted')
-
     @raises(ValueError)
     def test_delete_already_deleted(self):
         task = self.tw.task_add("foobar")
@@ -241,6 +257,15 @@ class _BaseTestDB(object):
 
 class TestDBDirect(_BaseTestDB):
     class_to_test = TaskWarriorDirect
+
+    def test_delete_completed(self):
+        task = self.tw.task_add("foobar")
+        task = self.tw.task_done(uuid=task['uuid'])
+        self.tw.task_delete(uuid=task['uuid'])
+        tasks = self.tw.load_tasks()
+        eq_(len(tasks['pending']), 0)
+        eq_(len(tasks['completed']), 1)
+        #eq_(tasks['completed'][0]['status'], 'deleted')
 
     def should_skip(self):
         return False

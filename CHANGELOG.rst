@@ -1,6 +1,62 @@
 Changelog
 =========
 
+0.8.0
+-----
+
+- Switch .sync to also utilize common _execute interface. `db29c60c8 <https://github.com/ralphbean/taskw/commit/db29c60c8a99f084d70dd9ed697ae88d48630378>`_
+- Merge pull request #32 from latestrevision/sync_to_execute `0dd85cffd <https://github.com/ralphbean/taskw/commit/0dd85cffd765620427ad7df96e1150b73053876d>`_
+- Support datetime objects as input. `48f7734b0 <https://github.com/ralphbean/taskw/commit/48f7734b080b848b1589594ca85ee560bd97f82e>`_
+- Merge branch 'develop' of github.com:ralphbean/taskw into develop `f4760baf7 <https://github.com/ralphbean/taskw/commit/f4760baf76edebaecec62a9e2190e5ca9fba7359>`_
+- Update the readme. `db00a1b91 <https://github.com/ralphbean/taskw/commit/db00a1b9186dc2c7fd4f76e7da54414fac9fd30f>`_
+- py3 compat. `73bd7d924 <https://github.com/ralphbean/taskw/commit/73bd7d924956f8c69b04e3aabfc8d5530bbe2c6e>`_
+- Of course, handle unicode as well as byte strings here... `ef09c4073 <https://github.com/ralphbean/taskw/commit/ef09c4073f00adc9533493a5068c5a7499ba8f85>`_
+- Test that unicode stuff. `9b394d513 <https://github.com/ralphbean/taskw/commit/9b394d513cd652af09492d90abcd5f819f0c1615>`_
+- Serialize incoming zoned date/datetime instances into strings of the appropriate format before relaying to taskwarrior. `0516cc10c <https://github.com/ralphbean/taskw/commit/0516cc10c229e4e0625c5a8ed3e1e145ff153fe4>`_
+- Adding two additional requirements (sorry). `2f3264d2b <https://github.com/ralphbean/taskw/commit/2f3264d2ba1d621282f90b98fe73258b95526f61>`_
+- Fixing requirement name. `850b75c7b <https://github.com/ralphbean/taskw/commit/850b75c7b81ca3522dcda3dfa4bb180972be0b6a>`_
+- Minor modifications to annotation handling to support annotations in 2.3.0 `c2f1e4fae <https://github.com/ralphbean/taskw/commit/c2f1e4faecec7e6c77a4529556a5a6cba519a67a>`_
+- Overriding _stub_task to preserve due date; display the actual error message when a task is not creatable. `290a93f34 <https://github.com/ralphbean/taskw/commit/290a93f34bfa2a7f693b9ab1c5ac36c4908b925c>`_
+- Use string_types rather than basestring. `a33aa47a9 <https://github.com/ralphbean/taskw/commit/a33aa47a918ba59eec3ce08fb91a5aeaf3d5fee4>`_
+- Removing unicode literal. `037b22622 <https://github.com/ralphbean/taskw/commit/037b2262288975427c5f4382108a3766f79b0abc>`_
+- Use six.text_type rather than a unicode literal. `40ef622ea <https://github.com/ralphbean/taskw/commit/40ef622ea835a25c1aa22b7b2a7b95a35646f9f6>`_
+- Use string_types rather than basestring. `546a9de89 <https://github.com/ralphbean/taskw/commit/546a9de89fb79a6c985ff665427cf077bf8182cf>`_
+- Use six.text_type rather than a unicode literal. `e94459981 <https://github.com/ralphbean/taskw/commit/e94459981912bd21486f69f9a59c963616b5fc56>`_
+- Do not attempt to set parameters unless they are explicitly defined in the incoming data. `30750abee <https://github.com/ralphbean/taskw/commit/30750abee14803f1075c32ca66ab220e686c904a>`_
+- Gracefully handle situations in which id or uuid is unspecified. `790b7b044 <https://github.com/ralphbean/taskw/commit/790b7b044154f784788da0c16a0b1b92ea34b248>`_
+- Merge pull request #34 from latestrevision/fix_date_serialization `c0f7a1f76 <https://github.com/ralphbean/taskw/commit/c0f7a1f76372274d26781b6ab7bdaf115914d0bb>`_
+- Merge branch 'fix_annotation_handling' into develop `f313d2800 <https://github.com/ralphbean/taskw/commit/f313d28005b853b23c12885c6e7a48a9c2ec90bd>`_
+- Avoid hardcoding TZ in the test expectation. `d696409bd <https://github.com/ralphbean/taskw/commit/d696409bd3f6c410a860cb2570215a4c8b54e046>`_
+- Add functionality for marking existing task as started/stopped. `b7926d2ec <https://github.com/ralphbean/taskw/commit/b7926d2ecb8d8c9a3b987b90a9a901fa83d3c1d1>`_
+- Return stdout or stderr from task_info. `c83b5ac81 <https://github.com/ralphbean/taskw/commit/c83b5ac8179127f22081e4babd23be6ced77f9e3>`_
+- Merge pull request #36 from latestrevision/add_start_and_stop `860bf5176 <https://github.com/ralphbean/taskw/commit/860bf5176e2781a19eb4486b55944a3fc49b0cf4>`_
+- Merge pull request #37 from latestrevision/fix_info_method `5e46a51ac <https://github.com/ralphbean/taskw/commit/5e46a51accbc6ef0e1e69f0037cce882b6b6ab0d>`_
+- Removing duplicated encoding of string types. `0dccea5ca <https://github.com/ralphbean/taskw/commit/0dccea5ca92fc6f956321c000a538d0a6f4900ac>`_
+- Merge pull request #38 from latestrevision/remove_duplicated_encoding_for_string_items `9031179c8 <https://github.com/ralphbean/taskw/commit/9031179c8ce0f6fb47ff7fca3b5e4e00339ad497>`_
+- Convert 'None' into an empty string; otherwise, we will ask task to set various fields to the string value None. `14eb7c4ae <https://github.com/ralphbean/taskw/commit/14eb7c4aec2d1c90ff679e53751362dce9a488c5>`_
+- Merge pull request #39 from latestrevision/properly_empty_values_upon_null `5eb1fdbec <https://github.com/ralphbean/taskw/commit/5eb1fdbec33192827c0a1012132ea302403fa0fc>`_
+- Raise an exception when taskwarrior has a non-zero return status. `8bb389997 <https://github.com/ralphbean/taskw/commit/8bb389997d5d8a3ed4b82a3e42b95ea6eb216ded>`_
+- Merge pull request #40 from latestrevision/raise_on_error `1a5c0d468 <https://github.com/ralphbean/taskw/commit/1a5c0d468706049a5ee3bb4fe74393387ab1faa5>`_
+- Manually assign UUID of task before creation to ensure that retrieval is successful. `782e9f6f0 <https://github.com/ralphbean/taskw/commit/782e9f6f0e9f7122fd6b53b234276a8bd7b81113>`_
+- Merge pull request #41 from coddingtonbear/manually_assign_uuid_to_added_tasks `d1afcbd48 <https://github.com/ralphbean/taskw/commit/d1afcbd486951822aad81cf78a0f361e26f637ef>`_
+- Alter TaskWarriorShellout such that one can easily define new config overrides in subclasses. `2c3344d3a <https://github.com/ralphbean/taskw/commit/2c3344d3a532a0d1903e34760cfd220fea7a71ce>`_
+- Use a slightly more untuitive data structure for storing config overrides. `a1c7fde67 <https://github.com/ralphbean/taskw/commit/a1c7fde67e0d3e3496dd0fd816c3709d37cc0c0a>`_
+- Removing unncessary unicode string marker. `5ce28c699 <https://github.com/ralphbean/taskw/commit/5ce28c6991218b7bb75d6ea62ed560918f3fc448>`_
+- Merge pull request #42 from coddingtonbear/allow_subclass_configuration_overrides `ebaa6967f <https://github.com/ralphbean/taskw/commit/ebaa6967fbad97d5654905f43eb82330dc397b60>`_
+- Do not test deletion of completed tasks with Shellout; this operation is not supported by taskwarrior. `5ca1d61e1 <https://github.com/ralphbean/taskw/commit/5ca1d61e1116bb7545e619a804e392021dd0762d>`_
+- Merge pull request #43 from coddingtonbear/fix_test_delete_completed `203c38694 <https://github.com/ralphbean/taskw/commit/203c386942d06000a50e20eea36907dd6e5220a5>`_
+- Adding 'filter_tasks' method accepting a dictionary of filter arguments for returning from taskwarrior. `99fc349fc <https://github.com/ralphbean/taskw/commit/99fc349fcc29c8ed28f3f191b51048b65f863880>`_
+- Adding a docstring. `b5d897607 <https://github.com/ralphbean/taskw/commit/b5d897607ecbf06a6dcda12b8454fa4a702f7889>`_
+- Merge pull request #44 from coddingtonbear/add_filter_tasks_method `2514cd584 <https://github.com/ralphbean/taskw/commit/2514cd584d735417f58edd0fc1222527de378513>`_
+- Distinguish between escaping a query and escaping on issue creation. `333e26919 <https://github.com/ralphbean/taskw/commit/333e26919942efc8282eba3473cb0b17825483e5>`_
+- Merge pull request #45 from coddingtonbear/distinguish_query `f98ed1620 <https://github.com/ralphbean/taskw/commit/f98ed162010487ec4d41f3b096d2ef54961d021d>`_
+- Minor fixes relating to UDA handling; improving exception message. `253aad5d9 <https://github.com/ralphbean/taskw/commit/253aad5d92333e5034c4a1ef3381b014bec77fd1>`_
+- Better annotation handling. `209050dab <https://github.com/ralphbean/taskw/commit/209050dabd9e78feb1380751144c266368f6520a>`_
+- Allow passing "init" arg to sync command `3b9ae8e68 <https://github.com/ralphbean/taskw/commit/3b9ae8e68bc40fd6e5503a8da4670ee29327e507>`_
+- Merge pull request #48 from kostajh/sync-init `a1da55d30 <https://github.com/ralphbean/taskw/commit/a1da55d309e2cb6d3b720e3667744a31b414b875>`_
+- Merge pull request #47 from coddingtonbear/minor_fixes_supporting_bugwarrior `e1332c2a1 <https://github.com/ralphbean/taskw/commit/e1332c2a14c7ce0dd40a7b99f7f3263c45eb29a5>`_
+- Don't hardcode ascii. `459ab8911 <https://github.com/ralphbean/taskw/commit/459ab891155481ff0ee935b2ba7785ec912cdc94>`_
+
 0.7.2
 -----
 
