@@ -82,13 +82,24 @@ def encode_task_value(value, query=False):
 
 def encode_query(value):
     args = []
-    for k, v in six.iteritems(value):
-        args.append(
-            '%s:\"%s\"' % (
-                k,
-                encode_task_value(v, query=True)
+
+    if isinstance(value, dict):
+        value = six.iteritems(value)
+
+    for k, v in value:
+        if isinstance(v, list):
+            args.append(
+                "(" + (" %s " % k).join([
+                    encode_query([item])[0] for item in v
+                ]) + ")"
             )
-        )
+        else:
+            args.append(
+                '%s:\"%s\"' % (
+                    k,
+                    encode_task_value(v, query=True)
+                )
+            )
     return args
 
 

@@ -354,3 +354,29 @@ class TestDBShellout(_BaseTestDB):
         })
         eq_(len(tasks), 1)
         eq_(tasks[0]['id'], 3)
+
+    def test_filtering_logic_disjunction(self):
+        task1 = self.tw.task_add("foobar1")
+        task2 = self.tw.task_add("foobar2")
+        task2 = self.tw.task_add("foobar3")
+        tasks = self.tw.filter_tasks({
+            'or': [
+                ('description.has', 'foobar1'),
+                ('description.has', 'foobar3'),
+            ]
+        })
+        eq_(len(tasks), 2)
+        eq_(tasks[0]['id'], 1)
+        eq_(tasks[1]['id'], 3)
+
+    def test_filtering_logic_conjunction(self):
+        task1 = self.tw.task_add("foobar1")
+        task2 = self.tw.task_add("foobar2")
+        task2 = self.tw.task_add("foobar3")
+        tasks = self.tw.filter_tasks({
+            'and': [
+                ('description.has', 'foobar1'),
+                ('description.has', 'foobar3'),
+            ]
+        })
+        eq_(len(tasks), 0)
