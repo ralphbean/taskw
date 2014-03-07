@@ -448,14 +448,22 @@ class TaskWarriorShellout(TaskWarriorBase):
             + self.get_configuration_override_args()
             + [six.text_type(arg) for arg in args]
         )
+
+        # subprocess is expecting bytestrings only, so nuke unicode if present
+        for i in range(len(command)):
+            if isinstance(command[i], six.text_type):
+                command[i] = command[i].encode('utf-8')
+
         proc = subprocess.Popen(
             command,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
         stdout, stderr = proc.communicate()
+
         if proc.returncode != 0:
             raise TaskwarriorError(command, stderr, stdout, proc.returncode)
+
         return stdout, stderr
 
     def _get_json(self, *args):
