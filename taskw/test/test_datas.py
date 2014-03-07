@@ -390,3 +390,17 @@ class TestDBShellout(_BaseTestDB):
             ]
         })
         eq_(len(tasks), 0)
+
+    def test_annotation_escaping(self):
+        original = {'description': 're-opening the issue'}
+
+        self.tw.task_add('foobar')
+        task = self.tw.load_tasks()['pending'][0]
+        task['annotations'] = [original]
+        self.tw.task_update(task)
+
+        task = self.tw.load_tasks()['pending'][0]
+        self.tw.task_update(task)
+
+        eq_(len(task['annotations']), 1)
+        eq_(task['annotations'][0]['description'], original['description'])
