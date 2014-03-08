@@ -277,3 +277,130 @@ class TestDBShellout(_BaseTestDB):
     def should_skip(self):
         """ If 'task' is not installed, we can't run these tests. """
         return not TaskWarriorShellout.can_use()
+
+    def test_filtering_simple(self):
+        task1 = self.tw.task_add("foobar1")
+        task2 = self.tw.task_add("foobar2")
+        tasks = self.tw.filter_tasks({
+            'description.contains': 'foobar2',
+        })
+        eq_(len(tasks), 1)
+        eq_(tasks[0]['id'], 2)
+
+    def test_filtering_brace(self):
+        task1 = self.tw.task_add("[foobar1]")
+        task2 = self.tw.task_add("[foobar2]")
+        tasks = self.tw.filter_tasks({
+            'description.contains': '[foobar2]',
+        })
+        eq_(len(tasks), 1)
+        eq_(tasks[0]['id'], 2)
+
+    def test_filtering_quote(self):
+        task1 = self.tw.task_add("[foobar1]")
+        task2 = self.tw.task_add("\"foobar2\"")
+        tasks = self.tw.filter_tasks({
+            'description.contains': '"foobar2"',
+        })
+        eq_(len(tasks), 1)
+        eq_(tasks[0]['id'], 2)
+
+    def test_filtering_plus(self):
+        task1 = self.tw.task_add("foobar1")
+        task2 = self.tw.task_add("foobar2")
+        task2 = self.tw.task_add("foobar+")
+        tasks = self.tw.filter_tasks({
+            'description.contains': 'foobar+',
+        })
+        eq_(len(tasks), 1)
+        eq_(tasks[0]['id'], 3)
+
+    def test_filtering_minus(self):
+        task1 = self.tw.task_add("foobar1")
+        task2 = self.tw.task_add("foobar2")
+        task2 = self.tw.task_add("foobar-")
+        tasks = self.tw.filter_tasks({
+            'description.contains': 'foobar-',
+        })
+        eq_(len(tasks), 1)
+        eq_(tasks[0]['id'], 3)
+
+    def test_filtering_colon(self):
+        task1 = self.tw.task_add("foobar1")
+        task2 = self.tw.task_add("foobar2")
+        task2 = self.tw.task_add("foobar:")
+        tasks = self.tw.filter_tasks({
+            'description.contains': 'foobar:',
+        })
+        eq_(len(tasks), 1)
+        eq_(tasks[0]['id'], 3)
+
+    def test_filtering_semicolon(self):
+        task1 = self.tw.task_add("foobar1")
+        task2 = self.tw.task_add("foobar2")
+        task2 = self.tw.task_add("foo;bar")
+        tasks = self.tw.filter_tasks({
+            'description.contains': 'foo;bar',
+        })
+        eq_(len(tasks), 1)
+        eq_(tasks[0]['id'], 3)
+
+    def test_filtering_question_mark(self):
+        task1 = self.tw.task_add("foobar1")
+        task2 = self.tw.task_add("foobar2")
+        task2 = self.tw.task_add("foo?bar")
+        tasks = self.tw.filter_tasks({
+            'description.contains': 'foo?bar',
+        })
+        eq_(len(tasks), 1)
+        eq_(tasks[0]['id'], 3)
+
+    def test_filtering_slash(self):
+        task1 = self.tw.task_add("foobar1")
+        task2 = self.tw.task_add("foobar2")
+        task2 = self.tw.task_add("foo/bar")
+        tasks = self.tw.filter_tasks({
+            'description.contains': 'foo/bar',
+        })
+        eq_(len(tasks), 1)
+        eq_(tasks[0]['id'], 3)
+
+    def test_filtering_logic_disjunction(self):
+        task1 = self.tw.task_add("foobar1")
+        task2 = self.tw.task_add("foobar2")
+        task2 = self.tw.task_add("foobar3")
+        tasks = self.tw.filter_tasks({
+            'or': [
+                ('description.has', 'foobar1'),
+                ('description.has', 'foobar3'),
+            ]
+        })
+        eq_(len(tasks), 2)
+        eq_(tasks[0]['id'], 1)
+        eq_(tasks[1]['id'], 3)
+
+    def test_filtering_logic_conjunction(self):
+        task1 = self.tw.task_add("foobar1")
+        task2 = self.tw.task_add("foobar2")
+        task2 = self.tw.task_add("foobar3")
+        tasks = self.tw.filter_tasks({
+            'and': [
+                ('description.has', 'foobar1'),
+                ('description.has', 'foobar3'),
+            ]
+        })
+        eq_(len(tasks), 0)
+
+    def test_annotation_escaping(self):
+        original = {'description': 're-opening the issue'}
+
+        self.tw.task_add('foobar')
+        task = self.tw.load_tasks()['pending'][0]
+        task['annotations'] = [original]
+        self.tw.task_update(task)
+
+        task = self.tw.load_tasks()['pending'][0]
+        self.tw.task_update(task)
+
+        eq_(len(task['annotations']), 1)
+        eq_(task['annotations'][0]['description'], original['description'])
