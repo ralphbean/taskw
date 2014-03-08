@@ -1,6 +1,22 @@
 Changelog
 =========
 
+0.8.1
+-----
+
+- Expand TaskwarriorError output to include the command. `cbc2e98c1 <https://github.com/ralphbean/taskw/commit/cbc2e98c1e6d3c5907c84a48f75db75ef24a9f49>`_
+- That's a list.. whoops! `22b2c6cad <https://github.com/ralphbean/taskw/commit/22b2c6cadcdb103c6609ffeb495737854571ebae>`_
+- These also need to be escaped. `0b468ea6b <https://github.com/ralphbean/taskw/commit/0b468ea6bcc33c1484cd171485ebfa990b0b3d0d>`_
+- Add some passing tests of task filtering. `12d1dbf32 <https://github.com/ralphbean/taskw/commit/12d1dbf3254fd7841856bf6551db6f2af6dba4fd>`_
+- Test and fix a problem with filter encoding. `fa468d4a3 <https://github.com/ralphbean/taskw/commit/fa468d4a3dbbabf9df641bc12bed559fb511ce20>`_
+- Test and fix another problem with filter encoding. `7900cd9e1 <https://github.com/ralphbean/taskw/commit/7900cd9e16378d7852712f3a937fd647be8dc2f0>`_
+- Add some other similar tests that all pass. `982fdcf6b <https://github.com/ralphbean/taskw/commit/982fdcf6b3ace0426a2135bcfc6221132a9a4761>`_
+- Test and fix another problem with filter encoding. `08950fff2 <https://github.com/ralphbean/taskw/commit/08950fff2b58e111db81290e701d74e28912d8b9>`_
+- Test and implement logical operations in task filters. `3ef025c31 <https://github.com/ralphbean/taskw/commit/3ef025c3117d69d280c0e522f7fc777d56ff1bf8>`_
+- Add a test for encoding of slashes. `079973a9f <https://github.com/ralphbean/taskw/commit/079973a9f699085a0b1474478b755003b6aff9af>`_
+- Test and fix annotation escaping. `1a868cfdf <https://github.com/ralphbean/taskw/commit/1a868cfdf999789a6d7a5c8fd4513c2d86b7e820>`_
+- subprocess is expecting bytestrings. `16e9d00e7 <https://github.com/ralphbean/taskw/commit/16e9d00e799eb0ddcbd07aeb98d76d16d10bece7>`_
+
 0.8.0
 -----
 
