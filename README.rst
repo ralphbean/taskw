@@ -92,6 +92,7 @@ You can point ``taskw`` at different taskwarrior databases.
     >>> w = TaskWarrior(config_filename="~/some_project/.taskrc")
     >>> w.task_add("Use 'taskw'.")
 
+
 Looking at the config
 +++++++++++++++++++++
 
@@ -102,3 +103,21 @@ Looking at the config
     '/home/threebean/.task'
     >>> config['_forcecolor']
     'yes'
+
+
+Using Python-appropriate Types (Dates, UUIDs, etc)
+++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    >>> from taskw import TaskWarrior
+    >>> w = TaskWarrior(marshal=True)
+    >>> w.get_task(id=10)
+    (10,
+     {
+      'description': 'Hello there!',
+      'entry': datetime.datetime(2014, 3, 14, 14, 18, 40, tzinfo=tzutc())
+      'id': 10,
+      'project': 'Saying Hello',
+      'status': 'pending',
+      'uuid': UUID('4882751a-3966-4439-9675-948b1152895c')
+     }
+    )

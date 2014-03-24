@@ -31,7 +31,6 @@ encode_replacements_experimental = OrderedDict([
     ('"', '&dquot;'),
     ('[', '&open;'),
     (']', '&close;'),
-    ('\n', ' '),
 ])
 
 decode_replacements = OrderedDict([
