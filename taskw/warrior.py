@@ -9,28 +9,29 @@ default TaskWarrior class.  If not, then the default TaskWarrior class will
 fall back to the older TaskWarriorDirect implementation.
 
 """
-
 import abc
 import codecs
 import copy
 from distutils.version import LooseVersion
+import logging
 import os
-import re
-import sys
 import time
 import uuid
 import subprocess
 import json
-import pprint
-
-import taskw.utils
-from taskw.exceptions import TaskwarriorError
 
 import six
 from six import with_metaclass
 from six.moves import filter
 from six.moves import map
-from six.moves import zip
+
+import taskw.utils
+from taskw.exceptions import TaskwarriorError
+from taskw.task import Task
+from taskw.taskrc import TaskRc
+
+
+logger = logging.getLogger(__name__)
 
 
 open = lambda fname, mode: codecs.open(fname, mode, "utf-8")
@@ -43,9 +44,22 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
     with a taskwarrior database.
     """
 
-    def __init__(self, config_filename="~/.taskrc"):
+    def __init__(
+        self,
+        config_filename="~/.taskrc",
+        config_overrides=None,
+        marshal=False
+    ):
         self.config_filename = config_filename
         self.config = TaskWarriorBase.load_config(config_filename)
+        if marshal:
+            raise NotImplementedError(
+                "You must use TaskWarriorShellout to use 'marshal'"
+            )
+        if config_overrides:
+            raise NotImplementedError(
+                "You must use TaskWarriorShellout to use 'config_overrides'"
+            )
 
     def _stub_task(self, description, tags=None, **kw):
         """ Given a description, stub out a task dict. """
@@ -101,7 +115,7 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
 
         By default, the 'all' command is run.
 
-        >>> w = Warrior()
+        >>> w = TaskWarrior()
         >>> tasks = w.load_tasks()
         >>> tasks.keys()
         ['completed', 'pending']
@@ -357,7 +371,6 @@ class TaskWarriorDirect(TaskWarriorBase):
         self._apply_modification(id, category, modification)
 
     def _apply_modification(self, id, category, modification):
-        location = self.config['data']['location']
         filename = DataFile.filename(category)
         filename = os.path.join(self.config['data']['location'], filename)
         filename = os.path.expanduser(filename)
@@ -417,9 +430,23 @@ class TaskWarriorShellout(TaskWarriorBase):
         'confirmation': 'no',
     }
 
-    def __init__(self, config_filename="~/.taskrc", config_overrides=None):
+    def __init__(
+        self,
+        config_filename="~/.taskrc",
+        config_overrides=None,
+        marshal=False,
+    ):
         super(TaskWarriorShellout, self).__init__(config_filename)
         self.config_overrides = config_overrides if config_overrides else {}
+        self._marshal = marshal
+        try:
+            self.config = TaskRc(config_filename)
+        except:
+            logger.exception(
+                "Error encountered while loading configuration file "
+                "at '%s'",
+                config_filename,
+            )
 
     def get_configuration_override_args(self):
         args = []
@@ -470,6 +497,18 @@ class TaskWarriorShellout(TaskWarriorBase):
         encoded = self._execute(*args)[0]
         decoded = encoded.decode(self.config.get('encoding', 'utf-8'))
         return json.loads(decoded)
+
+    def _get_task_objects(self, *args):
+        json = self._get_json(*args)
+        if isinstance(json, dict):
+            return self._get_task_object(json)
+        value = [self._get_task_object(j) for j in json]
+        return value
+
+    def _get_task_object(self, obj):
+        if self._marshal:
+            return Task(obj, udas=self.config.get_udas())
+        return obj
 
     def _stub_task(self, description, tags=None, **kw):
         """ Given a description, stub out a task dict. """
@@ -523,7 +562,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         """ Returns a dictionary of tasks for a list of command."""
 
         results = dict(
-            (db, self._get_json('status:%s' % db, 'export'))
+            (db, self._get_task_objects('status:%s' % db, 'export'))
             for db in Command.files(command)
         )
 
@@ -531,7 +570,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         # Here we merge the waiting list back into the pending list.
         if 'pending' in results:
             results['pending'].extend(
-                self._get_json('status:waiting', 'export'))
+                self._get_task_objects('status:waiting', 'export'))
 
         return results
 
@@ -559,7 +598,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         query_args = taskw.utils.encode_query(
             filter_dict,
         )
-        return self._get_json(
+        return self._get_task_objects(
             'export',
             *query_args
         )
@@ -599,7 +638,7 @@ class TaskWarriorShellout(TaskWarriorBase):
             else:
                 search = [value]
 
-        task = self._get_json('export', *search)
+        task = self._get_task_objects('export', *search)
 
         if task:
             if isinstance(task, list):
@@ -680,6 +719,11 @@ class TaskWarriorShellout(TaskWarriorBase):
     def task_update(self, task):
         if 'uuid' not in task:
             raise KeyError('Task must have a UUID.')
+
+        if isinstance(task, Task):
+            # Let's pre-serialize taskw.task.Task instances
+            task = task.serialized()
+
         id, original_task = self.get_task(uuid=task['uuid'])
 
         if 'id' in task:
