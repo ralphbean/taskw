@@ -129,3 +129,31 @@ class TestTaskMarshalling(TestCase):
         self.assertEqual(task['tags'], arbitrary_tags)
         self.assertEqual(task['urgency'], arbitrary_urgency)
         self.assertEqual(task['uuid'], arbitrary_uuid)
+
+    def test_composition(self):
+        arbitrary_serialized_data = {
+            'depends': ','.join([
+                str(uuid.uuid4()),
+                str(uuid.uuid4()),
+            ]),
+            'description': '&open;Something important',
+            'due': (
+                datetime.datetime.now().replace(tzinfo=pytz.UTC)
+                + datetime.timedelta(hours=1)
+            ).strftime('%Y%m%dT%H%M%SZ'),
+            'tags': ['one', 'two', 'three'],
+            'urgency': 10,
+            'uuid': str(uuid.uuid4()),
+        }
+        task = Task(arbitrary_serialized_data)
+        expected_result = arbitrary_serialized_data
+
+        after_composition = Task(
+            Task(
+                Task(
+                    arbitrary_serialized_data
+                ).serialized()
+            ).serialized()
+        ).serialized()
+
+        self.assertEqual(after_composition, expected_result)
