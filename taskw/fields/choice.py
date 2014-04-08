@@ -22,7 +22,7 @@ class ChoiceField(Field):
             return True
         elif (
             not self._case_sensitive
-            and value.upper() in [v.upper() for v in self._choices if value]
+            and value.upper() in [v.upper() for v in self._choices if v]
         ):
             return True
         elif self._case_sensitive and value in self._choices:
