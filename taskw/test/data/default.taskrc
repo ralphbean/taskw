@@ -1,0 +1,11 @@
+data.location = ~/.task
+
+
+alpha.one = yes
+alpha.two = 2
+beta.one = TRUE
+
+include taskw/test/data/included.taskrc
+
+gamma.one = TRUE
+

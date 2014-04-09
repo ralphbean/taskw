@@ -39,10 +39,29 @@ class TaskRc(dict):
         else:
             self.path = None
             config = {}
-        config['data'] = {
-            'location': self.path
-        }
         super(TaskRc, self).__init__(config)
+
+    def _add_to_tree(self, config, key, value):
+        key_parts = key.split('.')
+        cursor = config
+        for part in key_parts[0:-1]:
+            if part not in cursor:
+                cursor[part] = {}
+            cursor = cursor[part]
+        cursor[key_parts[-1]] = value
+        return config
+
+    def _merge_trees(self, left, right):
+        if left is None:
+            left = {}
+
+        for key, value in right.items():
+            if isinstance(value, dict):
+                left[key] = self._merge_trees(left.get(key), value)
+            else:
+                left[key] = value
+
+        return left
 
     def _read(self, path):
         config = {}
@@ -54,7 +73,10 @@ class TaskRc(dict):
                 if line.startswith('include '):
                     try:
                         left, right = line.split(' ')
-                        config.update(TaskRc(right.strip()))
+                        config = self._merge_trees(
+                            config,
+                            TaskRc(right.strip())
+                        )
                     except ValueError:
                         logger.exception(
                             "Error encountered while adding TaskRc at "
@@ -67,7 +89,7 @@ class TaskRc(dict):
                         left, right = line.split('=')
                         key = left.strip()
                         value = right.strip()
-                        config[key] = value
+                        config = self._add_to_tree(config, key, value)
                     except ValueError:
                         logger.exception(
                             "Error encountered while processing configuration "
@@ -75,6 +97,7 @@ class TaskRc(dict):
                             line,
                             self.path,
                         )
+
         return config
 
     def __delitem__(self, *args):
@@ -86,26 +109,11 @@ class TaskRc(dict):
     def update(self, value):
         raise TypeError('TaskRc objects are immutable')
 
-    def _get_uda_data(self):
-        raw_udas = {}
-
-        uda_type = re.compile('^uda\.([^.]+)\.(type)$')
-        uda_label = re.compile('^uda\.([^.]+)\.(label)$')
-        uda_values = re.compile('^uda\.([^.]+)\.(values)$')
-        for k, v in self.items():
-            for matcher in (uda_type, uda_label, uda_values):
-                matches = matcher.match(k)
-                if matches:
-                    if matches.group(1) not in raw_udas:
-                        raw_udas[matches.group(1)] = {}
-                    raw_udas[matches.group(1)][matches.group(2)] = v
-
-        return raw_udas
-
     def get_udas(self):
+        raw_udas = self.get('uda', {})
         udas = {}
 
-        for k, v in self._get_uda_data().items():
+        for k, v in raw_udas.items():
             tw_type = v.get('type', '')
             label = v.get('label', None)
             choices = v.get('values', None)
@@ -121,11 +129,6 @@ class TaskRc(dict):
             udas[k] = cls(**kwargs)
 
         return udas
-
-    def add_include(self, item):
-        if item not in self.includes:
-            self.includes.append(item)
-        self._write()
 
     def __unicode__(self):
         return 'TaskRc file at {path}'.format(
