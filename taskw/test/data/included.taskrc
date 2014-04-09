@@ -1,0 +1,7 @@
+beta.one = FALSE
+gamma.one = FALSE
+
+uda.a.type = numeric
+uda.a.label = Alpha
+uda.b.type = string
+uda.b.label = Beta

@@ -38,6 +38,18 @@ class Field(object):
             label=six.text_type(self) if self._label else '(No Label)',
         )
 
+    def __eq__(self, other):
+        if self.label != other.label:
+            return False
+        if self.read_only != other.read_only:
+            return False
+        if self.__class__ != other.__class__:
+            return False
+        return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
 
 class Dirtyable(object):
     """ Superclass for all objects implementing trackability."""
