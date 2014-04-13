@@ -56,3 +56,50 @@ class TestTaskRc(TestCase):
         actual_udas = self.taskrc.get_udas()
 
         self.assertEqual(actual_udas, expected_udas)
+
+    def test_config_overrides(self):
+        overrides = {
+            'uda': {
+                'd': {
+                    'type': 'string',
+                    'label': 'Delta',
+                }
+            },
+            'alpha': {
+                'two': '3',
+            }
+        }
+
+        taskrc = TaskRc(self.path_to_taskrc, overrides=overrides)
+
+        expected_config = {
+            'data': {
+                'location': '~/.task'
+            },
+            'alpha': {
+                'one': 'yes',
+                'two': '3',
+            },
+            'beta': {
+                'one': 'FALSE',
+            },
+            'gamma': {
+                'one': 'TRUE',
+            },
+            'uda': {
+                'a': {
+                    'type': 'numeric',
+                    'label': 'Alpha',
+                },
+                'b': {
+                    'type': 'string',
+                    'label': 'Beta',
+                },
+                'd': {
+                    'type': 'string',
+                    'label': 'Delta',
+                }
+            }
+        }
+
+        self.assertEqual(taskrc, expected_config)

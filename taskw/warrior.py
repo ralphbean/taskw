@@ -440,7 +440,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         self.config_overrides = config_overrides if config_overrides else {}
         self._marshal = marshal
         try:
-            self.config = TaskRc(config_filename)
+            self.config = TaskRc(config_filename, overrides=config_overrides)
         except:
             logger.exception(
                 "Error encountered while loading configuration file "
