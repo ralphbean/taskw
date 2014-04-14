@@ -10,6 +10,8 @@ class NumericField(Field):
         return value
 
     def deserialize(self, value):
+        if value is None:
+            return value
         try:
             return int(value)
         except ValueError:
@@ -18,4 +20,8 @@ class NumericField(Field):
             return float(value)
         except ValueError:
             pass
-        return None
+
+        # If we've made it this far, somehow Taskwarrior has
+        # a non-numeric value stored in this field; this shouldn't
+        # happen, but it's probably inappropriate to blow up.
+        return value
