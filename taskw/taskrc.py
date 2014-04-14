@@ -48,6 +48,16 @@ class TaskRc(dict):
         for part in key_parts[0:-1]:
             if part not in cursor:
                 cursor[part] = {}
+            # Unfortunately, collapsing our configuration into a dict
+            # has some downsides -- we can't store both of the following
+            # simultaneously::
+            #
+            #   color = on
+            #   color.header = something
+            #
+            # So we err on the side of storing more.
+            if not isinstance(cursor[part], dict):
+                cursor[part] = {}
             cursor = cursor[part]
         cursor[key_parts[-1]] = value
         return config
