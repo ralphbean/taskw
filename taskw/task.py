@@ -171,6 +171,15 @@ class Task(dict):
             serialized[k] = self._serialize(k, v)
         return serialized
 
+    def serialized_changes(self, keep=False):
+        serialized = {}
+        for k, v in six.iteritems(self.get_changes(keep=keep)):
+            # Here, `v` is a 2-tuple of the field's original value
+            # and the field's new value.
+            _, to = v
+            serialized[k] = self._serialize(k, to)
+        return serialized
+
     def __setitem__(self, key, value, force=False):
         if force or value != self.get(key):
             self._record_change(

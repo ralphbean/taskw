@@ -713,10 +713,14 @@ class TaskWarriorShellout(TaskWarriorBase):
     def task_update(self, task):
         if 'uuid' not in task:
             raise KeyError('Task must have a UUID.')
+        # 'Legacy' causes us to handle this task as if it were an
+        # old-style task -- just a standard dictionary
+        legacy = True
 
         if isinstance(task, Task):
             # Let's pre-serialize taskw.task.Task instances
-            task = task.serialized()
+            task = task.serialized_changes(keep=True)
+            legacy = False
 
         id, original_task = self.get_task(uuid=task['uuid'])
 
@@ -728,33 +732,45 @@ class TaskWarriorShellout(TaskWarriorBase):
         task_to_modify.pop('uuid', None)
         task_to_modify.pop('id', None)
 
-        # Check if there are annotations, if so, look if they are
-        # in the existing task, otherwise annotate the task to add them.
-        ttm_annotations = taskw.utils.annotation_list_to_comparison_map(
-            self._extract_annotations_from_task(task_to_modify)
-        )
-        original_annotations = taskw.utils.annotation_list_to_comparison_map(
-            self._extract_annotations_from_task(original_task)
-        )
+        # Only handle annotation differences if this is an old-style
+        # task, or if the task itself says annotations have changed.
+        if legacy or 'annotations' in task_to_modify:
+            # Check if there are annotations, if so, look if they are
+            # in the existing task, otherwise annotate the task to add them.
+            ttm_annotations = taskw.utils.annotation_list_to_comparison_map(
+                self._extract_annotations_from_task(task_to_modify)
+            )
+            original_annotations = (
+                taskw.utils.annotation_list_to_comparison_map(
+                    self._extract_annotations_from_task(original_task)
+                )
+            )
 
-        new_annotations = set(ttm_annotations.keys())
-        existing_annotations = set(original_annotations.keys())
+            new_annotations = set(ttm_annotations.keys())
+            existing_annotations = set(original_annotations.keys())
 
-        annotations_to_delete = existing_annotations - new_annotations
-        annotations_to_create = new_annotations - existing_annotations
+            annotations_to_delete = existing_annotations - new_annotations
+            annotations_to_create = new_annotations - existing_annotations
 
-        if 'annotations' in task_to_modify:
-            del task_to_modify['annotations']
+            if 'annotations' in task_to_modify:
+                del task_to_modify['annotations']
 
         modification = taskw.utils.encode_task_experimental(task_to_modify)
         self._execute(task['uuid'], 'modify', modification)
 
         # If there are no existing annotations, add the new ones
-        ttm_annotations.update(original_annotations)
-        for annotation_key in annotations_to_create:
-            self.task_annotate(original_task, ttm_annotations[annotation_key])
-        for annotation_key in annotations_to_delete:
-            self.task_denotate(original_task, ttm_annotations[annotation_key])
+        if legacy or 'annotations' in task_to_modify:
+            ttm_annotations.update(original_annotations)
+            for annotation_key in annotations_to_create:
+                self.task_annotate(
+                    original_task,
+                    ttm_annotations[annotation_key]
+                )
+            for annotation_key in annotations_to_delete:
+                self.task_denotate(
+                    original_task,
+                    ttm_annotations[annotation_key]
+                )
 
         return self.get_task(uuid=original_task['uuid'])
 
