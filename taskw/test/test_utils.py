@@ -7,7 +7,11 @@ import pytz
 import six
 
 from taskw.utils import (
-    decode_task, encode_task, encode_task_experimental, DATE_FORMAT
+    convert_dict_to_override_args,
+    decode_task,
+    encode_task,
+    encode_task_experimental,
+    DATE_FORMAT
 )
 
 TASK = {'description': "task 2 http://www.google.com/",
@@ -162,3 +166,25 @@ class TestUtils(object):
             actual_encoded_task,
             expected_encoded_task,
         )
+
+    def test_convert_dict_to_override_args(self):
+        overrides = {
+            'one': {
+                'two': 1,
+                'three': {
+                    'alpha': 'a'
+                },
+                'four': 'lorem ipsum',
+            },
+            'two': {
+            }
+        }
+
+        expected_overrides = [
+            'rc.one.two=1',
+            'rc.one.three.alpha=a',
+            'rc.one.four="lorem ipsum"',
+        ]
+        actual_overrides = convert_dict_to_override_args(overrides)
+
+        eq_(set(actual_overrides), set(expected_overrides))

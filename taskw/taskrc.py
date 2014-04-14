@@ -28,7 +28,8 @@ class TaskRc(dict):
         'string': StringField,
     }
 
-    def __init__(self, path=None):
+    def __init__(self, path=None, overrides=None):
+        self.overrides = overrides if overrides else {}
         if path:
             self.path = os.path.normpath(
                 os.path.expanduser(
@@ -98,7 +99,7 @@ class TaskRc(dict):
                             self.path,
                         )
 
-        return config
+        return self._merge_trees(config, self.overrides)
 
     def __delitem__(self, *args):
         raise TypeError('TaskRc objects are immutable')

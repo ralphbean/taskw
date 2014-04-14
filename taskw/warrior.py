@@ -425,7 +425,9 @@ class TaskWarriorShellout(TaskWarriorBase):
     and https://github.com/ralphbean/taskw/issues/30 for more.
     """
     DEFAULT_CONFIG_OVERRIDES = {
-        'json.array': 'TRUE',
+        'json': {
+            'array': 'TRUE'
+        },
         'verbose': 'nothing',
         'confirmation': 'no',
     }
@@ -440,7 +442,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         self.config_overrides = config_overrides if config_overrides else {}
         self._marshal = marshal
         try:
-            self.config = TaskRc(config_filename)
+            self.config = TaskRc(config_filename, overrides=config_overrides)
         except:
             logger.exception(
                 "Error encountered while loading configuration file "
@@ -449,17 +451,9 @@ class TaskWarriorShellout(TaskWarriorBase):
             )
 
     def get_configuration_override_args(self):
-        args = []
         config_overrides = self.DEFAULT_CONFIG_OVERRIDES.copy()
         config_overrides.update(self.config_overrides)
-        for key, value in six.iteritems(config_overrides):
-            args.append(
-                'rc.%s=%s' % (
-                    key,
-                    value if ' ' not in value else '"%s"' % value
-                )
-            )
-        return args
+        return taskw.utils.convert_dict_to_override_args(config_overrides)
 
     def _execute(self, *args):
         """ Execute a given taskwarrior command with arguments
