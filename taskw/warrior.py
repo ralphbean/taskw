@@ -719,10 +719,13 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         if isinstance(task, Task):
             # Let's pre-serialize taskw.task.Task instances
+            task_uuid = str(task['uuid'])
             task = task.serialized_changes(keep=True)
             legacy = False
+        else:
+            task_uuid = task['uuid']
 
-        id, original_task = self.get_task(uuid=task['uuid'])
+        id, original_task = self.get_task(uuid=task_uuid)
 
         if 'id' in task:
             del task['id']
@@ -734,6 +737,8 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         # Only handle annotation differences if this is an old-style
         # task, or if the task itself says annotations have changed.
+        annotations_to_delete = set()
+        annotations_to_create = set()
         if legacy or 'annotations' in task_to_modify:
             # Check if there are annotations, if so, look if they are
             # in the existing task, otherwise annotate the task to add them.
@@ -756,10 +761,13 @@ class TaskWarriorShellout(TaskWarriorBase):
                 del task_to_modify['annotations']
 
         modification = taskw.utils.encode_task_experimental(task_to_modify)
-        self._execute(task['uuid'], 'modify', modification)
+        # Only try to modify the task if there are changes to post here
+        # (changes *might* just be in annotations).
+        if modification.strip():
+            self._execute(task_uuid, 'modify', modification)
 
         # If there are no existing annotations, add the new ones
-        if legacy or 'annotations' in task_to_modify:
+        if legacy or annotations_to_delete or annotations_to_create:
             ttm_annotations.update(original_annotations)
             for annotation_key in annotations_to_create:
                 self.task_annotate(
@@ -772,7 +780,7 @@ class TaskWarriorShellout(TaskWarriorBase):
                     ttm_annotations[annotation_key]
                 )
 
-        return self.get_task(uuid=original_task['uuid'])
+        return self.get_task(uuid=task_uuid)
 
     def task_delete(self, **kw):
         """ Marks a task as deleted.  """
