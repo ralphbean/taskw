@@ -719,7 +719,7 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         if isinstance(task, Task):
             # Let's pre-serialize taskw.task.Task instances
-            task_uuid = str(task['uuid'])
+            task_uuid = six.text_type(task['uuid'])
             task = task.serialized_changes(keep=True)
             legacy = False
         else:
