@@ -171,6 +171,15 @@ class Task(dict):
             serialized[k] = self._serialize(k, v)
         return serialized
 
+    def serialized_changes(self, keep=False):
+        serialized = {}
+        for k, v in six.iteritems(self.get_changes(keep=keep)):
+            # Here, `v` is a 2-tuple of the field's original value
+            # and the field's new value.
+            _, to = v
+            serialized[k] = self._serialize(k, to)
+        return serialized
+
     def __getitem__(self, key):
         try:
             return super(Task, self).__getitem__(key)
