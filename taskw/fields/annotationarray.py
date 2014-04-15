@@ -18,7 +18,7 @@ class Annotation(six.text_type):
 
     def __init__(self, description, entry=None):
         self._entry = entry
-        super(Annotation, self).__init__(description)
+        super(Annotation, self).__init__()
 
     @property
     def entry(self):
