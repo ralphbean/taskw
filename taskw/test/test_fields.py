@@ -277,6 +277,30 @@ class TestNumericField(TestCase):
     def setUp(self):
         self.field = fields.NumericField()
 
+    def test_deserialize_float(self):
+        arbitrary_float = '214.8'
+
+        actual_value = self.field.deserialize(arbitrary_float)
+        expected_value = 214.8
+
+        self.assertEqual(actual_value, expected_value)
+
+    def test_deserialize_integer(self):
+        arbitrary_integer = '214'
+
+        actual_value = self.field.deserialize(arbitrary_integer)
+        expected_value = 214
+
+        self.assertEqual(actual_value, expected_value)
+
+    def test_deserialize_and_lo_and_behold_it_wasnt_numeric(self):
+        arbitrary_string = 'alpha'
+
+        actual_value = self.field.deserialize(arbitrary_string)
+        expected_value = arbitrary_string
+
+        self.assertEqual(actual_value, expected_value)
+
     def test_numeric_value(self):
         arbitrary_numeric_value = 10
 
