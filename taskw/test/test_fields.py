@@ -1,16 +1,91 @@
 import datetime
-import sys
 import uuid
 
 from dateutil.tz import tzlocal
 from pytz import UTC, timezone
+import six
 
 from taskw import fields
+from taskw.fields.annotationarray import Annotation
 
-if sys.version_info >= (3, ):
+if six.PY3:
     from unittest import TestCase
 else:
     from unittest2 import TestCase
+
+
+class TestAnnotationArrayField(TestCase):
+    def setUp(self):
+        self.field = fields.AnnotationArrayField()
+
+    def test_serialize_none(self):
+        actual_result = self.field.serialize(None)
+        expected_result = []
+
+        self.assertEqual(actual_result, expected_result)
+
+    def test_serialize_annotations_into_strings(self):
+        value = [
+            Annotation("something", "20240101T010101Z"),
+            Annotation("something else")
+        ]
+
+        expected_serialized = ["something", "something else"]
+        actual_serialized = self.field.serialize(value)
+
+        self.assertEqual(actual_serialized, expected_serialized)
+        for entry in actual_serialized:
+            self.assertTrue(
+                isinstance(entry, six.text_type)
+            )
+
+    def test_deserialize_fully_formed_entries_to_stringey_things(self):
+        # Note that this test is *identical* in conditions and actions
+        # to the below, but we are asserting that we can extract treat
+        # the returned entries just as if they were strings.
+        value = [
+            {
+                'description': 'Coddingtonbear\'s birthday',
+                'entry': '19840302T000000Z'
+            },
+            {
+                'description': 'Coddingtonbear\'s partner\'s birthday',
+                'entry': '19850711T000000Z',
+            }
+        ]
+
+        expected_results = [
+            value[0]['description'],
+            value[1]['description'],
+        ]
+        actual_results = self.field.deserialize(value)
+
+        self.assertEqual(expected_results, actual_results)
+
+    def test_deserialize_fully_formed_entries_to_annotation_objects(self):
+        # Note that this test is *identical* in conditions and actions
+        # to the above, but we are asserting that we can extract a little
+        # bit more information from the returned objects.
+        value = [
+            {
+                'description': 'Coddingtonbear\'s birthday',
+                'entry': '19840302T000000Z'
+            },
+            {
+                'description': 'Coddingtonbear\'s partner\'s birthday',
+                'entry': '19850711T000000Z',
+            }
+        ]
+
+        expected_results = [
+            Annotation(value[0]['description'], value[0]['entry']),
+            Annotation(value[1]['description'], value[1]['entry']),
+        ]
+        actual_results = self.field.deserialize(value)
+
+        self.assertEqual(expected_results, actual_results)
+        self.assertEqual(expected_results[0].entry.year, 1984)
+        self.assertEqual(expected_results[1].entry.year, 1985)
 
 
 class TestArrayField(TestCase):
