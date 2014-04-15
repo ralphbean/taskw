@@ -3,6 +3,7 @@ import logging
 import six
 
 from taskw.fields import (
+    AnnotationArrayField,
     ArrayField,
     ChoiceField,
     CommaSeparatedUUIDField,
@@ -24,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 class Task(dict):
     FIELDS = {
-        'annotations': ArrayField(label='Annotations'),
+        'annotations': AnnotationArrayField(label='Annotations'),
         'depends': CommaSeparatedUUIDField(label='Depends Upon'),
         'description': StringField(label='Description'),
         'due': DateField(label='Due'),

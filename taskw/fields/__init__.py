@@ -1,4 +1,5 @@
 from .base import Field
+from .annotationarray import AnnotationArrayField
 from .array import ArrayField
 from .commaseparateduuid import CommaSeparatedUUIDField
 from .choice import ChoiceField
