@@ -95,7 +95,7 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
                 if isinstance(v, dict):
                     annotations.append(v['description'])
                 else:
-                    annotations.append(v)
+                    annotations.append(six.text_type(v))
 
         for key in task.keys():
             if key.startswith('annotation_'):
