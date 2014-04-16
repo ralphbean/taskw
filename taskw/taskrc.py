@@ -1,8 +1,8 @@
 import logging
 import os
-import re
 
 from taskw.fields import (
+    ChoiceField,
     DateField,
     DurationField,
     NumericField,
@@ -131,8 +131,8 @@ class TaskRc(dict):
 
             kwargs = {}
             cls = self.UDA_TYPE_MAP.get(tw_type, StringField)
-
-            if choices and cls == StringField:
+            if choices:
+                cls = ChoiceField
                 kwargs['choices'] = choices.split(',')
             if label:
                 kwargs['label'] = label

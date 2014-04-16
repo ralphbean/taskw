@@ -2,7 +2,7 @@ import os
 import sys
 
 from taskw.taskrc import TaskRc
-from taskw.fields import NumericField, StringField
+from taskw.fields import NumericField, ChoiceField
 
 
 if sys.version_info >= (3, ):
@@ -42,6 +42,7 @@ class TestTaskRc(TestCase):
                 'b': {
                     'type': 'string',
                     'label': 'Beta',
+                    'values': 'Strontium-90,Hydrogen-3',
                 }
             }
         }
@@ -51,7 +52,10 @@ class TestTaskRc(TestCase):
     def test_get_udas(self):
         expected_udas = {
             'a': NumericField(label='Alpha'),
-            'b': StringField(label='Beta'),
+            'b': ChoiceField(
+                label='Beta',
+                choices=['Strontium-90', 'Hydrogen-3'],
+            ),
         }
         actual_udas = self.taskrc.get_udas()
 
@@ -94,6 +98,7 @@ class TestTaskRc(TestCase):
                 'b': {
                     'type': 'string',
                     'label': 'Beta',
+                    'values': 'Strontium-90,Hydrogen-3',
                 },
                 'd': {
                     'type': 'string',

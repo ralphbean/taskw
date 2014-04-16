@@ -5,3 +5,4 @@ uda.a.type = numeric
 uda.a.label = Alpha
 uda.b.type = string
 uda.b.label = Beta
+uda.b.values = Strontium-90,Hydrogen-3
