@@ -198,7 +198,13 @@ class Task(dict):
             return self._deserialize(key, None)
 
     def __setitem__(self, key, value, force=False):
-        if force or value != self.get(key):
+        existing_value = self.get(key)
+        if not existing_value and not value:
+            # Do not attempt to record changes if both the existing
+            # and previous values are Falsy.  We cannot distinguish
+            # between `''` and `None` for...reasons.
+            return False
+        if force or value != existing_value:
             self._record_change(
                 key,
                 self.get(key),
