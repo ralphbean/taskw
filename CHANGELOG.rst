@@ -1,6 +1,47 @@
 Changelog
 =========
 
+0.8.2
+-----
+
+- This works.. that's good. `d7163b28f <https://github.com/ralphbean/taskw/commit/d7163b28f51e37ea30f60cc0fad7e0188483fdd2>`_
+- Refactoring task instance handling to support marshalling to and from python-specific (non-JSON) datatypes while retaining backward-compatible behavior. `1ed40ba95 <https://github.com/ralphbean/taskw/commit/1ed40ba950cc523b8ec3486bd9bf7da6fa15d4ac>`_
+- Merge pull request #50 from coddingtonbear/change_tracking_and_coercion `46b277732 <https://github.com/ralphbean/taskw/commit/46b277732eb7be95c7421cf2d38ee8a78bc215d0>`_
+- Test composition.  (It works..) `2de883c38 <https://github.com/ralphbean/taskw/commit/2de883c38528f53435a82ea89a2ca801fa8eae4c>`_
+- Test string UDAs. `37c3c28a3 <https://github.com/ralphbean/taskw/commit/37c3c28a385558ee017fa6730bd62819aeb12724>`_
+- Test UDA dates. `ba4c0eb84 <https://github.com/ralphbean/taskw/commit/ba4c0eb841415e08e393cd51060c83309971e1c5>`_
+- Typofix. `0f7189282 <https://github.com/ralphbean/taskw/commit/0f718928230bdcbbf7f32babdc49a292aef01fb5>`_
+- Refactors TaskRc parser to match previous version written by @ralphbean. Adds tests; fixes #51. `17f41c6e0 <https://github.com/ralphbean/taskw/commit/17f41c6e0029c0622e68200104cb6d71889f7aee>`_
+- Merge pull request #52 from coddingtonbear/issue_51 `e0d6415cb <https://github.com/ralphbean/taskw/commit/e0d6415cb6b75eeaa5090fb248049a66e6768547>`_
+- Merge configuration overrides into taskrc configuration. `e5b7a502d <https://github.com/ralphbean/taskw/commit/e5b7a502dc05c702a072a043e16c5adb61738f35>`_
+- Update existing use of config overrides to match new datatstructure. `7278ce33e <https://github.com/ralphbean/taskw/commit/7278ce33ea84da883d7647e10c165023b5ce7a1d>`_
+- Merge pull request #53 from coddingtonbear/handle_config_overrides `3c8adfe5f <https://github.com/ralphbean/taskw/commit/3c8adfe5fdf01e4a9d225faa10cf783b845a8b0b>`_
+- Raise an exception if we can't parse configuration; ignore simple config values to allow storing complex ones. `fc1beaee5 <https://github.com/ralphbean/taskw/commit/fc1beaee5c20b6aa1c78b1b63571bfba5327ad05>`_
+- Add AnnotationArrayField for handling idiosyncrasies of annotations. `ef3aca65f <https://github.com/ralphbean/taskw/commit/ef3aca65f9c6df642d5d2ee68e491e50df6f1846>`_
+- Attempt to convert incoming string into int or float. `2726efaf0 <https://github.com/ralphbean/taskw/commit/2726efaf069edf8afb5d03b57083e218b44eda59>`_
+- Only attempt to change fields known to have changed if using new journaled task. `5b7cb71b7 <https://github.com/ralphbean/taskw/commit/5b7cb71b73c7ecb8c4a89471470b365258f933e2>`_
+- Handle none values. `51f003c3e <https://github.com/ralphbean/taskw/commit/51f003c3ee5f4c9fd59f78452fb9fc090e411e86>`_
+- Properly handle changes to annotations. `deab4070a <https://github.com/ralphbean/taskw/commit/deab4070a833ac0919285493926f67a0ff490a4a>`_
+- Allow comma-separated UUID field to properly handle null values. `aa5b6b3f9 <https://github.com/ralphbean/taskw/commit/aa5b6b3f9d9e7ac99801d13e0ca6a584165647ab>`_
+- Assume that fields with registered converters are present on task record. `f81746f65 <https://github.com/ralphbean/taskw/commit/f81746f6515270ae3feaf811076066504d480f8e>`_
+- Use six.text_type rather than str. `c4cc90f45 <https://github.com/ralphbean/taskw/commit/c4cc90f4529340be23ebfea9c6edb8ca984599ce>`_
+- Preserve all annotation information should we have it, but still handle outgoing and incoming values as if they were strings. `e1f497291 <https://github.com/ralphbean/taskw/commit/e1f497291ac12848b4cefc89068803d1867d0702>`_
+- Adding tests verifying this behavior. `02444fd75 <https://github.com/ralphbean/taskw/commit/02444fd7542fca88910d7038534abccb106f11af>`_
+- Merge pull request #54 from coddingtonbear/cautious_configuration_handling `e4b02c5d3 <https://github.com/ralphbean/taskw/commit/e4b02c5d3122048892c07d6074dfdbe7bba51602>`_
+- Merge pull request #58 from coddingtonbear/csuuid_field_enhancements `95eace2e5 <https://github.com/ralphbean/taskw/commit/95eace2e560d1995e8df3d1946a0973aea963e79>`_
+- Merge pull request #59 from coddingtonbear/assume_specified_fields_have_value `7bf7dd5aa <https://github.com/ralphbean/taskw/commit/7bf7dd5aaf4ecb199ce311c020a15311d51fd183>`_
+- Merging in upstream changes. `dfd59319a <https://github.com/ralphbean/taskw/commit/dfd59319ab5bf572712d462401423a6392f6101e>`_
+- Merge pull request #57 from coddingtonbear/only_change_if_changes_exist_when_using_modern_task `78eef2a76 <https://github.com/ralphbean/taskw/commit/78eef2a76703eb1129e9b8169b6532f7e930ed7e>`_
+- Merge pull request #56 from coddingtonbear/properly_deserialize_numbers `9dedffe03 <https://github.com/ralphbean/taskw/commit/9dedffe032cf0c89a3e84b6b590e80d1ac7dc989>`_
+- Merge pull request #55 from coddingtonbear/annotation_field `f8511d1fd <https://github.com/ralphbean/taskw/commit/f8511d1fd1983e9a531d15e6b5beb7a7b2aca4f0>`_
+- Make annotations really be strings, just special ones. `8d20fdcd4 <https://github.com/ralphbean/taskw/commit/8d20fdcd45412466f8c9393fed3c9e5293a81c0e>`_
+- That's surprising, but I suppose __new__ takes care of these detais. `8d62c4750 <https://github.com/ralphbean/taskw/commit/8d62c47508520d6fdd46d90a10af553d3865b79c>`_
+- Properly handle parsing choices from UDAs. `4077de023 <https://github.com/ralphbean/taskw/commit/4077de0234f717faee82d9a3c832f393143cbd1b>`_
+- Do not record changes when both the former and latter values are Falsy `0f1a692c8 <https://github.com/ralphbean/taskw/commit/0f1a692c80a9bcdbf5fa9c35489d7f4196df8edb>`_
+- Merge pull request #62 from coddingtonbear/fix_choices_handling_udas `c6f02f62e <https://github.com/ralphbean/taskw/commit/c6f02f62eb721215bfff706d0debdbb476640c5f>`_
+- Merge pull request #63 from coddingtonbear/none_and_none_are_none `e2ef3bd9d <https://github.com/ralphbean/taskw/commit/e2ef3bd9ddf1dabe43cc4adeac0014382fc21e8c>`_
+- Merge pull request #61 from coddingtonbear/better_annotation_objects `f90fcc6fe <https://github.com/ralphbean/taskw/commit/f90fcc6fe3f82b0ef04b4c694e17574545490ba6>`_
+
 0.8.1
 -----
 
