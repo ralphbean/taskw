@@ -1,2 +1,3 @@
 include README.rst
 include LICENSE.txt
+recursive-include taskw/test/data *
