@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.8.3
+-----
+
+- Add failing test for annotation extension. `ee746dac9 <https://github.com/ralphbean/taskw/commit/ee746dac99bc277b50ce52715786a6eea1d28250>`_
+- Add another failing test just to round it out. `aa637a950 <https://github.com/ralphbean/taskw/commit/aa637a950cffb1633349851a77db750630cf2723>`_
+- Make Task object store newly fabricated attributes. `47d27c78f <https://github.com/ralphbean/taskw/commit/47d27c78f69840185dd0a629d5965f95190c45f5>`_
+
 0.8.2
 -----
 
