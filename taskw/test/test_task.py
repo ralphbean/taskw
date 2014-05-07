@@ -26,6 +26,10 @@ class TestTaskDirtyability(TestCase):
             'tags': ['one', 'two', 'three'],
         })
 
+    def test_append_when_absent(self):
+        self.task['annotations'].append('awesome')
+        self.assertEqual(self.task['annotations'], ['awesome'])
+
     def test_marks_date_changed(self):
         original_due_date = self.task['due']
         new_due_date = datetime.datetime.now().replace(tzinfo=pytz.UTC)
