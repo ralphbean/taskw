@@ -195,7 +195,12 @@ class Task(dict):
             # This is primarily helpful for fields that *might* be
             # unspecified in the JSON, but are always part of a task
             # record -- like annotations.
-            return self._deserialize(key, None)
+            # Furthermore, since we're returning a value we don't really
+            # "have", we should stick it in the collection to be consistent
+            # for future queries.
+            value = self._deserialize(key, None)
+            super(Task, self).__setitem__(key, value)
+            return value
 
     def __setitem__(self, key, value, force=False):
         existing_value = self.get(key)
