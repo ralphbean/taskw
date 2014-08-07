@@ -1,3 +1,4 @@
+import codecs
 import logging
 import os
 
@@ -76,7 +77,7 @@ class TaskRc(dict):
 
     def _read(self, path):
         config = {}
-        with open(path, 'r') as config_file:
+        with codecs.open(path, 'r', 'utf8') as config_file:
             for raw_line in config_file.readlines():
                 line = sanitize(raw_line)
                 if not line:
