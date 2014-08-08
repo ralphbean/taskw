@@ -22,6 +22,24 @@ def sanitize(line):
 
 
 class TaskRc(dict):
+    """ Access the user's taskRC using a dictionary-like interface.
+
+    There is a downside, though:
+
+    Unfortunately, collapsing our configuration into a dict has a
+    jarring limitation -- we can't store both of the following
+    simultaneously:
+
+    * color = on
+    * color.header = something
+
+    In this module, we err on the side of storing subkeys rather than the
+    actual value in situations where both are necessary.
+
+    Please forgive me.
+
+    """
+
     UDA_TYPE_MAP = {
         'date': DateField,
         'duration': DurationField,
@@ -49,14 +67,8 @@ class TaskRc(dict):
         for part in key_parts[0:-1]:
             if part not in cursor:
                 cursor[part] = {}
-            # Unfortunately, collapsing our configuration into a dict
-            # has some downsides -- we can't store both of the following
-            # simultaneously::
-            #
-            #   color = on
-            #   color.header = something
-            #
-            # So we err on the side of storing more.
+            # See class docstring -- we can't store both a value and
+            # a dict in the same place.
             if not isinstance(cursor[part], dict):
                 cursor[part] = {}
             cursor = cursor[part]
@@ -68,6 +80,10 @@ class TaskRc(dict):
             left = {}
 
         for key, value in right.items():
+            # See class docstring -- we can't store both a value and
+            # a dict in the same place.
+            if not isinstance(left, dict):
+                left = {}
             if isinstance(value, dict):
                 left[key] = self._merge_trees(left.get(key), value)
             else:
