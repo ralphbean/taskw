@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.8.4
+0.8.5
 -----
 
 - Do not allow taskwarrior to attempt to parse the string passed-in to denotate. `e9716a2e9 <https://github.com/ralphbean/taskw/commit/e9716a2e9fabd4558c81055e4a378fb3190fa3d0>`_
@@ -10,6 +10,7 @@ Changelog
 - Fixing a bug in which, while merging two configuration trees, we encounter the dict/string problem.  Fixes #65. `477cc8b65 <https://github.com/ralphbean/taskw/commit/477cc8b6539599d783f7ae9750355ad24492ac3c>`_
 - Merge pull request #66 from coddingtonbear/handle_unicode_configs `60218eef7 <https://github.com/ralphbean/taskw/commit/60218eef7942cb928b2462723067c52603c7046d>`_
 - Merge pull request #67 from coddingtonbear/merge_trees_dict_nonsense `666d21ce5 <https://github.com/ralphbean/taskw/commit/666d21ce546873eab808c05b92d933b66a127b0b>`_
+- 0.8.4 `fa0b386ee <https://github.com/ralphbean/taskw/commit/fa0b386ee191989e1942701a988dd53fa8dddb94>`_
 
 0.8.3
 -----
