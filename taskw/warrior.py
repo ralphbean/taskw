@@ -686,6 +686,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         self._execute(
             task['uuid'],
             'denotate',
+            '--',
             annotation
         )
         id, denotated_task = self.get_task(uuid=task[six.u('uuid')])
