@@ -19,7 +19,7 @@ tests_require = [
     'nose',
 ]
 
-if sys.version_info < (3, ):
+if sys.version_info < (2, 7):
     tests_require.append('unittest2')
 
 if sys.version_info[0] == 2 and sys.version_info[1] < 7:
