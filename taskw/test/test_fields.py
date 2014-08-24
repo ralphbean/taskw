@@ -1,5 +1,6 @@
 import datetime
 import uuid
+import sys
 
 from dateutil.tz import tzlocal
 from pytz import UTC, timezone
@@ -8,7 +9,7 @@ import six
 from taskw import fields
 from taskw.fields.annotationarray import Annotation
 
-if six.PY3:
+if sys.version_info >= (2, 7):
     from unittest import TestCase
 else:
     from unittest2 import TestCase

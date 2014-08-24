@@ -3,7 +3,7 @@ import logging
 import sys
 from setuptools import setup, find_packages
 
-version = '0.8.5'
+version = '0.8.6'
 
 f = open('README.rst')
 long_description = f.read().strip()
@@ -19,7 +19,7 @@ tests_require = [
     'nose',
 ]
 
-if sys.version_info < (3, ):
+if sys.version_info < (2, 7):
     tests_require.append('unittest2')
 
 if sys.version_info[0] == 2 and sys.version_info[1] < 7:
