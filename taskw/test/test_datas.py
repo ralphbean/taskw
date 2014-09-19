@@ -147,10 +147,15 @@ class _BaseTestDB(object):
 
             # Also, experimental mode returns the id.  So, avoid comparing.
             del tasks['pending'][0]['id']
+
             # Task 2.2.0 adds a "modified" field, so delete this.
             del tasks['pending'][0]['modified']
         except:
             pass
+
+        # But Task 2.4.0 puts the modified field in earlier
+        if 'modified' in task:
+            del task['modified']
 
         eq_(tasks['pending'][0], task)
 
