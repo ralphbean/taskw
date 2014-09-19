@@ -135,6 +135,7 @@ class _BaseTestDB(object):
 
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 1)
+        eq_(tasks['pending'][0]['priority'], 'L')
 
         # For compatibility with the direct and shellout modes.
         # Shellout returns more information.
