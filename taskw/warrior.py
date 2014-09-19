@@ -443,6 +443,9 @@ class TaskWarriorShellout(TaskWarriorBase):
         self._marshal = marshal
         self.config = TaskRc(config_filename, overrides=config_overrides)
 
+        if self.get_version() >= LooseVersion('2.4'):
+            self.DEFAULT_CONFIG_OVERRIDES['verbose'] = 'new-uuid'
+
     def get_configuration_override_args(self):
         config_overrides = self.DEFAULT_CONFIG_OVERRIDES.copy()
         config_overrides.update(self.config_overrides)
@@ -646,11 +649,22 @@ class TaskWarriorShellout(TaskWarriorBase):
         # task and add them after we've added the task.
         annotations = self._extract_annotations_from_task(task)
 
-        task['uuid'] = str(uuid.uuid4())
+        # With older versions of taskwarrior, you can specify whatever uuid you
+        # want when adding a task.
+        if self.get_version() < LooseVersion('2.4'):
+            task['uuid'] = str(uuid.uuid4())
+
         stdout, stderr = self._execute(
             'add',
             taskw.utils.encode_task_experimental(task),
         )
+
+        # However, in 2.4 and later, you cannot specify whatever uuid you want
+        # when adding a task.  Instead, you have to specify rc.verbose=new-uuid
+        # and then parse the assigned uuid out from stdout.
+        if self.get_version() >= LooseVersion('2.4'):
+            task['uuid'] = stdout.strip().split()[-1].strip('.')
+
         id, added_task = self.get_task(uuid=task['uuid'])
 
         # Check if 'uuid' is in the task we just added.
