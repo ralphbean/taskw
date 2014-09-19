@@ -656,7 +656,7 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         stdout, stderr = self._execute(
             'add',
-            taskw.utils.encode_task_experimental(task),
+            *taskw.utils.encode_task_experimental(task)
         )
 
         # However, in 2.4 and later, you cannot specify whatever uuid you want
@@ -771,8 +771,8 @@ class TaskWarriorShellout(TaskWarriorBase):
         modification = taskw.utils.encode_task_experimental(task_to_modify)
         # Only try to modify the task if there are changes to post here
         # (changes *might* just be in annotations).
-        if modification.strip():
-            self._execute(task_uuid, 'modify', modification)
+        if modification:
+            self._execute(task_uuid, 'modify', *modification)
 
         # If there are no existing annotations, add the new ones
         if legacy or annotations_to_delete or annotations_to_create:
