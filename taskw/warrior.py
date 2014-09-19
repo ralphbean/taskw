@@ -653,6 +653,8 @@ class TaskWarriorShellout(TaskWarriorBase):
         # want when adding a task.
         if self.get_version() < LooseVersion('2.4'):
             task['uuid'] = str(uuid.uuid4())
+        elif 'uuid' in task:
+            del task['uuid']
 
         stdout, stderr = self._execute(
             'add',
