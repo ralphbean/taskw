@@ -81,7 +81,7 @@ Completing tasks
 
     >>> from taskw import TaskWarrior
     >>> w = TaskWarrior()
-    >>> w.task_done(46)
+    >>> w.task_done(id=46)
 
 Being Flexible
 ++++++++++++++
