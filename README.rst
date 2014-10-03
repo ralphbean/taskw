@@ -88,9 +88,9 @@ Updating tasks
 
     >>> from taskw import TaskWarrior
     >>> w = TaskWarrior()
-    >>> task = w.get_task(id=14)
-    >>> task[1]['project'] = 'Updated project name'
-    >>> w.task_update(task[1])
+    >>> id, task = w.get_task(id=14)
+    >>> task['project'] = 'Updated project name'
+    >>> w.task_update(task)
 
 Deleting tasks
 ++++++++++++++
