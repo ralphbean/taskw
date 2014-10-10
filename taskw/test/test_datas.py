@@ -36,6 +36,8 @@ class _BaseTestDB(object):
                 'uda.somestring.type=string\n',
                 'uda.somedate.label=Testing Date\n',
                 'uda.somedate.type=date\n',
+                'uda.somenumber.label=Testing Number\n',
+                'uda.somenumber.type=numeric\n',
             ])
 
         # Create empty .data files
@@ -212,6 +214,17 @@ class _BaseTestDB(object):
         task = tasks['pending'][0]
 
         assert(task['somedate'].startswith("20110101T"))
+
+    def test_add_with_uda_numeric(self):
+        self.tw.task_add(
+            "foobar",
+            somenumber=15,
+        )
+        tasks = self.tw.load_tasks()
+        eq_(len(tasks['pending']), 1)
+        task = tasks['pending'][0]
+
+        assert(task['somenumber'], 15)
 
     @raises(ValueError)
     def test_completing_completed_task(self):
