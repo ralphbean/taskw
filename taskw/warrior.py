@@ -705,6 +705,15 @@ class TaskWarriorShellout(TaskWarriorBase):
         return self.get_task(uuid=task['uuid'])[1]
 
     def task_update(self, task):
+        """ If there's a chance that updating the task could cause
+        Taskwarrior to ask a question, call this function like so::
+
+            try:
+                w.task_update(task)
+            except Exception, e:
+
+        The exception will contain the question.
+        """
         if 'uuid' not in task:
             raise KeyError('Task must have a UUID.')
         # 'Legacy' causes us to handle this task as if it were an
@@ -758,7 +767,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         # Only try to modify the task if there are changes to post here
         # (changes *might* just be in annotations).
         if modification.strip():
-            self._execute(task_uuid, 'modify', modification)
+            out, err = self._execute(task_uuid, 'modify', modification)
 
         # If there are no existing annotations, add the new ones
         if legacy or annotations_to_delete or annotations_to_create:
@@ -773,6 +782,11 @@ class TaskWarriorShellout(TaskWarriorBase):
                     original_task,
                     ttm_annotations[annotation_key]
                 )
+
+        # If Taswarrior produces stdout without stderr, pass it
+        # out of this function via an exception
+        if out and not err:
+            raise Exception(out)
 
         return self.get_task(uuid=task_uuid)
 
@@ -809,6 +823,24 @@ class TaskWarriorShellout(TaskWarriorBase):
         if err:
             return err
         return out
+
+    def answer_question(self, **kw):
+        """ Allows interaction with Taskwarrior when Taskwarrior asks
+        a question following a command. Accepts a string value called
+        'answer' as a keyword argument.
+        """
+        proc = subprocess.Popen(
+            answer,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        stdout, stderr = proc.communicate()
+
+        if proc.returncode != 0:
+            message = 'Answer: ' + answer
+            raise TaskwarriorError(message, stderr, stdout, proc.returncode)
+
+        return stdout, stderr
 
 
 class DataFile(object):
