@@ -181,27 +181,6 @@ class Task(dict):
             serialized[k] = self._serialize(k, to)
         return serialized
 
-    def __getitem__(self, key):
-        try:
-            return super(Task, self).__getitem__(key)
-        except KeyError:
-            converter = self._fields.get(key, None)
-            if converter is None:
-                # If we don't have something registered as a converter,
-                # let's raise KeyError as we always would have.
-                raise
-
-            # Otherwise, let's return the empty value for this field.
-            # This is primarily helpful for fields that *might* be
-            # unspecified in the JSON, but are always part of a task
-            # record -- like annotations.
-            # Furthermore, since we're returning a value we don't really
-            # "have", we should stick it in the collection to be consistent
-            # for future queries.
-            value = self._deserialize(key, None)
-            super(Task, self).__setitem__(key, value)
-            return value
-
     def __setitem__(self, key, value, force=False):
         existing_value = self.get(key)
         if not existing_value and not value:
