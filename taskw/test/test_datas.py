@@ -5,6 +5,7 @@ import sys
 import shutil
 import tempfile
 import datetime
+import dateutil.tz
 
 from taskw import TaskWarriorDirect, TaskWarriorShellout
 
@@ -183,7 +184,7 @@ class _BaseTestDB(object):
             "foobar",
             uuid="1234-1234",
             project="some_project",
-            entry=datetime.datetime(2011, 1, 1),
+            entry=datetime.datetime(2011, 1, 1, tzinfo=dateutil.tz.tzutc()),
         )
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 1)
@@ -205,7 +206,7 @@ class _BaseTestDB(object):
     def test_add_with_uda_date(self):
         self.tw.task_add(
             "foobar",
-            somedate=datetime.datetime(2011, 1, 1),
+            somedate=datetime.datetime(2011, 1, 1, tzinfo=dateutil.tz.tzutc()),
         )
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 1)
