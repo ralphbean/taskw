@@ -220,17 +220,6 @@ class _BaseTestDB(object):
 
         assert(task['somedate'].startswith("20110101T"))
 
-    def test_add_with_uda_numeric(self):
-        self.tw.task_add(
-            "foobar",
-            somenumber=15,
-        )
-        tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 1)
-        task = tasks['pending'][0]
-
-        eq_(task['somenumber'], 15)
-
     @raises(KeyError)
     def test_remove_uda_string(self):
         # Check that a string UDA is removed from a task when its
