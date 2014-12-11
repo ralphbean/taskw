@@ -27,11 +27,13 @@ class TestTaskDirtyability(TestCase):
         })
 
     def test_append_when_absent(self):
+        self.task['annotations'] = []
         self.task['annotations'].append('awesome')
         self.assertEqual(self.task['annotations'], ['awesome'])
 
     def test_append_when_absent_but_with_tags(self):
         self.task = Task({'uuid': str(uuid.uuid4()), 'description': 'Test'})
+        self.task['tags'] = []
         self.task['tags'].append('awesome')
         self.assertEqual(self.task['tags'], ['awesome'])
 

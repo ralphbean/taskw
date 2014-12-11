@@ -14,7 +14,7 @@ from taskw.fields import (
     StringField,
     UUIDField,
 )
-from taskw.fields.base import Dirtyable
+from taskw.fields.base import Dirtyable, DirtyableList, DirtyableDict
 
 # Sentinel value for not specifying a default
 UNSPECIFIED = object()
@@ -97,12 +97,10 @@ class Task(dict):
             return False
         return True
 
-    def get(self, key, default=UNSPECIFIED):
+    def get(self, key, default=None):
         try:
             return self[key]
         except KeyError:
-            if default is UNSPECIFIED:
-                return self._deserialize(key, None)
             return default
 
     def _record_change(self, key, from_, to):
@@ -181,40 +179,23 @@ class Task(dict):
             serialized[k] = self._serialize(k, to)
         return serialized
 
-    def __getitem__(self, key):
-        try:
-            return super(Task, self).__getitem__(key)
-        except KeyError:
-            converter = self._fields.get(key, None)
-            if converter is None:
-                # If we don't have something registered as a converter,
-                # let's raise KeyError as we always would have.
-                raise
-
-            # Otherwise, let's return the empty value for this field.
-            # This is primarily helpful for fields that *might* be
-            # unspecified in the JSON, but are always part of a task
-            # record -- like annotations.
-            # Furthermore, since we're returning a value we don't really
-            # "have", we should stick it in the collection to be consistent
-            # for future queries.
-            value = self._deserialize(key, None)
-            super(Task, self).__setitem__(key, value)
-            return value
-
     def __setitem__(self, key, value, force=False):
+        if isinstance(value, dict) and not isinstance(value, DirtyableDict):
+            value = DirtyableDict(value)
+        elif isinstance(value, list) and not isinstance(value, DirtyableList):
+            value = DirtyableList(value)
+
         existing_value = self.get(key)
-        if not existing_value and not value:
-            # Do not attempt to record changes if both the existing
-            # and previous values are Falsy.  We cannot distinguish
-            # between `''` and `None` for...reasons.
-            return False
         if force or value != existing_value:
-            self._record_change(
-                key,
-                self.get(key),
-                value,
-            )
+            if force or existing_value or value:
+                # Do not attempt to record changes if both the existing
+                # and previous values are Falsy.  We cannot distinguish
+                # between `''` and `None` for...reasons.
+                self._record_change(
+                    key,
+                    self.get(key),
+                    value,
+                )
 
             # Serialize just to make sure we can; it's better to throw
             # this error early.
