@@ -330,7 +330,8 @@ class TaskWarriorDirect(TaskWarriorBase):
 
         # Delete None values (treat them as deleting values)
         # https://github.com/ralphbean/taskw/pull/70
-        for k, v in task.items():
+        items = list(task.items())  # listify generator for py3 support.
+        for k, v in items:
             if v is None:
                 task.pop(k)
                 if k in _task:
