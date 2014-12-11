@@ -79,7 +79,7 @@ def encode_task_value(value, query=False):
     return value
 
 
-def encode_query(value):
+def encode_query(value, query=True):
     args = []
 
     if isinstance(value, dict):
@@ -89,14 +89,14 @@ def encode_query(value):
         if isinstance(v, list):
             args.append(
                 "(" + (" %s " % k).join([
-                    encode_query([item])[0] for item in v
+                    encode_query([item], query=False)[0] for item in v
                 ]) + ")"
             )
         else:
             args.append(
                 '%s:\"%s\"' % (
                     k,
-                    encode_task_value(v, query=True)
+                    encode_task_value(v, query=query)
                 )
             )
     return args

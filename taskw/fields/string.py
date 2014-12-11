@@ -21,6 +21,9 @@ class StringField(Field):
         return value
 
     def serialize(self, value):
+        # If value is None let it pass through
+        if not value:
+            return value
         if not isinstance(value, six.string_types):
             string_value = six.text_type(value)
             logger.warning(
