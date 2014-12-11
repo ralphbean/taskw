@@ -407,6 +407,24 @@ class TestDBShellout(_BaseTestDB):
         eq_(len(tasks), 1)
         eq_(tasks[0]['id'], 3)
 
+    def test_filtering_qmark(self):
+        task1 = self.tw.task_add("foobar1")
+        task2 = self.tw.task_add("foo?bar")
+        tasks = self.tw.filter_tasks({
+                'description.contains': 'oo?ba',
+        })
+        eq_(len(tasks), 1)
+        eq_(tasks[0]['id'], 2)
+
+    def test_filtering_qmark_not_contains(self):
+        task1 = self.tw.task_add("foobar1")
+        task2 = self.tw.task_add("foo?bar")
+        tasks = self.tw.filter_tasks({
+                'description': 'foo?bar',
+        })
+        eq_(len(tasks), 1)
+        eq_(tasks[0]['id'], 2)
+
     def test_filtering_semicolon(self):
         task1 = self.tw.task_add("foobar1")
         task2 = self.tw.task_add("foobar2")
