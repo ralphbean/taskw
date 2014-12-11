@@ -51,7 +51,7 @@ logical_replacements = OrderedDict([
 ])
 
 
-def encode_task_value(value, query=False):
+def encode_task_value(key, value, query=False):
     if value is None:
         value = ''
     elif isinstance(value, datetime.datetime):
@@ -68,6 +68,9 @@ def encode_task_value(value, query=False):
             # In some contexts, parentheses are interpreted for use in
             # logical expressions.  They must *sometimes* be escaped.
             for left, right in six.iteritems(logical_replacements):
+                # don't replace '?' if this is an exact match
+                if left == '?' and '.' not in key:
+                    continue
                 value = value.replace(left, right)
         else:
             for unsafe, safe in six.iteritems(
@@ -96,7 +99,7 @@ def encode_query(value, query=True):
             args.append(
                 '%s:\"%s\"' % (
                     k,
-                    encode_task_value(v, query=query)
+                    encode_task_value(k, v, query=query)
                 )
             )
     return args
@@ -116,7 +119,7 @@ def encode_task_experimental(task):
     if 'tags' in task:
         task['tags'] = ','.join(task['tags'])
     for k in task:
-        task[k] = encode_task_value(task[k])
+        task[k] = encode_task_value(k, task[k])
 
     # Then, format it as a string
     return "%s\n" % " ".join([
