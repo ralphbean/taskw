@@ -439,6 +439,9 @@ class TaskWarriorShellout(TaskWarriorBase):
         },
         'verbose': 'nothing',
         'confirmation': 'no',
+        'dependency': {
+            'confirmation': 'no',
+        },
     }
 
     def __init__(
