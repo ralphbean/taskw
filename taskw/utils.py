@@ -41,7 +41,6 @@ decode_replacements = OrderedDict([
 logical_replacements = OrderedDict([
     ('?', '\\?'),
     ('+', '\\+'),
-    ('"', '\\"'),
     ('(', '\\('),
     (')', '\\)'),
     ('[', '\\['),
@@ -97,7 +96,7 @@ def encode_query(value, query=True):
             )
         else:
             args.append(
-                '%s:\"%s\"' % (
+                '%s:%s' % (
                     k,
                     encode_task_value(k, v, query=query)
                 )
