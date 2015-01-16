@@ -15,7 +15,7 @@ before_install:
   - git checkout $TASKWARRIOR
   - cmake .
   - make
-  - make install
+  - sudo make install
   - task --version
 install: python setup.py install
 script: python setup.py test
