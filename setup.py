@@ -1,7 +1,8 @@
+import os
 import multiprocessing
-import logging
 import sys
 from setuptools import setup, find_packages
+import uuid
 
 version = '0.8.6'
 
@@ -10,22 +11,37 @@ long_description = f.read().strip()
 long_description = long_description.split('split here', 1)[1]
 f.close()
 
-install_requires = [
-    "six",
-    "python-dateutil",
-    "pytz",
-]
-tests_require = [
-    'nose',
-]
+REQUIREMENTS_FILES = {
+    'test': 'test_requirements.txt',
+    'install': 'requirements.txt',
+}
+REQUIREMENTS = {}
+for category, filename in REQUIREMENTS_FILES.items():
+    requirements_path = os.path.join(
+        os.path.dirname(__file__),
+        filename
+    )
+    try:
+        from pip.req import parse_requirements
+        requirements = [
+            str(req.req) for req in parse_requirements(
+                requirements_path,
+                session=uuid.uuid1()
+            )
+        ]
+    except ImportError:
+        requirements = []
+        with open(requirements_path, 'r') as in_:
+            requirements = [
+                req for req in in_.readlines()
+                if not req.startswith('-')
+                and not req.startswith('#')
+            ]
+    REQUIREMENTS[category] = requirements
 
 if sys.version_info < (2, 7):
-    tests_require.append('unittest2')
-
-if sys.version_info[0] == 2 and sys.version_info[1] < 7:
-    install_requires.extend([
-        'ordereddict',
-    ])
+    REQUIREMENTS['test'].append('unittest2')
+    REQUIREMENTS['install'].append('ordereddict')
 
 setup(name='taskw',
       version=version,
@@ -50,9 +66,9 @@ setup(name='taskw',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
       zip_safe=False,
-      install_requires=install_requires,
+      install_requires=REQUIREMENTS['install'],
       test_suite='nose.collector',
-      tests_require=tests_require,
+      tests_require=REQUIREMENTS['test'],
       entry_points="""
       # -*- Entry points: -*-
       """,
