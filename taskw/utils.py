@@ -122,10 +122,10 @@ def encode_task_experimental(task):
         task[k] = encode_task_value(k, task[k])
 
     # Then, format it as a string
-    return "%s\n" % " ".join([
+    return [
         "%s:\"%s\"" % (k, v)
         for k, v in sorted(task.items(), key=itemgetter(0))
-    ])
+    ]
 
 
 def encode_task(task):

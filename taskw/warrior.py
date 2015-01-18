@@ -665,7 +665,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         if self.get_version() > LooseVersion('2.4'):
             stdout, stderr = self._execute(
                 'add',
-                taskw.utils.encode_task_experimental(task),
+                *taskw.utils.encode_task_experimental(task)
             )
             # Modern versions of taskwarrior output the UUID as a string in a
             # format like "Created task af1ed899-4086-410e-9c48-3aef73b76f01."
@@ -680,7 +680,7 @@ class TaskWarriorShellout(TaskWarriorBase):
             task['uuid'] = str(uuid.uuid4())
             stdout, stderr = self._execute(
                 'add',
-                taskw.utils.encode_task_experimental(task),
+                *taskw.utils.encode_task_experimental(task)
             )
             id, added_task = self.get_task(uuid=task['uuid'])
 
@@ -788,8 +788,8 @@ class TaskWarriorShellout(TaskWarriorBase):
         modification = taskw.utils.encode_task_experimental(task_to_modify)
         # Only try to modify the task if there are changes to post here
         # (changes *might* just be in annotations).
-        if modification.strip():
-            self._execute(task_uuid, 'modify', modification)
+        if modification:
+            self._execute(task_uuid, 'modify', *modification)
 
         # If there are no existing annotations, add the new ones
         if legacy or annotations_to_delete or annotations_to_create:

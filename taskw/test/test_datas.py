@@ -144,22 +144,10 @@ class _BaseTestDB(object):
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 1)
 
-        # For compatibility with the direct and shellout modes.
-        # Shellout returns more information.
-        try:
-            # Shellout mode returns the correct urgency, so,
-            # let's just not compare for now.
-            del tasks['pending'][0]['urgency']
-            del task['urgency']
-
-            # Also, experimental mode returns the id.  So, avoid comparing.
-            del tasks['pending'][0]['id']
-            # Task 2.2.0 adds a "modified" field, so delete this.
-            del tasks['pending'][0]['modified']
-        except:
-            pass
-
-        eq_(tasks['pending'][0], task)
+        # We don't want to compare *every* field, in some situations
+        # we will receive a 'modified' date, etc.
+        for field in ('entry', 'status', 'priority', 'description', 'uuid'):
+            eq_(tasks['pending'][0][field], task[field])
 
     @raises(KeyError)
     def test_update_exc(self):
@@ -169,7 +157,6 @@ class _BaseTestDB(object):
     def test_add_complicated(self):
         self.tw.task_add(
             "foobar",
-            uuid="1234-1234",
             project="some_project"
         )
         tasks = self.tw.load_tasks()
@@ -178,7 +165,6 @@ class _BaseTestDB(object):
     def test_add_timestamp(self):
         self.tw.task_add(
             "foobar",
-            uuid="1234-1234",
             project="some_project",
             entry="20110101T000000Z",
         )
@@ -189,7 +175,6 @@ class _BaseTestDB(object):
     def test_add_datetime(self):
         self.tw.task_add(
             "foobar",
-            uuid="1234-1234",
             project="some_project",
             entry=datetime.datetime(2011, 1, 1, tzinfo=dateutil.tz.tzutc()),
         )
@@ -263,13 +248,6 @@ class _BaseTestDB(object):
         self.tw.task_done(uuid=task['uuid'])
         self.tw.task_done(uuid=task['uuid'])
 
-    def test_updating_completed_task(self):
-        task = self.tw.task_add("foobar")
-        task = self.tw.task_done(uuid=task['uuid'])
-        task['priority'] = 'L'
-        id, task = self.tw.task_update(task)
-        eq_(task['priority'], 'L')
-
     def test_get_task_completed(self):
         task = self.tw.task_add("foobar")
         task = self.tw.task_done(uuid=task['uuid'])
@@ -291,13 +269,6 @@ class _BaseTestDB(object):
     @raises(ValueError)
     def test_load_task_with_unknown_command(self):
         tasks = self.tw.load_tasks(command='foobar')
-
-    def test_updating_deleted_task(self):
-        task = self.tw.task_add("foobar")
-        task = self.tw.task_delete(uuid=task['uuid'])
-        task['priority'] = 'L'
-        id, task = self.tw.task_update(task)
-        eq_(task['priority'], 'L')
 
     def test_delete(self):
         task = self.tw.task_add("foobar")
@@ -338,6 +309,20 @@ class TestDBDirect(_BaseTestDB):
         eq_(len(tasks['pending']), 0)
         eq_(len(tasks['completed']), 1)
         #eq_(tasks['completed'][0]['status'], 'deleted')
+
+    def test_updating_completed_task(self):
+        task = self.tw.task_add("foobar")
+        task = self.tw.task_done(uuid=task['uuid'])
+        task['priority'] = 'L'
+        id, task = self.tw.task_update(task)
+        eq_(task['priority'], 'L')
+
+    def test_updating_deleted_task(self):
+        task = self.tw.task_add("foobar")
+        task = self.tw.task_delete(uuid=task['uuid'])
+        task['pri'] = 'L'
+        id, task = self.tw.task_update(task)
+        eq_(task['pri'], 'L')
 
     def should_skip(self):
         return False
