@@ -328,6 +328,15 @@ class TaskWarriorDirect(TaskWarriorBase):
         if 'id' in task:
             del task['id']
 
+        # Delete None values (treat them as deleting values)
+        # https://github.com/ralphbean/taskw/pull/70
+        items = list(task.items())  # listify generator for py3 support.
+        for k, v in items:
+            if v is None:
+                task.pop(k)
+                if k in _task:
+                    _task.pop(k)
+
         _task.update(task)
         self._task_replace(line, Status.to_file(task['status']), _task)
         return line, _task
@@ -430,6 +439,9 @@ class TaskWarriorShellout(TaskWarriorBase):
         },
         'verbose': 'nothing',
         'confirmation': 'no',
+        'dependency': {
+            'confirmation': 'no',
+        },
     }
 
     def __init__(

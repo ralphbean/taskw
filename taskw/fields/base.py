@@ -71,5 +71,5 @@ class DirtyableList(Dirtyable, list):
     pass
 
 
-class DirtyableDict(Dirtyable, list):
+class DirtyableDict(Dirtyable, dict):
     pass
