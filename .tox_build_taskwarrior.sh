@@ -6,6 +6,5 @@ if [ ! -d "$1/task" ]; then
     cmake -DCMAKE_INSTALL_PREFIX:PATH=$1 .
     make
     make install
+    cd $2
 fi
-cd $2
-py.test
