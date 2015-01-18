@@ -97,7 +97,7 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
                 else:
                     annotations.append(v)
 
-        for key in task.keys():
+        for key in list(task.keys()):
             if key.startswith('annotation_'):
                 annotations.append(task[key])
                 del(task[key])
