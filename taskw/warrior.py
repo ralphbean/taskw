@@ -15,6 +15,7 @@ import copy
 from distutils.version import LooseVersion
 import logging
 import os
+import re
 import time
 import uuid
 import subprocess
@@ -437,12 +438,15 @@ class TaskWarriorShellout(TaskWarriorBase):
         'json': {
             'array': 'TRUE'
         },
-        'verbose': 'nothing',
+        'verbose': 'new-uuid',
         'confirmation': 'no',
         'dependency': {
             'confirmation': 'no',
         },
     }
+    UUID_RE = re.compile(
+        '([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})'
+    )
 
     def __init__(
         self,
@@ -658,12 +662,27 @@ class TaskWarriorShellout(TaskWarriorBase):
         # task and add them after we've added the task.
         annotations = self._extract_annotations_from_task(task)
 
-        task['uuid'] = str(uuid.uuid4())
-        stdout, stderr = self._execute(
-            'add',
-            taskw.utils.encode_task_experimental(task),
-        )
-        id, added_task = self.get_task(uuid=task['uuid'])
+        if self.get_version() > LooseVersion('2.4'):
+            stdout, stderr = self._execute(
+                'add',
+                taskw.utils.encode_task_experimental(task),
+            )
+            # Modern versions of taskwarrior output the UUID as a string in a
+            # format like "Created task af1ed899-4086-410e-9c48-3aef73b76f01."
+            # so, we need to search for it in the output.
+            task_uuid = str(
+                uuid.UUID(
+                    self.UUID_RE.search(stdout).group(1)
+                )
+            )
+            id, added_task = self.get_task(uuid=task_uuid)
+        else:
+            task['uuid'] = str(uuid.uuid4())
+            stdout, stderr = self._execute(
+                'add',
+                taskw.utils.encode_task_experimental(task),
+            )
+            id, added_task = self.get_task(uuid=task['uuid'])
 
         # Check if 'uuid' is in the task we just added.
         if not 'uuid' in added_task:
