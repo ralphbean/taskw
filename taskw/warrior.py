@@ -493,12 +493,15 @@ class TaskWarriorShellout(TaskWarriorBase):
         if proc.returncode != 0:
             raise TaskwarriorError(command, stderr, stdout, proc.returncode)
 
+        # We should get bytes from the outside world.  Turn those into unicode
+        # as soon as we can.
+        stdout = stdout.decode(self.config.get('encoding', 'utf-8'))
+        stderr = stderr.decode(self.config.get('encoding', 'utf-8'))
+
         return stdout, stderr
 
     def _get_json(self, *args):
-        encoded = self._execute(*args)[0]
-        decoded = encoded.decode(self.config.get('encoding', 'utf-8'))
-        return json.loads(decoded)
+        return json.loads(self._execute(*args)[0])
 
     def _get_task_objects(self, *args):
         json = self._get_json(*args)
