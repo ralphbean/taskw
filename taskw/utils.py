@@ -13,6 +13,9 @@ import dateutil.tz
 import pytz
 import six
 
+from distutils.version import LooseVersion
+
+
 DATE_FORMAT = '%Y%m%dT%H%M%SZ'
 
 
@@ -81,8 +84,14 @@ def encode_task_value(key, value, query=False):
     return value
 
 
-def encode_query(value, query=True):
+def encode_query(value, version, query=True):
     args = []
+
+    def wrap(subquery):
+        if version < LooseVersion("2.4"):
+            return subquery
+        else:
+            return "(" + subquery + ")"
 
     if isinstance(value, dict):
         value = six.iteritems(value)
@@ -90,9 +99,9 @@ def encode_query(value, query=True):
     for k, v in value:
         if isinstance(v, list):
             args.append(
-                "(" + (" %s " % k).join([
-                    encode_query([item], query=False)[0] for item in v
-                ]) + ")"
+                wrap((" %s " % k).join([
+                    encode_query([item], version, query=False)[0] for item in v
+                ]))
             )
         else:
             args.append(

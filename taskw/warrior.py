@@ -600,9 +600,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         website.
 
         """
-        query_args = taskw.utils.encode_query(
-            filter_dict,
-        )
+        query_args = taskw.utils.encode_query(filter_dict, self.get_version())
         return self._get_task_objects(
             'export',
             *query_args
