@@ -4,6 +4,7 @@ import os
 import shutil
 import tempfile
 import datetime
+import dateutil.tz
 
 from taskw import TaskWarriorDirect, TaskWarriorShellout
 
@@ -35,6 +36,8 @@ class _BaseTestDB(object):
                 'uda.somestring.type=string\n',
                 'uda.somedate.label=Testing Date\n',
                 'uda.somedate.type=date\n',
+                'uda.somenumber.label=Testing Number\n',
+                'uda.somenumber.type=numeric\n',
             ])
 
         # Create empty .data files
@@ -47,6 +50,12 @@ class _BaseTestDB(object):
 
         # Create the taskwarrior db object that each test will use.
         self.tw = self.class_to_test(config_filename=fname)
+
+        # Create a taskwarrior db object for tests where marshal=True,
+        # but only for TaskwarriorShellout
+        if self.class_to_test == TaskWarriorShellout:
+            self.tw_marshal = self.class_to_test(config_filename=fname,
+                                                 marshal=True)
 
     def tearDown(self):
         os.remove(self.fname)
@@ -188,7 +197,7 @@ class _BaseTestDB(object):
             "foobar",
             uuid="1234-1234",
             project="some_project",
-            entry=datetime.datetime(2011, 1, 1),
+            entry=datetime.datetime(2011, 1, 1, tzinfo=dateutil.tz.tzutc()),
         )
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 1)
@@ -210,13 +219,49 @@ class _BaseTestDB(object):
     def test_add_with_uda_date(self):
         self.tw.task_add(
             "foobar",
-            somedate=datetime.datetime(2011, 1, 1),
+            somedate=datetime.datetime(2011, 1, 1, tzinfo=dateutil.tz.tzutc()),
         )
         tasks = self.tw.load_tasks()
         eq_(len(tasks['pending']), 1)
         task = tasks['pending'][0]
 
         assert(task['somedate'].startswith("20110101T"))
+
+    @raises(KeyError)
+    def test_remove_uda_string(self):
+        # Check that a string UDA is removed from a task when its
+        # value is set to None
+        task = self.tw.task_add(
+            "foobar",
+            somestring='this is a uda',
+        )
+        task['somestring'] = None
+        id, task = self.tw.task_update(task)
+        task['somestring']
+
+    @raises(KeyError)
+    def test_remove_uda_date(self):
+        # Check that a date UDA is removed from a task when its
+        # value is set to None
+        task = self.tw.task_add(
+            "foobar",
+            somedate=datetime.datetime(2011, 1, 1),
+        )
+        task['somedate'] = None
+        id, task = self.tw.task_update(task)
+        task['somedate']
+
+    @raises(KeyError)
+    def test_remove_uda_numeric(self):
+        # Check that a numeric UDA is removed from a task when its
+        # value is set to None
+        task = self.tw.task_add(
+            "foobar",
+            somenumber=15,
+        )
+        task['somenumber'] = None
+        id, task = self.tw.task_update(task)
+        task['somenumber']
 
     @raises(ValueError)
     def test_completing_completed_task(self):
@@ -368,6 +413,24 @@ class TestDBShellout(_BaseTestDB):
         eq_(len(tasks), 1)
         eq_(tasks[0]['id'], 3)
 
+    def test_filtering_qmark(self):
+        task1 = self.tw.task_add("foobar1")
+        task2 = self.tw.task_add("foo?bar")
+        tasks = self.tw.filter_tasks({
+                'description.contains': 'oo?ba',
+        })
+        eq_(len(tasks), 1)
+        eq_(tasks[0]['id'], 2)
+
+    def test_filtering_qmark_not_contains(self):
+        task1 = self.tw.task_add("foobar1")
+        task2 = self.tw.task_add("foo?bar")
+        tasks = self.tw.filter_tasks({
+                'description': 'foo?bar',
+        })
+        eq_(len(tasks), 1)
+        eq_(tasks[0]['id'], 2)
+
     def test_filtering_semicolon(self):
         task1 = self.tw.task_add("foobar1")
         task2 = self.tw.task_add("foobar2")
@@ -448,3 +511,39 @@ class TestDBShellout(_BaseTestDB):
 
         eq_(len(task['annotations']), 1)
         eq_(task['annotations'][0]['description'], original['description'])
+
+    @raises(KeyError)
+    def test_remove_uda_string_marshal(self):
+        # Check that a string UDA is removed from a task when its
+        # value is set to None
+        task = self.tw_marshal.task_add(
+            "foobar",
+            somestring='this is a uda',
+        )
+        task['somestring'] = None
+        id, task = self.tw_marshal.task_update(task)
+        task['somestring']
+
+    @raises(KeyError)
+    def test_remove_uda_date_marshal(self):
+        # Check that a date UDA is removed from a task when its
+        # value is set to None
+        task = self.tw_marshal.task_add(
+            "foobar",
+            somedate=datetime.datetime(2011, 1, 1),
+        )
+        task['somedate'] = None
+        id, task = self.tw_marshal.task_update(task)
+        task['somedate']
+
+    @raises(KeyError)
+    def test_remove_uda_numeric_marshal(self):
+        # Check that a numeric UDA is removed from a task when its
+        # value is set to None
+        task = self.tw_marshal.task_add(
+            "foobar",
+            somenumber=15,
+        )
+        task['somenumber'] = None
+        id, task = self.tw_marshal.task_update(task)
+        task['somenumber']
