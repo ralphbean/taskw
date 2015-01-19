@@ -9,7 +9,7 @@ env:
  - TASKWARRIOR=v2.2.0
  - TASKWARRIOR=v2.3.0
  - TASKWARRIOR=v2.4.0
- - TASKWARRIOR=v2.4.1
+ - TASKWARRIOR=2.4.1
 before_install:
   - sudo apt-get install -y python-dev cmake build-essential libgnutls28-dev uuid-dev gnutls-bin chrpath libssl-dev libfontconfig1-dev
   - git clone https://git.tasktools.org/scm/tm/task.git
