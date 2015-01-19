@@ -13,6 +13,9 @@ import dateutil.tz
 import pytz
 import six
 
+from distutils.version import LooseVersion
+
+
 DATE_FORMAT = '%Y%m%dT%H%M%SZ'
 
 
@@ -41,7 +44,6 @@ decode_replacements = OrderedDict([
 logical_replacements = OrderedDict([
     ('?', '\\?'),
     ('+', '\\+'),
-    ('"', '\\"'),
     ('(', '\\('),
     (')', '\\)'),
     ('[', '\\['),
@@ -82,8 +84,14 @@ def encode_task_value(key, value, query=False):
     return value
 
 
-def encode_query(value, query=True):
+def encode_query(value, version, query=True):
     args = []
+
+    def wrap(subquery):
+        if version < LooseVersion("2.4"):
+            return subquery
+        else:
+            return "(" + subquery + ")"
 
     if isinstance(value, dict):
         value = six.iteritems(value)
@@ -91,13 +99,13 @@ def encode_query(value, query=True):
     for k, v in value:
         if isinstance(v, list):
             args.append(
-                "(" + (" %s " % k).join([
-                    encode_query([item], query=False)[0] for item in v
-                ]) + ")"
+                wrap((" %s " % k).join([
+                    encode_query([item], version, query=False)[0] for item in v
+                ]))
             )
         else:
             args.append(
-                '%s:\"%s\"' % (
+                '%s:%s' % (
                     k,
                     encode_task_value(k, v, query=query)
                 )
@@ -122,10 +130,10 @@ def encode_task_experimental(task):
         task[k] = encode_task_value(k, task[k])
 
     # Then, format it as a string
-    return "%s\n" % " ".join([
+    return [
         "%s:\"%s\"" % (k, v)
         for k, v in sorted(task.items(), key=itemgetter(0))
-    ])
+    ]
 
 
 def encode_task(task):

@@ -8,3 +8,4 @@ dist
 test.html
 *.egg*
 *.pdf
+.tox/*
