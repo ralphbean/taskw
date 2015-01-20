@@ -498,6 +498,21 @@ class TestDBShellout(_BaseTestDB):
         })
         eq_(len(tasks), 0)
 
+    def test_filtering_logic_conjunction_junction_whats_your_function(self):
+        task1 = self.tw.task_add("foobar1")
+        task2 = self.tw.task_add("foobar2")
+        task2 = self.tw.task_add("foobar3")
+        tasks = self.tw.filter_tasks({
+            'and': [
+                ('description', 'foobar1'),
+            ],
+            'or': [
+                ('status', 'pending'),
+                ('status', 'waiting'),
+            ]
+        })
+        eq_(len(tasks), 1)
+
     def test_annotation_escaping(self):
         original = {'description': 're-opening the issue'}
 
