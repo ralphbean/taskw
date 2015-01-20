@@ -547,3 +547,23 @@ class TestDBShellout(_BaseTestDB):
         task['somenumber'] = None
         id, task = self.tw_marshal.task_update(task)
         task['somenumber']
+
+    def test_add_and_retrieve_uda_string_url(self):
+        arbitrary_url = "http://www.someurl.com/1084/"
+
+        self.tw.config_overrides['uda'] = {
+            'someurl': {
+                'label': 'Some URL',
+                'type': 'string'
+            }
+        }
+        self.tw.task_add(
+            "foobar",
+            someurl=arbitrary_url,
+        )
+        results = self.tw.filter_tasks({
+            'someurl': arbitrary_url
+        })
+        eq_(len(results), 1)
+        task = results[0]
+        eq_(task['someurl'], arbitrary_url)
