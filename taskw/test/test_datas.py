@@ -577,7 +577,7 @@ class TestDBShellout(_BaseTestDB):
             someurl=arbitrary_url,
         )
         results = self.tw.filter_tasks({
-            'someurl': arbitrary_url
+            'someurl.is': arbitrary_url
         })
         eq_(len(results), 1)
         task = results[0]
