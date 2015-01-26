@@ -1,4 +1,5 @@
 """ Various utilties """
+from __future__ import print_function
 
 import datetime
 import re
@@ -12,8 +13,6 @@ except ImportError:
 import dateutil.tz
 import pytz
 import six
-
-from distutils.version import LooseVersion
 
 
 DATE_FORMAT = '%Y%m%dT%H%M%SZ'
@@ -87,21 +86,15 @@ def encode_task_value(key, value, query=False):
 def encode_query(value, version, query=True):
     args = []
 
-    def wrap(subquery):
-        if version < LooseVersion("2.4"):
-            return subquery
-        else:
-            return "(" + subquery + ")"
-
     if isinstance(value, dict):
         value = six.iteritems(value)
 
     for k, v in value:
         if isinstance(v, list):
             args.append(
-                wrap((" %s " % k).join([
+                "( %s )" % (" %s " % k).join([
                     encode_query([item], version, query=False)[0] for item in v
-                ]))
+                ])
             )
         else:
             args.append(
@@ -110,6 +103,7 @@ def encode_query(value, version, query=True):
                     encode_task_value(k, v, query=query)
                 )
             )
+
     return args
 
 
