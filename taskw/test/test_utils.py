@@ -103,6 +103,18 @@ class TestUtils(object):
         task2 = dict(shuffled(TASK.items()))
         eq_(encode_task(task1), encode_task(task2))
 
+    def test_taskwarrior_null_encoding_bug_workaround(self):
+        task = {
+            'priority': ''
+        }
+        actual_encoded = encode_task_experimental(task)[0]
+        expected_encoded = "priority:"
+
+        eq_(
+            actual_encoded,
+            expected_encoded
+        )
+
     def test_encodes_dates(self):
         arbitrary_date = datetime.date(2014, 3, 2)
         task = {

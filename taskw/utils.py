@@ -125,7 +125,7 @@ def encode_task_experimental(task):
 
     # Then, format it as a string
     return [
-        "%s:\"%s\"" % (k, v)
+        "%s:\"%s\"" % (k, v) if v else "%s:" % (k, )
         for k, v in sorted(task.items(), key=itemgetter(0))
     ]
 
