@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.0.2
+-----
+
+- This one too. `72d61ee33 <https://github.com/ralphbean/taskw/commit/72d61ee334c183a7e819c954099a3690bb9a7aa6>`_
+
 1.0.1
 -----
 
