@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.0.1
+-----
+
+- Ding this req. `2d9c546eb <https://github.com/ralphbean/taskw/commit/2d9c546eb9da57a75468c479d7abb15047a0c793>`_
+
 1.0.0
 -----
 
