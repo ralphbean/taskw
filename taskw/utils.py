@@ -1,4 +1,5 @@
 """ Various utilties """
+from __future__ import print_function
 
 import datetime
 import re
@@ -12,6 +13,7 @@ except ImportError:
 import dateutil.tz
 import pytz
 import six
+
 
 DATE_FORMAT = '%Y%m%dT%H%M%SZ'
 
@@ -41,7 +43,6 @@ decode_replacements = OrderedDict([
 logical_replacements = OrderedDict([
     ('?', '\\?'),
     ('+', '\\+'),
-    ('"', '\\"'),
     ('(', '\\('),
     (')', '\\)'),
     ('[', '\\['),
@@ -51,7 +52,7 @@ logical_replacements = OrderedDict([
 ])
 
 
-def encode_task_value(value, query=False):
+def encode_task_value(key, value, query=False):
     if value is None:
         value = ''
     elif isinstance(value, datetime.datetime):
@@ -68,6 +69,9 @@ def encode_task_value(value, query=False):
             # In some contexts, parentheses are interpreted for use in
             # logical expressions.  They must *sometimes* be escaped.
             for left, right in six.iteritems(logical_replacements):
+                # don't replace '?' if this is an exact match
+                if left == '?' and '.' not in key:
+                    continue
                 value = value.replace(left, right)
         else:
             for unsafe, safe in six.iteritems(
@@ -79,7 +83,7 @@ def encode_task_value(value, query=False):
     return value
 
 
-def encode_query(value, query=True):
+def encode_query(value, version, query=True):
     args = []
 
     if isinstance(value, dict):
@@ -88,17 +92,18 @@ def encode_query(value, query=True):
     for k, v in value:
         if isinstance(v, list):
             args.append(
-                "(" + (" %s " % k).join([
-                    encode_query([item], query=False)[0] for item in v
-                ]) + ")"
+                "( %s )" % (" %s " % k).join([
+                    encode_query([item], version, query=False)[0] for item in v
+                ])
             )
         else:
             args.append(
-                '%s:\"%s\"' % (
+                '%s:%s' % (
                     k,
-                    encode_task_value(v, query=query)
+                    encode_task_value(k, v, query=query)
                 )
             )
+
     return args
 
 
@@ -116,13 +121,13 @@ def encode_task_experimental(task):
     if 'tags' in task:
         task['tags'] = ','.join(task['tags'])
     for k in task:
-        task[k] = encode_task_value(task[k])
+        task[k] = encode_task_value(k, task[k])
 
     # Then, format it as a string
-    return "%s\n" % " ".join([
-        "%s:\"%s\"" % (k, v)
+    return [
+        "%s:\"%s\"" % (k, v) if v else "%s:" % (k, )
         for k, v in sorted(task.items(), key=itemgetter(0))
-    ])
+    ]
 
 
 def encode_task(task):

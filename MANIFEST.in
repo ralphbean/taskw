@@ -1,3 +1,8 @@
 include README.rst
 include LICENSE.txt
+include requirements.txt
+include test_requirements.txt
+include .tox_tests.sh
+include tox.ini
+include setup.cfg
 recursive-include taskw/test/data *
