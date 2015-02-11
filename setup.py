@@ -4,8 +4,6 @@ import sys
 from setuptools import setup, find_packages
 import uuid
 
-version = '0.8.6'
-
 f = open('README.rst')
 long_description = f.read().strip()
 long_description = long_description.split('split here', 1)[1]
@@ -44,7 +42,7 @@ if sys.version_info < (2, 7):
     REQUIREMENTS['install'].append('ordereddict')
 
 setup(name='taskw',
-      version=version,
+      version='0.8.6',
       description="Python bindings for your taskwarrior database",
       long_description=long_description,
       classifiers=[
