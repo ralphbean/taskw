@@ -75,6 +75,20 @@ class Task(dict):
 
         super(Task, self).__init__(processed)
 
+    @classmethod
+    def from_stub(cls, data, udas=None):
+        """ Create a Task from an already deserialized dict. """
+
+        # Construct a throwaway task just to use its _serialize method
+        # ... these should really be class methods.
+        throwaway = Task({}, udas=udas)
+
+        processed = {}
+        for k, v in six.iteritems(data):
+            processed[k] = throwaway._serialize(k, v)
+
+        return cls(processed, udas)
+
     def _get_converter_for_field(self, field, default=None):
         converter = self._fields.get(field, None)
         if not converter:
