@@ -1,6 +1,14 @@
 Changelog
 =========
 
+1.0.3
+-----
+
+- Replace attr.is:value queries with attr == "value". `417928c8f <https://github.com/ralphbean/taskw/commit/417928c8f297fed4091592c55c17ba5e66de17fb>`_
+- Merge pull request #91 from ralphbean/feature/is-to-equals `55afe8db4 <https://github.com/ralphbean/taskw/commit/55afe8db4f8aba598a7fb6cf77898ff6b2356519>`_
+- Use the 'release build' just to make things faster `3b10aee66 <https://github.com/ralphbean/taskw/commit/3b10aee661808d8cf3cb034c5a5bf9e8568ff4a4>`_
+- Test against task-2.4.1.  It is out! `4b170808d <https://github.com/ralphbean/taskw/commit/4b170808df90b04e224a6c32de60ae0557b5df4f>`_
+
 1.0.2
 -----
 
