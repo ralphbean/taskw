@@ -14,6 +14,8 @@ import dateutil.tz
 import pytz
 import six
 
+from distutils.version import LooseVersion
+
 
 DATE_FORMAT = '%Y%m%dT%H%M%SZ'
 
@@ -97,12 +99,20 @@ def encode_query(value, version, query=True):
                 ])
             )
         else:
-            args.append(
-                '%s:%s' % (
-                    k,
-                    encode_task_value(k, v, query=query)
+            if k.endswith(".is") and version >= LooseVersion('2.4'):
+                args.append(
+                    '%s == "%s"' % (
+                        k[:-3],
+                        encode_task_value(k, v, query=query)
+                    )
                 )
-            )
+            else:
+                args.append(
+                    '%s:%s' % (
+                        k,
+                        encode_task_value(k, v, query=query)
+                    )
+                )
 
     return args
 
