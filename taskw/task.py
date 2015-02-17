@@ -64,14 +64,14 @@ class Task(dict):
     }
 
     def __init__(self, data, udas=None):
+        udas = udas or {}
         self._fields = self.FIELDS.copy()
-        if udas:
-            self._fields.update(udas)
+        self._fields.update(udas)
         self._changes = []
 
         processed = {}
         for k, v in six.iteritems(data):
-            processed[k] = self._deserialize(k, v)
+            processed[k] = self._deserialize(k, v, self._fields)
 
         super(Task, self).__init__(processed)
 
@@ -79,34 +79,38 @@ class Task(dict):
     def from_stub(cls, data, udas=None):
         """ Create a Task from an already deserialized dict. """
 
-        # Construct a throwaway task just to use its _serialize method
-        # ... these should really be class methods.
-        throwaway = Task({}, udas=udas)
+        udas = udas or {}
+        fields = cls.FIELDS.copy()
+        fields.update(udas)
 
         processed = {}
         for k, v in six.iteritems(data):
-            processed[k] = throwaway._serialize(k, v)
+            processed[k] = cls._serialize(k, v, fields)
 
         return cls(processed, udas)
 
-    def _get_converter_for_field(self, field, default=None):
-        converter = self._fields.get(field, None)
+    @classmethod
+    def _get_converter_for_field(cls, field, default=None, fields=None):
+        fields = fields or {}
+        converter = fields.get(field, None)
         if not converter:
             return default if default else Field()
         return converter
 
-    def _deserialize(self, key, value):
+    @classmethod
+    def _deserialize(cls, key, value, fields):
         """ Marshal incoming data into Python objects."""
-        converter = self._get_converter_for_field(key)
+        converter = cls._get_converter_for_field(key, None, fields)
         return converter.deserialize(value)
 
-    def _serialize(self, key, value):
+    @classmethod
+    def _serialize(cls, key, value, fields):
         """ Marshal outgoing data into Taskwarrior's JSON format."""
-        converter = self._get_converter_for_field(key)
+        converter = cls._get_converter_for_field(key, None, fields)
         return converter.serialize(value)
 
     def _field_is_writable(self, key):
-        converter = self._get_converter_for_field(key)
+        converter = self._get_converter_for_field(key, fields=self._fields)
         if converter.read_only:
             return False
         return True
@@ -141,7 +145,10 @@ class Task(dict):
         for k, f, t in self._changes:
             if k not in results:
                 results[k] = [f, None]
-            results[k][1] = self._serialize(k, t) if serialized else t
+            results[k][1] = (
+                self._serialize(k, t, self._fields)
+                if serialized else t
+            )
 
         # Check for changes on subordinate items
         for k, v in six.iteritems(self):
@@ -151,7 +158,7 @@ class Task(dict):
                     if not k in results:
                         results[k] = [result[0], None]
                     results[k][1] = (
-                        self._serialize(k, result[1])
+                        self._serialize(k, result[1], self._fields)
                         if serialized else result[1]
                     )
 
@@ -181,7 +188,7 @@ class Task(dict):
         """ Returns a serialized representation of this task."""
         serialized = {}
         for k, v in six.iteritems(self):
-            serialized[k] = self._serialize(k, v)
+            serialized[k] = self._serialize(k, v, self._fields)
         return serialized
 
     def serialized_changes(self, keep=False):
@@ -190,7 +197,7 @@ class Task(dict):
             # Here, `v` is a 2-tuple of the field's original value
             # and the field's new value.
             _, to = v
-            serialized[k] = self._serialize(k, to)
+            serialized[k] = self._serialize(k, to, self._fields)
         return serialized
 
     def __setitem__(self, key, value, force=False):
@@ -213,7 +220,7 @@ class Task(dict):
 
             # Serialize just to make sure we can; it's better to throw
             # this error early.
-            self._serialize(key, value)
+            self._serialize(key, value, self._fields)
 
             # Also make sure we raise an error if this field isn't
             # writable at all.
