@@ -159,7 +159,7 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
         return filtered
 
     @classmethod
-    def load_config(self, config_filename="~/.taskrc"):
+    def load_config(cls, config_filename="~/.taskrc", overrides=None):
         """ Load ~/.taskrc into a python dict
 
         >>> config = TaskWarrior.load_config()
@@ -169,39 +169,7 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
         'yes'
 
         """
-
-        with open(os.path.expanduser(config_filename), 'r') as f:
-            lines = f.readlines()
-
-        _usable = lambda l: not(l.startswith('#') or l.strip() == '')
-        lines = filter(_usable, lines)
-
-        def _build_config(key, value, d):
-            """ Called recursively to split up keys """
-            pieces = key.split('.', 1)
-            if len(pieces) == 1:
-                d[pieces[0]] = value.strip()
-            else:
-                d[pieces[0]] = _build_config(pieces[1], value, {})
-
-            return d
-
-        d = {}
-        for line in lines:
-            if '=' not in line:
-                continue
-
-            key, value = line.split('=', 1)
-            d = _build_config(key, value, d)
-
-        # Set a default data location if one is not specified.
-        if d.get('data') is None:
-            d['data'] = {}
-
-        if d['data'].get('location') is None:
-            d['data']['location'] = os.path.expanduser("~/.task/")
-
-        return d
+        return TaskRc(config_filename, overrides=overrides)
 
     @abc.abstractmethod
     def task_start(self, **kw):
