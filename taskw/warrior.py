@@ -500,6 +500,9 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         task.update(kw)
 
+        if self._marshal:
+            return Task.from_stub(task, udas=self.config.get_udas())
+
         return task
 
     @classmethod
@@ -637,10 +640,12 @@ class TaskWarriorShellout(TaskWarriorBase):
         elif 'uuid' in task:
             del task['uuid']
 
-        stdout, stderr = self._execute(
-            'add',
-            *taskw.utils.encode_task_experimental(task)
-        )
+        if self._marshal:
+            args = taskw.utils.encode_task_experimental(task.serialized())
+        else:
+            args = taskw.utils.encode_task_experimental(task)
+
+        stdout, stderr = self._execute('add', *args)
 
         # However, in 2.4 and later, you cannot specify whatever uuid you want
         # when adding a task.  Instead, you have to specify rc.verbose=new-uuid

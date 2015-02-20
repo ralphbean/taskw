@@ -15,5 +15,5 @@ class CommaSeparatedUUIDField(Field):
         if not value:
             value = []
         if not hasattr(value, '__iter__'):
-            raise ValueError("Value must be list or tuple.")
+            raise ValueError("Value must be list or tuple, not %r." % value)
         return ','.join([str(v) for v in value])
