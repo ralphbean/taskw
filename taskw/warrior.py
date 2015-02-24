@@ -36,6 +36,10 @@ logger = logging.getLogger(__name__)
 
 open = lambda fname, mode: codecs.open(fname, mode, "utf-8")
 
+# Location of configuration file: either specified by TASKRC environment
+# variable, or ~/.taskrc (default).
+TASKRC = os.getenv("TASKRC", "~/.taskrc")
+
 
 class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
     """ The task warrior
@@ -46,7 +50,7 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
 
     def __init__(
         self,
-        config_filename="~/.taskrc",
+        config_filename=TASKRC,
         config_overrides=None,
         marshal=False
     ):
@@ -159,7 +163,7 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
         return filtered
 
     @classmethod
-    def load_config(cls, config_filename="~/.taskrc", overrides=None):
+    def load_config(cls, config_filename=TASKRC, overrides=None):
         """ Load ~/.taskrc into a python dict
 
         >>> config = TaskWarrior.load_config()
@@ -414,7 +418,7 @@ class TaskWarriorShellout(TaskWarriorBase):
 
     def __init__(
         self,
-        config_filename="~/.taskrc",
+        config_filename=TASKRC,
         config_overrides=None,
         marshal=False,
     ):
