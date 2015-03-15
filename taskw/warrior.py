@@ -455,12 +455,17 @@ class TaskWarriorShellout(TaskWarriorBase):
             if isinstance(command[i], six.text_type):
                 command[i] = command[i].encode('utf-8')
 
-        proc = subprocess.Popen(
-            command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        stdout, stderr = proc.communicate()
+        try:
+            proc = subprocess.Popen(
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            stdout, stderr = proc.communicate()
+        except OSError as e:
+            if 'No such file or directory' in e:
+                raise OSError("Unable to find the 'task' command-line tool.")
+            raise
 
         if proc.returncode != 0:
             raise TaskwarriorError(command, stderr, stdout, proc.returncode)
@@ -522,10 +527,15 @@ class TaskWarriorShellout(TaskWarriorBase):
 
     @classmethod
     def get_version(cls):
-        taskwarrior_version = subprocess.Popen(
-            ['task', '--version'],
-            stdout=subprocess.PIPE
-        ).communicate()[0]
+        try:
+            taskwarrior_version = subprocess.Popen(
+                ['task', '--version'],
+                stdout=subprocess.PIPE
+            ).communicate()[0]
+        except OSError as e:
+            if 'No such file or directory' in e:
+                raise OSError("Unable to find the 'task' command-line tool.")
+            raise
         return LooseVersion(taskwarrior_version.decode())
 
     def sync(self, init=False):
