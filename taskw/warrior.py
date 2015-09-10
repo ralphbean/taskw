@@ -36,6 +36,10 @@ logger = logging.getLogger(__name__)
 
 open = lambda fname, mode: codecs.open(fname, mode, "utf-8")
 
+# Location of configuration file: either specified by TASKRC environment
+# variable, or ~/.taskrc (default).
+TASKRC = os.getenv("TASKRC", "~/.taskrc")
+
 
 class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
     """ The task warrior
@@ -46,7 +50,7 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
 
     def __init__(
         self,
-        config_filename="~/.taskrc",
+        config_filename=TASKRC,
         config_overrides=None,
         marshal=False
     ):
@@ -159,7 +163,7 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
         return filtered
 
     @classmethod
-    def load_config(self, config_filename="~/.taskrc"):
+    def load_config(cls, config_filename=TASKRC, overrides=None):
         """ Load ~/.taskrc into a python dict
 
         >>> config = TaskWarrior.load_config()
@@ -169,39 +173,7 @@ class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
         'yes'
 
         """
-
-        with open(os.path.expanduser(config_filename), 'r') as f:
-            lines = f.readlines()
-
-        _usable = lambda l: not(l.startswith('#') or l.strip() == '')
-        lines = filter(_usable, lines)
-
-        def _build_config(key, value, d):
-            """ Called recursively to split up keys """
-            pieces = key.split('.', 1)
-            if len(pieces) == 1:
-                d[pieces[0]] = value.strip()
-            else:
-                d[pieces[0]] = _build_config(pieces[1], value, {})
-
-            return d
-
-        d = {}
-        for line in lines:
-            if '=' not in line:
-                continue
-
-            key, value = line.split('=', 1)
-            d = _build_config(key, value, d)
-
-        # Set a default data location if one is not specified.
-        if d.get('data') is None:
-            d['data'] = {}
-
-        if d['data'].get('location') is None:
-            d['data']['location'] = os.path.expanduser("~/.task/")
-
-        return d
+        return TaskRc(config_filename, overrides=overrides)
 
     @abc.abstractmethod
     def task_start(self, **kw):
@@ -446,7 +418,7 @@ class TaskWarriorShellout(TaskWarriorBase):
 
     def __init__(
         self,
-        config_filename="~/.taskrc",
+        config_filename=TASKRC,
         config_overrides=None,
         marshal=False,
     ):
@@ -483,12 +455,17 @@ class TaskWarriorShellout(TaskWarriorBase):
             if isinstance(command[i], six.text_type):
                 command[i] = command[i].encode('utf-8')
 
-        proc = subprocess.Popen(
-            command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        stdout, stderr = proc.communicate()
+        try:
+            proc = subprocess.Popen(
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            stdout, stderr = proc.communicate()
+        except OSError as e:
+            if 'No such file or directory' in e:
+                raise OSError("Unable to find the 'task' command-line tool.")
+            raise
 
         if proc.returncode != 0:
             raise TaskwarriorError(command, stderr, stdout, proc.returncode)
@@ -532,6 +509,9 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         task.update(kw)
 
+        if self._marshal:
+            return Task.from_stub(task, udas=self.config.get_udas())
+
         return task
 
     @classmethod
@@ -547,10 +527,15 @@ class TaskWarriorShellout(TaskWarriorBase):
 
     @classmethod
     def get_version(cls):
-        taskwarrior_version = subprocess.Popen(
-            ['task', '--version'],
-            stdout=subprocess.PIPE
-        ).communicate()[0]
+        try:
+            taskwarrior_version = subprocess.Popen(
+                ['task', '--version'],
+                stdout=subprocess.PIPE
+            ).communicate()[0]
+        except OSError as e:
+            if 'No such file or directory' in e:
+                raise OSError("Unable to find the 'task' command-line tool.")
+            raise
         return LooseVersion(taskwarrior_version.decode())
 
     def sync(self, init=False):
@@ -669,10 +654,12 @@ class TaskWarriorShellout(TaskWarriorBase):
         elif 'uuid' in task:
             del task['uuid']
 
-        stdout, stderr = self._execute(
-            'add',
-            *taskw.utils.encode_task_experimental(task)
-        )
+        if self._marshal:
+            args = taskw.utils.encode_task_experimental(task.serialized())
+        else:
+            args = taskw.utils.encode_task_experimental(task)
+
+        stdout, stderr = self._execute('add', *args)
 
         # However, in 2.4 and later, you cannot specify whatever uuid you want
         # when adding a task.  Instead, you have to specify rc.verbose=new-uuid
