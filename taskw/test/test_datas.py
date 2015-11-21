@@ -369,7 +369,7 @@ class TestDBShellout(_BaseTestDB):
         task1 = self.tw.task_add("[foobar1]")
         task2 = self.tw.task_add("[foobar2]")
         tasks = self.tw.filter_tasks({
-            'description.contains': '\[foobar2\]',
+            'description.contains': '[foobar2]',
         })
         eq_(len(tasks), 1)
         eq_(tasks[0]['id'], 2)
@@ -388,7 +388,7 @@ class TestDBShellout(_BaseTestDB):
         task2 = self.tw.task_add("foobar2")
         task2 = self.tw.task_add("foobar+")
         tasks = self.tw.filter_tasks({
-            'description.contains': 'foobar\+',
+            'description.contains': 'foobar+',
         })
         eq_(len(tasks), 1)
         eq_(tasks[0]['id'], 3)
@@ -417,7 +417,7 @@ class TestDBShellout(_BaseTestDB):
         task1 = self.tw.task_add("foobar1")
         task2 = self.tw.task_add("foo?bar")
         tasks = self.tw.filter_tasks({
-                'description.contains': 'oo\?ba',
+                'description.contains': 'oo?ba',
         })
         eq_(len(tasks), 1)
         eq_(tasks[0]['id'], 2)
@@ -446,7 +446,7 @@ class TestDBShellout(_BaseTestDB):
         task2 = self.tw.task_add("foobar2")
         task2 = self.tw.task_add("foo?bar")
         tasks = self.tw.filter_tasks({
-            'description.contains': 'foo\?bar',
+            'description.contains': 'foo?bar',
         })
         eq_(len(tasks), 1)
         eq_(tasks[0]['id'], 3)
