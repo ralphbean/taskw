@@ -20,6 +20,8 @@ import uuid
 import subprocess
 import json
 
+import kitchen.text.converters
+
 import six
 from six import with_metaclass
 from six.moves import filter
@@ -472,8 +474,18 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         # We should get bytes from the outside world.  Turn those into unicode
         # as soon as we can.
-        stdout = stdout.decode(self.config.get('encoding', 'utf-8'))
-        stderr = stderr.decode(self.config.get('encoding', 'utf-8'))
+        # Everything going into and coming out of taskwarrior *should* be
+        # utf-8, but there are weird edge cases where something totally unusual
+        # made it in.. so we need to be able to handle (or at least try to
+        # handle) whatever.  Kitchen tries its best.
+        try:
+            stdout = stdout.decode(self.config.get('encoding', 'utf-8'))
+        except UnicodeDecodeError as e:
+            stdout = kitchen.text.converters.to_unicode(stdout)
+        try:
+            stderr = stderr.decode(self.config.get('encoding', 'utf-8'))
+        except UnicodeDecodeError as e:
+            stderr = kitchen.text.converters.to_unicode(stderr)
 
         return stdout, stderr
 
