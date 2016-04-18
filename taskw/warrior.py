@@ -487,6 +487,12 @@ class TaskWarriorShellout(TaskWarriorBase):
         except UnicodeDecodeError as e:
             stderr = kitchen.text.converters.to_unicode(stderr)
 
+        # strip any crazy terminal escape characters like bells, backspaces,
+        # and form feeds
+        for c in ('\a', '\b', '\f'):
+            stdout = stdout.replace(c, '?')
+            stderr = stderr.replace(c, '?')
+
         return stdout, stderr
 
     def _get_json(self, *args):
