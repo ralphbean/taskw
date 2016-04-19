@@ -489,7 +489,7 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         # strip any crazy terminal escape characters like bells, backspaces,
         # and form feeds
-        for c in ('\a', '\b', '\f'):
+        for c in ('\a', '\b', '\f', ''):
             stdout = stdout.replace(c, '?')
             stderr = stderr.replace(c, '?')
 
