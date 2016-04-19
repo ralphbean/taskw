@@ -19,6 +19,7 @@ import time
 import uuid
 import subprocess
 import json
+import errno
 
 import kitchen.text.converters
 
@@ -465,7 +466,6 @@ class TaskWarriorShellout(TaskWarriorBase):
             )
             stdout, stderr = proc.communicate()
         except OSError as e:
-            import errno
             if e.errno == errno.ENOENT:
                 raise OSError("Unable to find the 'task' command-line tool.")
             raise
