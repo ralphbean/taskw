@@ -26,7 +26,7 @@ class StringField(Field):
             return value
         if not isinstance(value, six.string_types):
             string_value = six.text_type(value)
-            logger.warning(
+            logger.debug(
                 "Value %s serialized to string as '%s'",
                 repr(value),
                 string_value
