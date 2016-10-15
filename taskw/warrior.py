@@ -454,9 +454,11 @@ class TaskWarriorShellout(TaskWarriorBase):
         )
 
         # subprocess is expecting bytestrings only, so nuke unicode if present
+        # and remove control characters
         for i in range(len(command)):
             if isinstance(command[i], six.text_type):
-                command[i] = command[i].encode('utf-8')
+                command[i] = (
+                    taskw.utils.clean_ctrl_chars(command[i].encode('utf-8')))
 
         try:
             proc = subprocess.Popen(
