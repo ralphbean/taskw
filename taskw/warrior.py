@@ -19,6 +19,9 @@ import time
 import uuid
 import subprocess
 import json
+import errno
+
+import kitchen.text.converters
 
 import six
 from six import with_metaclass
@@ -451,9 +454,11 @@ class TaskWarriorShellout(TaskWarriorBase):
         )
 
         # subprocess is expecting bytestrings only, so nuke unicode if present
+        # and remove control characters
         for i in range(len(command)):
             if isinstance(command[i], six.text_type):
-                command[i] = command[i].encode('utf-8')
+                command[i] = (
+                    taskw.utils.clean_ctrl_chars(command[i].encode('utf-8')))
 
         try:
             proc = subprocess.Popen(
@@ -463,7 +468,7 @@ class TaskWarriorShellout(TaskWarriorBase):
             )
             stdout, stderr = proc.communicate()
         except OSError as e:
-            if 'No such file or directory' in e:
+            if e.errno == errno.ENOENT:
                 raise OSError("Unable to find the 'task' command-line tool.")
             raise
 
@@ -472,8 +477,24 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         # We should get bytes from the outside world.  Turn those into unicode
         # as soon as we can.
-        stdout = stdout.decode(self.config.get('encoding', 'utf-8'))
-        stderr = stderr.decode(self.config.get('encoding', 'utf-8'))
+        # Everything going into and coming out of taskwarrior *should* be
+        # utf-8, but there are weird edge cases where something totally unusual
+        # made it in.. so we need to be able to handle (or at least try to
+        # handle) whatever.  Kitchen tries its best.
+        try:
+            stdout = stdout.decode(self.config.get('encoding', 'utf-8'))
+        except UnicodeDecodeError as e:
+            stdout = kitchen.text.converters.to_unicode(stdout)
+        try:
+            stderr = stderr.decode(self.config.get('encoding', 'utf-8'))
+        except UnicodeDecodeError as e:
+            stderr = kitchen.text.converters.to_unicode(stderr)
+
+        # strip any crazy terminal escape characters like bells, backspaces,
+        # and form feeds
+        for c in ('\a', '\b', '\f', ''):
+            stdout = stdout.replace(c, '?')
+            stderr = stderr.replace(c, '?')
 
         return stdout, stderr
 
