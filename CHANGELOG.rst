@@ -1,3 +1,58 @@
+
+1.2.0
+-----
+
+Pull Requests
+
+- (@ryansb)         #103, Strip form feed/bell chars
+  https://github.com/ralphbean/taskw/pull/103
+- (@ryansb)         #105, Also remove literal escape characters `^[`
+  https://github.com/ralphbean/taskw/pull/105
+- (@ryansb)         #104, Use the `errno` library instead of string matching error text
+  https://github.com/ralphbean/taskw/pull/104
+- (@ryneeverett)    #107, Travis Testing Improvements
+  https://github.com/ralphbean/taskw/pull/107
+- (@ryneeverett)    #108, Downgrade string coercion from warning to debug.
+  https://github.com/ralphbean/taskw/pull/108
+- (@gdetrez)        #109, Fix bugwarrior issue #393
+  https://github.com/ralphbean/taskw/pull/109
+
+Commits
+
+- ac720a5f2 Test against beta2.
+  https://github.com/ralphbean/taskw/commit/ac720a5f2
+- de5fa87d9 task 2.5.0 is out!
+  https://github.com/ralphbean/taskw/commit/de5fa87d9
+- 11cdab50f Use kitchen in the most dire of circumstances.
+  https://github.com/ralphbean/taskw/commit/11cdab50f
+- 36406c6d5 All hail 2.5.1.
+  https://github.com/ralphbean/taskw/commit/36406c6d5
+- 00ea026aa Strip form feed/bell chars
+  https://github.com/ralphbean/taskw/commit/00ea026aa
+- c97ed88c1 Use the `errno` library instead of string matching error text
+  https://github.com/ralphbean/taskw/commit/c97ed88c1
+- 359543f37 Move import
+  https://github.com/ralphbean/taskw/commit/359543f37
+- 1bacb40bf Also remove literal escape characters `^[`
+  https://github.com/ralphbean/taskw/commit/1bacb40bf
+- 8d86fc538 Downgrade string coercion from warning to debug.
+  https://github.com/ralphbean/taskw/commit/8d86fc538
+- bae210000 Fix the v2.4.4 tag name in travis.yml.
+  https://github.com/ralphbean/taskw/commit/bae210000
+- fc41a5917 Upgrade travis to ubuntu trusty.
+  https://github.com/ralphbean/taskw/commit/fc41a5917
+- 64574e276 Run Travis against taskwarrior 2.5.x series.
+  https://github.com/ralphbean/taskw/commit/64574e276
+- 1b19f66eb Run tests against python3.5.
+  https://github.com/ralphbean/taskw/commit/1b19f66eb
+- 74b778552 Remove taskwarrior 2.4.3-2.4.4 from Travis matrix.
+  https://github.com/ralphbean/taskw/commit/74b778552
+- c9c2e75c1 Run on py35 now.
+  https://github.com/ralphbean/taskw/commit/c9c2e75c1
+- 840613288 Add a function to clean control characters
+  https://github.com/ralphbean/taskw/commit/840613288
+- 32a87235f Clean control characters in command
+  https://github.com/ralphbean/taskw/commit/32a87235f
 1.1.0 ----- Primarily: - Compatibility with task-2.5.0.beta1 `91cc20f96 <https://github.com/ralphbean/taskw/commit/91cc20f96b50a4ebe72c22fb3b498b9b3e8a97f9>`_ Also: - Improvements to dependency behavior. `a9f716456 <https://github.com/ralphbean/taskw/commit/a9f71645676f42852789b791ba42a6314227a7e0>`_ - Shuffle some things in Task just to make classmethods easier. `938171e3b <https://github.com/ralphbean/taskw/commit/938171e3bd6d8e03522fbe072ac24146a43b7a7c>`_ - Add test. `3c494c1e4 <https://github.com/ralphbean/taskw/commit/3c494c1e4479c577127f95ce858991569eb5a008>`_ - Make .load_config() work as expected. `971ddc6b3 <https://github.com/ralphbean/taskw/commit/971ddc6b368d9a3e9f5f9c9c0fc52dab89ced13d>`_ - Merge pull request #93 from ralphbean/feature/nested-config `a8301a7cc <https://github.com/ralphbean/taskw/commit/a8301a7ccdf0ab79625ff6950a4fd54dade90206>`_ - Merge pull request #92 from ralphbean/feature/recursive-tasks `57939f4c4 <https://github.com/ralphbean/taskw/commit/57939f4c46b5841e716dc44bf847e47ad7cabf56>`_ - Check TASKRC environment var, default to ~/.taskrc `03b908bce <https://github.com/ralphbean/taskw/commit/03b908bcedb0bc36d4c8f5f9b1fc62271296417b>`_ - Merge pull request #95 from khaeru/develop `17133f22f <https://github.com/ralphbean/taskw/commit/17133f22feed0ef002ecc1b3658717eeb933e9b0>`_ - Raise a more descriptive error `02b9fa5db <https://github.com/ralphbean/taskw/commit/02b9fa5dbd6fd56b453af4a1f04afc166571cf73>`_ - Merge pull request #97 from ralphbean/feature/more-descriptive-error `69e63c04e <https://github.com/ralphbean/taskw/commit/69e63c04ee3dfe59dc502cf7bf8aa9daf849e0ed>`_ - Test against task-2.4.2 also. `310c2e473 <https://github.com/ralphbean/taskw/commit/310c2e47343d7933829032d788dc83b21aaa2466>`_ - Expand tox and travis to test against the latest taskwarrior release. `e2df21780 <https://github.com/ralphbean/taskw/commit/e2df2178081f3f0f21c722475739d0d876027cf1>`_
 1.0.3
 -----
