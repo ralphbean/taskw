@@ -413,6 +413,7 @@ class TaskWarriorShellout(TaskWarriorBase):
             'array': 'TRUE'
         },
         'verbose': 'nothing',
+        'regex': 'no',
         'confirmation': 'no',
         'dependency': {
             'confirmation': 'no',
