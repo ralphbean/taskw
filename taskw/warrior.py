@@ -607,6 +607,7 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         """
         query_args = taskw.utils.encode_query(filter_dict, self.get_version())
+        query_args = [i.replace('\\', '\\\\') for i in query_args]
         return self._get_task_objects(
             'export',
             *query_args
