@@ -17,8 +17,8 @@ env:
  - TASKWARRIOR=v2.5.1
 before_install:
   - sudo apt-get install -y python-dev cmake build-essential libgnutls28-dev uuid-dev gnutls-bin chrpath libssl-dev libfontconfig1-dev
-  - git clone https://git.tasktools.org/scm/tm/task.git
-  - cd task
+  - git clone https://github.com/GothenburgBitFactory/taskwarrior.git
+  - cd taskwarrior
   - git checkout $TASKWARRIOR
   - cmake .
   - make
