@@ -152,7 +152,6 @@ class TestTaskMarshalling(TestCase):
             'urgency': 10,
             'uuid': str(uuid.uuid4()),
         }
-        task = Task(arbitrary_serialized_data)
         expected_result = arbitrary_serialized_data
 
         after_composition = Task(
