@@ -95,14 +95,15 @@ class Task(dict):
     @classmethod
     def from_input(cls, input_file=sys.stdin, modify=None, udas=None):
         """
-        Creates a Task object, directly from the stdin, by reading one line.
-        If modify=True, two lines are used, first line interpreted as the
-        original state of the Task object, and second line as its new,
-        modified value. This is consistent with the TaskWarrior's hook
-        system.
+        Create a Task directly from stdin by reading one line. If modify=True,
+        two lines are expected, which is consistent with the Taskwarrior hook
+        system. The first line is interpreted as the original state of the Task,
+        and the second one as the new, modified state.
 
-        Input_file argument can be used to specify the input file,
-        but defaults to sys.stdin.
+        :param input_file: Input file. Defaults to sys.stdin.
+        :param modify: Flag for on-modify hook event.
+        :param udas: Taskrc udas
+        :return Task
         """
         # Detect the hook type if not given directly
         name = os.path.basename(sys.argv[0])
