@@ -189,12 +189,16 @@ class TestTaskMarshalling(TestCase):
             ]),
         )
 
-        task = Task.from_input(input_file=input_add_data)
-        assert task.get('description') == "Go to Camelot"
-        assert task.get('entry') == datetime.datetime(2018, 6, 18, 3, 2, 42, tzinfo=tzutc())
-        assert task.get('status') == "pending"
-        assert task.get('start') == datetime.datetime(2018, 10, 12, 11, 6, 5, tzinfo=tzutc())
-        assert task.get('uuid') == uuid.UUID("daa3ff05-f716-482e-bc35-3e1601e50778")
+        on_add_task = Task.from_input(input_file=input_add_data)
+        assert on_add_task.get('description') == "Go to Camelot"
+        assert on_add_task.get('entry') == datetime.datetime(2018, 6, 18, 3, 2, 42, tzinfo=tzutc())
+        assert on_add_task.get('status') == "pending"
+        assert on_add_task.get('start') == datetime.datetime(2018, 10, 12, 11, 6, 5, tzinfo=tzutc())
+        assert on_add_task.get('uuid') == uuid.UUID("daa3ff05-f716-482e-bc35-3e1601e50778")
 
-        task = Task.from_input(input_file=input_modify_data, modify=True)
-        assert task.get('description') == "Go to Camelot again"
+        on_modify_task = Task.from_input(input_file=input_modify_data, modify=True)
+        assert on_modify_task.get('description') == "Go to Camelot again"
+        assert on_modify_task.get('entry') == datetime.datetime(2018, 6, 18, 3, 2, 42, tzinfo=tzutc())
+        assert on_modify_task.get('status') == "pending"
+        assert on_modify_task.get('start') == datetime.datetime(2018, 10, 12, 11, 6, 5, tzinfo=tzutc())
+        assert on_modify_task.get('uuid') == uuid.UUID("daa3ff05-f716-482e-bc35-3e1601e50778")
