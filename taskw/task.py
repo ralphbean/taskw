@@ -93,7 +93,7 @@ class Task(dict):
         return cls(processed, udas)
 
     @classmethod
-    def from_input(cls, input_file=sys.stdin, modify=None, udas=None):
+    def from_input(cls, input_file=sys.stdin, modify=False, udas=None):
         """
         Create a Task directly from stdin by reading one line. If modify=True,
         two lines are expected, which is consistent with the Taskwarrior hook
@@ -101,14 +101,10 @@ class Task(dict):
         and the second one as the new, modified state.
 
         :param input_file: Input file. Defaults to sys.stdin.
-        :param modify: Flag for on-modify hook event.
-        :param udas: Taskrc udas
+        :param modify: Flag for on-modify hook event. Defaults to False.
+        :param udas: Taskrc udas. Defaults to None.
         :return Task
         """
-        # Detect the hook type if not given directly
-        name = os.path.basename(sys.argv[0])
-        modify = name.startswith('on-modify') if modify is None else modify
-
         original_task = input_file.readline().strip()
         if modify:
             modified_task = input_file.readline().strip()
