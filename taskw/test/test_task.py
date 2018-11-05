@@ -1,17 +1,13 @@
 import copy
 import datetime
-import sys
 import uuid
+from unittest import TestCase
 
 import pytz
 import six
+from dateutil.tz import tzutc
 
 from taskw.task import Task
-
-if sys.version_info >= (2, 7):
-    from unittest import TestCase
-else:
-    from unittest2 import TestCase
 
 
 class TestTaskDirtyability(TestCase):
@@ -156,7 +152,6 @@ class TestTaskMarshalling(TestCase):
             'urgency': 10,
             'uuid': str(uuid.uuid4()),
         }
-        task = Task(arbitrary_serialized_data)
         expected_result = arbitrary_serialized_data
 
         after_composition = Task(
@@ -168,3 +163,42 @@ class TestTaskMarshalling(TestCase):
         ).serialized()
 
         self.assertEqual(after_composition, expected_result)
+
+    def test_from_input(self):
+        input_add_data = six.StringIO(
+            '{'
+            '"description":"Go to Camelot",'
+            '"entry":"20180618T030242Z",'
+            '"status":"pending",'
+            '"start":"20181012T110605Z",'
+            '"uuid":"daa3ff05-f716-482e-bc35-3e1601e50778"'
+            '}')
+
+        input_modify_data = six.StringIO(
+            '\n'.join([
+                input_add_data.getvalue(),
+                (
+                    '{'
+                    '"description":"Go to Camelot again",'
+                    '"entry":"20180618T030242Z",'
+                    '"status":"pending",'
+                    '"start":"20181012T110605Z",'
+                    '"uuid":"daa3ff05-f716-482e-bc35-3e1601e50778"'
+                    '}'
+                ),
+            ]),
+        )
+
+        on_add_task = Task.from_input(input_file=input_add_data)
+        assert on_add_task.get('description') == "Go to Camelot"
+        assert on_add_task.get('entry') == datetime.datetime(2018, 6, 18, 3, 2, 42, tzinfo=tzutc())
+        assert on_add_task.get('status') == "pending"
+        assert on_add_task.get('start') == datetime.datetime(2018, 10, 12, 11, 6, 5, tzinfo=tzutc())
+        assert on_add_task.get('uuid') == uuid.UUID("daa3ff05-f716-482e-bc35-3e1601e50778")
+
+        on_modify_task = Task.from_input(input_file=input_modify_data, modify=True)
+        assert on_modify_task.get('description') == "Go to Camelot again"
+        assert on_modify_task.get('entry') == datetime.datetime(2018, 6, 18, 3, 2, 42, tzinfo=tzutc())
+        assert on_modify_task.get('status') == "pending"
+        assert on_modify_task.get('start') == datetime.datetime(2018, 10, 12, 11, 6, 5, tzinfo=tzutc())
+        assert on_modify_task.get('uuid') == uuid.UUID("daa3ff05-f716-482e-bc35-3e1601e50778")

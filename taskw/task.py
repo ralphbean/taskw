@@ -1,4 +1,7 @@
+import json
 import logging
+import os
+import sys
 
 import six
 
@@ -88,6 +91,25 @@ class Task(dict):
             processed[k] = cls._serialize(k, v, fields)
 
         return cls(processed, udas)
+
+    @classmethod
+    def from_input(cls, input_file=sys.stdin, modify=False, udas=None):
+        """
+        Create a Task directly from stdin by reading one line. If modify=True,
+        two lines are expected, which is consistent with the Taskwarrior hook
+        system. The first line is interpreted as the original state of the Task,
+        and the second one as the new, modified state.
+
+        :param input_file: Input file. Defaults to sys.stdin.
+        :param modify: Flag for on-modify hook event. Defaults to False.
+        :param udas: Taskrc udas. Defaults to None.
+        :return Task
+        """
+        original_task = input_file.readline().strip()
+        if modify:
+            modified_task = input_file.readline().strip()
+            return cls(json.loads(modified_task), udas=udas)
+        return cls(json.loads(original_task), udas=udas)
 
     @classmethod
     def _get_converter_for_field(cls, field, default=None, fields=None):
