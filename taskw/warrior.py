@@ -15,6 +15,7 @@ import copy
 from distutils.version import LooseVersion
 import logging
 import os
+import re
 import time
 import uuid
 import subprocess
@@ -399,6 +400,9 @@ class TaskWarriorDirect(TaskWarriorBase):
         self._task_remove(line, Status.to_file(original_status))
         return task
 
+# This regex is used to parse UUIDs from messages output
+# by the shell client when creating tasks.
+UUID_REGEX = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 
 class TaskWarriorShellout(TaskWarriorBase):
     """ Interacts with taskwarrior by invoking shell commands.
@@ -686,7 +690,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         # when adding a task.  Instead, you have to specify rc.verbose=new-uuid
         # and then parse the assigned uuid out from stdout.
         if self.get_version() >= LooseVersion('2.4'):
-            task['uuid'] = stdout.strip().split()[-1].strip('.')
+            task['uuid'] = re.search(UUID_REGEX, stdout).group(0)
 
         id, added_task = self.get_task(uuid=task['uuid'])
 
