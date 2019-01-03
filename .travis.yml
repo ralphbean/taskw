@@ -2,13 +2,13 @@ sudo: required
 dist: trusty
 language: python
 python:
- - "2.7"
- - "3.4"
- - "3.5"
- - "3.6"
+  - "2.7"
+  - "3.4"
+  - "3.5"
+  - "3.6"
 env:
- - TASKWARRIOR=v2.5.0
- - TASKWARRIOR=v2.5.1
+  - TASKWARRIOR=v2.5.0
+  - TASKWARRIOR=v2.5.1
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y python-dev cmake build-essential libgnutls28-dev uuid-dev gnutls-bin chrpath libssl-dev libfontconfig1-dev

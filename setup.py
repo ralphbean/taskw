@@ -1,5 +1,4 @@
 import os
-import sys
 import uuid
 
 from setuptools import setup, find_packages
@@ -36,10 +35,6 @@ for category, filename in REQUIREMENTS_FILES.items():
                 and not req.startswith('#')
             ]
     REQUIREMENTS[category] = requirements
-
-if sys.version_info < (2, 7):
-    REQUIREMENTS['test'].append('unittest2')
-    REQUIREMENTS['install'].append('ordereddict')
 
 setup(name='taskw',
       version='1.2.0',

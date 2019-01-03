@@ -3,19 +3,13 @@ from __future__ import print_function
 
 import datetime
 import re
+from collections import OrderedDict
+from distutils.version import LooseVersion
 from operator import itemgetter
-
-try:
-    from collections import OrderedDict
-except ImportError:
-    from ordereddict import OrderedDict
 
 import dateutil.tz
 import pytz
 import six
-
-from distutils.version import LooseVersion
-
 
 DATE_FORMAT = '%Y%m%dT%H%M%SZ'
 
@@ -264,6 +258,7 @@ def convert_dict_to_override_args(config, prefix=''):
 
 
 CTRLCHAR = re.compile(b"[\x00-\x08\x0e-\x1f]")
+
 
 def clean_ctrl_chars(s):
     """ Clean string removing most (but not all) control characters """

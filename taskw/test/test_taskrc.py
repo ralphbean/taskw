@@ -1,15 +1,9 @@
 import os
-import sys
+from unittest import TestCase
 
-from taskw.warrior import TaskWarrior
-from taskw.taskrc import TaskRc
 from taskw.fields import NumericField, ChoiceField
-
-
-if sys.version_info >= (2, 7):
-    from unittest import TestCase
-else:
-    from unittest2 import TestCase
+from taskw.taskrc import TaskRc
+from taskw.warrior import TaskWarrior
 
 
 class TestBasicLoading(TestCase):
