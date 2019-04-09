@@ -821,7 +821,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         if task['status'] == Status.DELETED:
             raise ValueError("Task is already deleted.")
 
-        self._execute(id, 'delete')
+        self._execute(task['uuid'], 'delete')
         return self.get_task(uuid=task['uuid'])[1]
 
     def task_start(self, **kw):
