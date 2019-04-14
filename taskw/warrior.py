@@ -417,6 +417,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         'dependency': {
             'confirmation': 'no',
         },
+        'recurrence.confirmation': 'no',
     }
 
     def __init__(
