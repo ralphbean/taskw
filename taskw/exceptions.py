@@ -18,4 +18,4 @@ class TaskwarriorError(Exception):
         )
 
     def __str__(self):
-        return self.__unicode__().encode(sys.getdefaultencoding(), 'replace')
+        return self.__unicode__().encode(sys.getdefaultencoding(), 'replace').decode(sys.getdefaultencoding())
