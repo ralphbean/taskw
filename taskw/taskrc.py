@@ -100,7 +100,7 @@ class TaskRc(dict):
                     continue
                 if line.startswith('include '):
                     try:
-                        left, right = line.split(' ')
+                        left, right = line.split(' ', maxsplit=1)
                         config = self._merge_trees(
                             config,
                             TaskRc(right.strip())
