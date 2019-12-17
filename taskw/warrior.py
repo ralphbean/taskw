@@ -19,7 +19,6 @@ import time
 import uuid
 import subprocess
 import json
-import errno
 
 import kitchen.text.converters
 
@@ -467,10 +466,10 @@ class TaskWarriorShellout(TaskWarriorBase):
                 stderr=subprocess.PIPE,
             )
             stdout, stderr = proc.communicate()
-        except OSError as e:
-            if e.errno == errno.ENOENT:
-                raise OSError("Unable to find the 'task' command-line tool.")
-            raise
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                "Unable to find the 'task' command-line tool."
+            )
 
         if proc.returncode != 0:
             raise TaskwarriorError(command, stderr, stdout, proc.returncode)
@@ -541,8 +540,8 @@ class TaskWarriorShellout(TaskWarriorBase):
         """
         try:
             return cls.get_version() > LooseVersion('2')
-        except OSError:
-            # OSError is raised if subprocess.Popen fails to find
+        except FileNotFoundError:
+            # FileNotFound is raised if subprocess.Popen fails to find
             # the executable.
             return False
 
@@ -553,10 +552,10 @@ class TaskWarriorShellout(TaskWarriorBase):
                 ['task', '--version'],
                 stdout=subprocess.PIPE
             ).communicate()[0]
-        except OSError as e:
-            if 'No such file or directory' in e:
-                raise OSError("Unable to find the 'task' command-line tool.")
-            raise
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                "Unable to find the 'task' command-line tool."
+            )
         return LooseVersion(taskwarrior_version.decode())
 
     def sync(self, init=False):
