@@ -1,2 +1,2 @@
 nose
-tox
+tox<3
