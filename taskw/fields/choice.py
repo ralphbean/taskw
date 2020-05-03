@@ -34,7 +34,9 @@ class ChoiceField(Field):
             raise ValueError(
                 "'%s' is not a valid choice; choices: %s" % (
                     value,
-                    self._choices,
+                    # None in _choices represents an empty string in config
+                    # so including '' in err instead makes more sense
+                    ['' if c is None else c for c in self._choices],
                 )
             )
         return value
