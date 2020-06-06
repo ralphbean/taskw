@@ -105,9 +105,10 @@ class TestUtils(object):
 
     def test_taskwarrior_null_encoding_bug_workaround(self):
         task = {
+            'description': 'arbitrary description',
             'priority': ''
         }
-        actual_encoded = encode_task_experimental(task)[0]
+        actual_encoded = encode_task_experimental(task)[1]
         expected_encoded = "priority:"
 
         assert actual_encoded == expected_encoded
@@ -115,12 +116,14 @@ class TestUtils(object):
     def test_encodes_dates(self):
         arbitrary_date = datetime.date(2014, 3, 2)
         task = {
+            'description': 'arbitrary description',
             'arbitrary_field': arbitrary_date
         }
 
         actual_encoded_task = encode_task_experimental(task)
         expected_encoded_task = encode_task_experimental(
             {
+                'description': 'arbitrary description',
                 'arbitrary_field': arbitrary_date.strftime(DATE_FORMAT)
             }
         )
@@ -130,12 +133,14 @@ class TestUtils(object):
     def test_encodes_naive_datetimes(self):
         arbitrary_naive_datetime = datetime.datetime.now()
         task = {
+            'description': 'arbitrary description',
             'arbitrary_field': arbitrary_naive_datetime
         }
 
         actual_encoded_task = encode_task_experimental(task)
         expected_encoded_task = encode_task_experimental(
             {
+                'description': 'arbitrary description',
                 'arbitrary_field': (
                     arbitrary_naive_datetime
                     .replace(tzinfo=dateutil.tz.tzlocal())
@@ -152,12 +157,14 @@ class TestUtils(object):
             tzinfo=arbitrary_timezone
         )
         task = {
+            'description': 'arbitrary description',
             'arbitrary_field': arbitrary_zoned_datetime
         }
 
         actual_encoded_task = encode_task_experimental(task)
         expected_encoded_task = encode_task_experimental(
             {
+                'description': 'arbitrary description',
                 'arbitrary_field': (
                     arbitrary_zoned_datetime
                     .astimezone(pytz.utc).strftime(DATE_FORMAT)

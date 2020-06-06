@@ -134,7 +134,8 @@ def encode_task_experimental(task):
         task[k] = encode_task_value(k, task[k])
 
     # Then, format it as a string
-    return [
+    positionals = [task.pop('description')] if 'description' in task else []
+    return positionals + [
         "%s:\"%s\"" % (k, v) if v else "%s:" % (k, )
         for k, v in sorted(task.items(), key=itemgetter(0))
     ]

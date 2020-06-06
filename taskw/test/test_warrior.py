@@ -49,3 +49,12 @@ class TestTaskWarrior(TestCase):
         assert tasks['pending'][0]['recur'] == 'weekly'
         assert tasks['pending'][0]['parent'] is not None
 
+    def test_add_task_depends_keyword(self):
+        """Add a task with description beginning with keyword "depends".
+        See https://github.com/ralphbean/bugwarrior/issues/733.
+        """
+        self.taskwarrior.task_add('depends filter does not work with IDs')
+        tasks = self.taskwarrior.load_tasks()
+        assert len(tasks['pending']) == 1
+        assert (tasks['pending'][0]['description']
+                == 'depends filter does not work with IDs')
