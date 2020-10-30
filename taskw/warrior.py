@@ -555,7 +555,7 @@ class TaskWarriorShellout(TaskWarriorBase):
                 stdout=subprocess.PIPE
             ).communicate()[0]
         except OSError as e:
-            if 'No such file or directory' in e:
+            if 'No such file or directory' in e.strerror:
                 raise OSError("Unable to find the 'task' command-line tool.")
             raise
         return LooseVersion(taskwarrior_version.decode())
