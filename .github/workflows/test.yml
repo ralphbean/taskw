@@ -16,9 +16,9 @@ jobs:
     - name: Install Taskwarrior ${{matrix.taskwarrior-version}}
       run: |
         sudo apt-get install -y python-dev cmake build-essential libgnutls28-dev uuid-dev gnutls-bin chrpath libssl-dev libfontconfig1-dev
-        git clone git clone https://github.com/GothenburgBitFactory/taskwarrior.git
+        git clone https://github.com/GothenburgBitFactory/taskwarrior.git
         cd taskwarrior
-        git checkout ${{matrix.taskwarrior-version}}
+        git checkout v${{matrix.taskwarrior-version}}
         cmake .
         make
         sudo make install
