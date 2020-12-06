@@ -65,8 +65,6 @@ setup(name='taskw',
       include_package_data=True,
       zip_safe=False,
       install_requires=REQUIREMENTS['install'],
-      test_suite='nose.collector',
-      tests_require=REQUIREMENTS['test'],
       entry_points="""
       # -*- Entry points: -*-
       """,
