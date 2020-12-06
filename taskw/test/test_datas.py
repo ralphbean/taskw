@@ -158,7 +158,7 @@ class _BaseTestDB(object):
 
             # Task 2.2.0 adds a "modified" field, so delete this.
             del tasks['pending'][0]['modified']
-        except:
+        except Exception:
             pass
 
         # But Task 2.4.0 puts the modified field in earlier
@@ -281,7 +281,7 @@ class _BaseTestDB(object):
         task = self.tw.task_done(uuid=task['uuid'])
 
         id, _task = self.tw.get_task(uuid=task['uuid'])
-        assert id == None
+        assert id is None
         assert _task['uuid'] == task['uuid']
 
     def test_load_task_pending_command(self):
@@ -296,7 +296,7 @@ class _BaseTestDB(object):
 
     def test_load_task_with_unknown_command(self):
         with pytest.raises(KeyError):
-            tasks = self.tw.load_tasks(command='foobar')
+            self.tw.load_tasks(command='foobar')
 
     def test_updating_deleted_task(self):
         task = self.tw.task_add("foobar")
@@ -310,10 +310,6 @@ class _BaseTestDB(object):
         self.tw.task_delete(uuid=task['uuid'])
         tasks = self.tw.load_tasks()
         assert len(tasks['pending']) == 0
-        # The shellout and direct methods behave differently here
-        #eq_(len(tasks['completed']), 1)
-        #ok_(not tasks['completed'][0]['end'] is None)
-        #eq_(tasks['completed'][0]['status'], 'deleted')
 
     def test_delete_already_deleted(self):
         task = self.tw.task_add("foobar")
@@ -322,7 +318,7 @@ class _BaseTestDB(object):
             self.tw.task_delete(uuid=task['uuid'])
 
     def test_load_tasks_with_one_each(self):
-        task1 = self.tw.task_add("foobar1")
+        self.tw.task_add("foobar1")
         task2 = self.tw.task_add("foobar2")
         task2 = self.tw.task_done(uuid=task2['uuid'])
         tasks = self.tw.load_tasks()
@@ -330,7 +326,7 @@ class _BaseTestDB(object):
         assert len(tasks['completed']) == 1
 
         # For issue #26, I thought this would raise an exception...
-        task = self.tw.get_task(description='foobar1')
+        self.tw.get_task(description='foobar1')
 
 
 class TestDBDirect(_BaseTestDB):
@@ -343,7 +339,6 @@ class TestDBDirect(_BaseTestDB):
         tasks = self.tw.load_tasks()
         assert len(tasks['pending']) == 0
         assert len(tasks['completed']) == 1
-        #eq_(tasks['completed'][0]['status'], 'deleted')
 
     def should_skip(self):
         return False
@@ -357,8 +352,8 @@ class TestDBShellout(_BaseTestDB):
         return not TaskWarriorShellout.can_use()
 
     def test_filtering_simple(self):
-        task1 = self.tw.task_add("foobar1")
-        task2 = self.tw.task_add("foobar2")
+        self.tw.task_add("foobar1")
+        self.tw.task_add("foobar2")
         tasks = self.tw.filter_tasks({
             'description.contains': 'foobar2',
         })
@@ -366,8 +361,8 @@ class TestDBShellout(_BaseTestDB):
         assert tasks[0]['id'] == 2
 
     def test_filtering_brace(self):
-        task1 = self.tw.task_add("[foobar1]")
-        task2 = self.tw.task_add("[foobar2]")
+        self.tw.task_add("[foobar1]")
+        self.tw.task_add("[foobar2]")
         tasks = self.tw.filter_tasks({
             'description.contains': '[foobar2]',
         })
@@ -375,8 +370,8 @@ class TestDBShellout(_BaseTestDB):
         assert tasks[0]['id'] == 2
 
     def test_filtering_quote(self):
-        task1 = self.tw.task_add("[foobar1]")
-        task2 = self.tw.task_add("\"foobar2\"")
+        self.tw.task_add("[foobar1]")
+        self.tw.task_add("\"foobar2\"")
         tasks = self.tw.filter_tasks({
             'description.contains': '"foobar2"',
         })
@@ -384,9 +379,9 @@ class TestDBShellout(_BaseTestDB):
         assert tasks[0]['id'] == 2
 
     def test_filtering_plus(self):
-        task1 = self.tw.task_add("foobar1")
-        task2 = self.tw.task_add("foobar2")
-        task2 = self.tw.task_add("foobar+")
+        self.tw.task_add("foobar1")
+        self.tw.task_add("foobar2")
+        self.tw.task_add("foobar+")
         tasks = self.tw.filter_tasks({
             'description.contains': 'foobar+',
         })
@@ -394,9 +389,9 @@ class TestDBShellout(_BaseTestDB):
         assert tasks[0]['id'] == 3
 
     def test_filtering_minus(self):
-        task1 = self.tw.task_add("foobar1")
-        task2 = self.tw.task_add("foobar2")
-        task2 = self.tw.task_add("foobar-")
+        self.tw.task_add("foobar1")
+        self.tw.task_add("foobar2")
+        self.tw.task_add("foobar-")
         tasks = self.tw.filter_tasks({
             'description.contains': 'foobar-',
         })
@@ -404,9 +399,9 @@ class TestDBShellout(_BaseTestDB):
         assert tasks[0]['id'] == 3
 
     def test_filtering_colon(self):
-        task1 = self.tw.task_add("foobar1")
-        task2 = self.tw.task_add("foobar2")
-        task2 = self.tw.task_add("foobar:")
+        self.tw.task_add("foobar1")
+        self.tw.task_add("foobar2")
+        self.tw.task_add("foobar:")
         tasks = self.tw.filter_tasks({
             'description.contains': 'foobar:',
         })
@@ -414,8 +409,8 @@ class TestDBShellout(_BaseTestDB):
         assert tasks[0]['id'] == 3
 
     def test_filtering_qmark(self):
-        task1 = self.tw.task_add("foobar1")
-        task2 = self.tw.task_add("foo?bar")
+        self.tw.task_add("foobar1")
+        self.tw.task_add("foo?bar")
         tasks = self.tw.filter_tasks({
                 'description.contains': 'oo?ba',
         })
@@ -423,8 +418,8 @@ class TestDBShellout(_BaseTestDB):
         assert tasks[0]['id'] == 2
 
     def test_filtering_qmark_not_contains(self):
-        task1 = self.tw.task_add("foobar1")
-        task2 = self.tw.task_add("foo?bar")
+        self.tw.task_add("foobar1")
+        self.tw.task_add("foo?bar")
         tasks = self.tw.filter_tasks({
                 'description': 'foo?bar',
         })
@@ -432,9 +427,9 @@ class TestDBShellout(_BaseTestDB):
         assert tasks[0]['id'] == 2
 
     def test_filtering_semicolon(self):
-        task1 = self.tw.task_add("foobar1")
-        task2 = self.tw.task_add("foobar2")
-        task2 = self.tw.task_add("foo;bar")
+        self.tw.task_add("foobar1")
+        self.tw.task_add("foobar2")
+        self.tw.task_add("foo;bar")
         tasks = self.tw.filter_tasks({
             'description.contains': 'foo;bar',
         })
@@ -442,9 +437,9 @@ class TestDBShellout(_BaseTestDB):
         assert tasks[0]['id'] == 3
 
     def test_filtering_question_mark(self):
-        task1 = self.tw.task_add("foobar1")
-        task2 = self.tw.task_add("foobar2")
-        task2 = self.tw.task_add("foo?bar")
+        self.tw.task_add("foobar1")
+        self.tw.task_add("foobar2")
+        self.tw.task_add("foo?bar")
         tasks = self.tw.filter_tasks({
             'description.contains': 'foo?bar',
         })
@@ -452,30 +447,19 @@ class TestDBShellout(_BaseTestDB):
         assert tasks[0]['id'] == 3
 
     def test_filtering_slash(self):
-        task1 = self.tw.task_add("foobar1")
-        task2 = self.tw.task_add("foobar2")
-        task2 = self.tw.task_add("foo/bar")
+        self.tw.task_add("foobar1")
+        self.tw.task_add("foobar2")
+        self.tw.task_add("foo/bar")
         tasks = self.tw.filter_tasks({
             'description.contains': 'foo/bar',
         })
         assert len(tasks) == 1
         assert tasks[0]['id'] == 3
 
-    #def test_filtering_double_dash(self):
-    #    task1 = self.tw.task_add("foobar1")
-    #    task2 = self.tw.task_add("foobar2")
-    #    task2 = self.tw.task_add("foo -- bar")
-    #    tasks = self.tw.filter_tasks({
-    #        'description.contains': 'foo -- bar',
-    #    })
-    #    eq_(len(tasks), 1)
-    #    eq_(tasks[0]['id'], 3)
-    #    eq_(tasks[0]['description'], 'foo -- bar')
-
     def test_filtering_logic_disjunction(self):
-        task1 = self.tw.task_add("foobar1")
-        task2 = self.tw.task_add("foobar2")
-        task2 = self.tw.task_add("foobar3")
+        self.tw.task_add("foobar1")
+        self.tw.task_add("foobar2")
+        self.tw.task_add("foobar3")
         tasks = self.tw.filter_tasks({
             'or': [
                 ('description.has', 'foobar1'),
@@ -487,9 +471,9 @@ class TestDBShellout(_BaseTestDB):
         assert tasks[1]['id'] == 3
 
     def test_filtering_logic_conjunction(self):
-        task1 = self.tw.task_add("foobar1")
-        task2 = self.tw.task_add("foobar2")
-        task2 = self.tw.task_add("foobar3")
+        self.tw.task_add("foobar1")
+        self.tw.task_add("foobar2")
+        self.tw.task_add("foobar3")
         tasks = self.tw.filter_tasks({
             'and': [
                 ('description.has', 'foobar1'),
@@ -499,9 +483,9 @@ class TestDBShellout(_BaseTestDB):
         assert len(tasks) == 0
 
     def test_filtering_logic_conjunction_junction_whats_your_function(self):
-        task1 = self.tw.task_add("foobar1")
-        task2 = self.tw.task_add("foobar2")
-        task2 = self.tw.task_add("foobar3")
+        self.tw.task_add("foobar1")
+        self.tw.task_add("foobar2")
+        self.tw.task_add("foobar3")
         tasks = self.tw.filter_tasks({
             'and': [
                 ('description', 'foobar1'),
