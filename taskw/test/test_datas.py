@@ -1,10 +1,10 @@
-import nose
-from nose.tools import eq_, ok_, raises
 import os
 import shutil
 import tempfile
 import datetime
 import dateutil.tz
+
+import pytest
 
 from taskw import TaskWarriorDirect, TaskWarriorShellout
 
@@ -21,7 +21,7 @@ class _BaseTestDB(object):
 
         # Sometimes the 'task' command line tool is not installed.
         if self.should_skip():
-            raise nose.SkipTest(
+            pytest.skip(
                 "%r unsupported on this system" % (self.class_to_test)
             )
 
@@ -63,87 +63,87 @@ class _BaseTestDB(object):
 
     def test_has_two_categories(self):
         tasks = self.tw.load_tasks()
-        eq_(len(tasks), 2)
-        ok_('pending' in tasks)
-        ok_('completed' in tasks)
+        assert len(tasks) == 2
+        assert 'pending' in tasks
+        assert 'completed' in tasks
 
     def test_empty_db(self):
         tasks = self.tw.load_tasks()
-        eq_(len(sum(tasks.values(), [])), 0)
+        assert len(sum(tasks.values() == [])), 0
 
     def test_add(self):
         self.tw.task_add("foobar")
         tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 1)
+        assert len(tasks['pending']) == 1
 
     def test_unchanging_load_tasks(self):
         tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 0)
+        assert len(tasks['pending']) == 0
         tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 0)
+        assert len(tasks['pending']) == 0
 
-    @raises(KeyError)
     def test_completion_raising_unspecified(self):
-        self.tw.task_done()
+        with pytest.raises(KeyError):
+            self.tw.task_done()
 
     def test_completing_task_by_id_unspecified(self):
         self.tw.task_add("foobar")
         self.tw.task_done(id=1)
         tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 0)
-        eq_(len(tasks['completed']), 1)
-        eq_(len(sum(tasks.values(), [])), 1)
-        ok_(tasks['completed'][0]['end'] is not None)
-        eq_(tasks['completed'][0]['status'], 'completed')
+        assert len(tasks['pending']) == 0
+        assert len(tasks['completed']) == 1
+        assert len(sum(tasks.values() == [])), 1
+        assert tasks['completed'][0]['end'] is not None
+        assert tasks['completed'][0]['status'] == 'completed'
 
     def test_completing_task_by_id_specified(self):
         self.tw.task_add("foobar")
         self.tw.task_done(id=1)
         tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 0)
-        eq_(len(tasks['completed']), 1)
-        eq_(len(sum(tasks.values(), [])), 1)
-        eq_(tasks['completed'][0]['status'], 'completed')
+        assert len(tasks['pending']) == 0
+        assert len(tasks['completed']) == 1
+        assert len(sum(tasks.values() == [])), 1
+        assert tasks['completed'][0]['status'] == 'completed'
 
     def test_completing_task_by_id_retrieved(self):
         task = self.tw.task_add("foobar")
         self.tw.task_done(id=task['id'])
         tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 0)
-        eq_(len(tasks['completed']), 1)
-        eq_(len(sum(tasks.values(), [])), 1)
-        eq_(tasks['completed'][0]['status'], 'completed')
+        assert len(tasks['pending']) == 0
+        assert len(tasks['completed']) == 1
+        assert len(sum(tasks.values() == [])), 1
+        assert tasks['completed'][0]['status'] == 'completed'
 
     def test_completing_task_by_uuid(self):
         self.tw.task_add("foobar")
         uuid = self.tw.load_tasks()['pending'][0]['uuid']
         self.tw.task_done(uuid=uuid)
         tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 0)
-        eq_(len(tasks['completed']), 1)
-        eq_(len(sum(tasks.values(), [])), 1)
-        eq_(tasks['completed'][0]['status'], 'completed')
+        assert len(tasks['pending']) == 0
+        assert len(tasks['completed']) == 1
+        assert len(sum(tasks.values() == [])), 1
+        assert tasks['completed'][0]['status'] == 'completed'
 
-    @raises(KeyError)
     def test_get_task_mismatch(self):
         self.tw.task_add("foobar")
         self.tw.task_add("bazbar")
         uuid = self.tw.load_tasks()['pending'][0]['uuid']
-        self.tw.get_task(id=2, uuid=uuid)  # which one?
+        with pytest.raises(KeyError):
+            self.tw.get_task(id=2, uuid=uuid)  # which one?
 
     def test_updating_task(self):
         self.tw.task_add("foobar")
 
         tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 1)
+        assert len(tasks['pending']) == 1
 
         task = tasks['pending'][0]
         task["priority"] = "L"
         self.tw.task_update(task)
 
         tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 1)
-        eq_(tasks['pending'][0]['priority'], 'L')
+        assert len(tasks['pending']) == 1
+        assert tasks['pending'][0]['priority'] == 'L'
 
         # For compatibility with the direct and shellout modes.
         # Shellout returns more information.
@@ -165,12 +165,12 @@ class _BaseTestDB(object):
         if 'modified' in task:
             del task['modified']
 
-        eq_(tasks['pending'][0], task)
+        assert tasks['pending'][0] == task
 
-    @raises(KeyError)
     def test_update_exc(self):
         task = dict(description="lol")
-        self.tw.task_update(task)
+        with pytest.raises(KeyError):
+            self.tw.task_update(task)
 
     def test_add_complicated(self):
         self.tw.task_add(
@@ -179,7 +179,7 @@ class _BaseTestDB(object):
             project="some_project"
         )
         tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 1)
+        assert len(tasks['pending']) == 1
 
     def test_add_timestamp(self):
         self.tw.task_add(
@@ -189,8 +189,8 @@ class _BaseTestDB(object):
             entry="20110101T000000Z",
         )
         tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 1)
-        eq_(tasks['pending'][0]['entry'], "20110101T000000Z")
+        assert len(tasks['pending']) == 1
+        assert tasks['pending'][0]['entry'] == "20110101T000000Z"
 
     def test_add_datetime(self):
         self.tw.task_add(
@@ -200,7 +200,7 @@ class _BaseTestDB(object):
             entry=datetime.datetime(2011, 1, 1, tzinfo=dateutil.tz.tzutc()),
         )
         tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 1)
+        assert len(tasks['pending']) == 1
         # The exact string we get back is dependent on your current TZ
         # ... we'll just "roughly" test it instead of mocking.
         assert(tasks['pending'][0]['entry'].startswith("20110101T"))
@@ -211,10 +211,10 @@ class _BaseTestDB(object):
             somestring="this is a uda",
         )
         tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 1)
+        assert len(tasks['pending']) == 1
         task = tasks['pending'][0]
 
-        eq_(task['somestring'], "this is a uda")
+        assert task['somestring'] == "this is a uda"
 
     def test_add_with_uda_date(self):
         self.tw.task_add(
@@ -222,12 +222,11 @@ class _BaseTestDB(object):
             somedate=datetime.datetime(2011, 1, 1, tzinfo=dateutil.tz.tzutc()),
         )
         tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 1)
+        assert len(tasks['pending']) == 1
         task = tasks['pending'][0]
 
         assert(task['somedate'].startswith("20110101T"))
 
-    @raises(KeyError)
     def test_remove_uda_string(self):
         # Check that a string UDA is removed from a task when its
         # value is set to None
@@ -237,9 +236,9 @@ class _BaseTestDB(object):
         )
         task['somestring'] = None
         id, task = self.tw.task_update(task)
-        task['somestring']
+        with pytest.raises(KeyError):
+            task['somestring']
 
-    @raises(KeyError)
     def test_remove_uda_date(self):
         # Check that a date UDA is removed from a task when its
         # value is set to None
@@ -249,9 +248,9 @@ class _BaseTestDB(object):
         )
         task['somedate'] = None
         id, task = self.tw.task_update(task)
-        task['somedate']
+        with pytest.raises(KeyError):
+            task['somedate']
 
-    @raises(KeyError)
     def test_remove_uda_numeric(self):
         # Check that a numeric UDA is removed from a task when its
         # value is set to None
@@ -261,73 +260,74 @@ class _BaseTestDB(object):
         )
         task['somenumber'] = None
         id, task = self.tw.task_update(task)
-        task['somenumber']
+        with pytest.raises(KeyError):
+            task['somenumber']
 
-    @raises(ValueError)
     def test_completing_completed_task(self):
         task = self.tw.task_add("foobar")
         self.tw.task_done(uuid=task['uuid'])
-        self.tw.task_done(uuid=task['uuid'])
+        with pytest.raises(KeyError):
+            self.tw.task_done(uuid=task['uuid'])
 
     def test_updating_completed_task(self):
         task = self.tw.task_add("foobar")
         task = self.tw.task_done(uuid=task['uuid'])
         task['priority'] = 'L'
         id, task = self.tw.task_update(task)
-        eq_(task['priority'], 'L')
+        assert task['priority'] == 'L'
 
     def test_get_task_completed(self):
         task = self.tw.task_add("foobar")
         task = self.tw.task_done(uuid=task['uuid'])
 
         id, _task = self.tw.get_task(uuid=task['uuid'])
-        eq_(id, None)
-        eq_(_task['uuid'], task['uuid'])
+        assert id == None
+        assert _task['uuid'] == task['uuid']
 
     def test_load_task_pending_command(self):
         tasks = self.tw.load_tasks(command='pending')
-        eq_(len(tasks), 1)
-        ok_('pending' in tasks)
+        assert len(tasks) == 1
+        assert 'pending' in tasks
 
     def test_load_task_completed_command(self):
         tasks = self.tw.load_tasks(command='completed')
-        eq_(len(tasks), 1)
-        ok_('completed' in tasks)
+        assert len(tasks) == 1
+        assert 'completed' in tasks
 
-    @raises(ValueError)
     def test_load_task_with_unknown_command(self):
-        tasks = self.tw.load_tasks(command='foobar')
+        with pytest.raises(KeyError):
+            tasks = self.tw.load_tasks(command='foobar')
 
     def test_updating_deleted_task(self):
         task = self.tw.task_add("foobar")
         task = self.tw.task_delete(uuid=task['uuid'])
         task['priority'] = 'L'
         id, task = self.tw.task_update(task)
-        eq_(task['priority'], 'L')
+        assert task['priority'] == 'L'
 
     def test_delete(self):
         task = self.tw.task_add("foobar")
         self.tw.task_delete(uuid=task['uuid'])
         tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 0)
+        assert len(tasks['pending']) == 0
         # The shellout and direct methods behave differently here
         #eq_(len(tasks['completed']), 1)
         #ok_(not tasks['completed'][0]['end'] is None)
         #eq_(tasks['completed'][0]['status'], 'deleted')
 
-    @raises(ValueError)
     def test_delete_already_deleted(self):
         task = self.tw.task_add("foobar")
         self.tw.task_delete(uuid=task['uuid'])
-        self.tw.task_delete(uuid=task['uuid'])
+        with pytest.raises(ValueError):
+            self.tw.task_delete(uuid=task['uuid'])
 
     def test_load_tasks_with_one_each(self):
         task1 = self.tw.task_add("foobar1")
         task2 = self.tw.task_add("foobar2")
         task2 = self.tw.task_done(uuid=task2['uuid'])
         tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 1)
-        eq_(len(tasks['completed']), 1)
+        assert len(tasks['pending']) == 1
+        assert len(tasks['completed']) == 1
 
         # For issue #26, I thought this would raise an exception...
         task = self.tw.get_task(description='foobar1')
@@ -341,8 +341,8 @@ class TestDBDirect(_BaseTestDB):
         task = self.tw.task_done(uuid=task['uuid'])
         self.tw.task_delete(uuid=task['uuid'])
         tasks = self.tw.load_tasks()
-        eq_(len(tasks['pending']), 0)
-        eq_(len(tasks['completed']), 1)
+        assert len(tasks['pending']) == 0
+        assert len(tasks['completed']) == 1
         #eq_(tasks['completed'][0]['status'], 'deleted')
 
     def should_skip(self):
@@ -362,8 +362,8 @@ class TestDBShellout(_BaseTestDB):
         tasks = self.tw.filter_tasks({
             'description.contains': 'foobar2',
         })
-        eq_(len(tasks), 1)
-        eq_(tasks[0]['id'], 2)
+        assert len(tasks) == 1
+        assert tasks[0]['id'] == 2
 
     def test_filtering_brace(self):
         task1 = self.tw.task_add("[foobar1]")
@@ -371,8 +371,8 @@ class TestDBShellout(_BaseTestDB):
         tasks = self.tw.filter_tasks({
             'description.contains': '[foobar2]',
         })
-        eq_(len(tasks), 1)
-        eq_(tasks[0]['id'], 2)
+        assert len(tasks) == 1
+        assert tasks[0]['id'] == 2
 
     def test_filtering_quote(self):
         task1 = self.tw.task_add("[foobar1]")
@@ -380,8 +380,8 @@ class TestDBShellout(_BaseTestDB):
         tasks = self.tw.filter_tasks({
             'description.contains': '"foobar2"',
         })
-        eq_(len(tasks), 1)
-        eq_(tasks[0]['id'], 2)
+        assert len(tasks) == 1
+        assert tasks[0]['id'] == 2
 
     def test_filtering_plus(self):
         task1 = self.tw.task_add("foobar1")
@@ -390,8 +390,8 @@ class TestDBShellout(_BaseTestDB):
         tasks = self.tw.filter_tasks({
             'description.contains': 'foobar+',
         })
-        eq_(len(tasks), 1)
-        eq_(tasks[0]['id'], 3)
+        assert len(tasks) == 1
+        assert tasks[0]['id'] == 3
 
     def test_filtering_minus(self):
         task1 = self.tw.task_add("foobar1")
@@ -400,8 +400,8 @@ class TestDBShellout(_BaseTestDB):
         tasks = self.tw.filter_tasks({
             'description.contains': 'foobar-',
         })
-        eq_(len(tasks), 1)
-        eq_(tasks[0]['id'], 3)
+        assert len(tasks) == 1
+        assert tasks[0]['id'] == 3
 
     def test_filtering_colon(self):
         task1 = self.tw.task_add("foobar1")
@@ -410,8 +410,8 @@ class TestDBShellout(_BaseTestDB):
         tasks = self.tw.filter_tasks({
             'description.contains': 'foobar:',
         })
-        eq_(len(tasks), 1)
-        eq_(tasks[0]['id'], 3)
+        assert len(tasks) == 1
+        assert tasks[0]['id'] == 3
 
     def test_filtering_qmark(self):
         task1 = self.tw.task_add("foobar1")
@@ -419,8 +419,8 @@ class TestDBShellout(_BaseTestDB):
         tasks = self.tw.filter_tasks({
                 'description.contains': 'oo?ba',
         })
-        eq_(len(tasks), 1)
-        eq_(tasks[0]['id'], 2)
+        assert len(tasks) == 1
+        assert tasks[0]['id'] == 2
 
     def test_filtering_qmark_not_contains(self):
         task1 = self.tw.task_add("foobar1")
@@ -428,8 +428,8 @@ class TestDBShellout(_BaseTestDB):
         tasks = self.tw.filter_tasks({
                 'description': 'foo?bar',
         })
-        eq_(len(tasks), 1)
-        eq_(tasks[0]['id'], 2)
+        assert len(tasks) == 1
+        assert tasks[0]['id'] == 2
 
     def test_filtering_semicolon(self):
         task1 = self.tw.task_add("foobar1")
@@ -438,8 +438,8 @@ class TestDBShellout(_BaseTestDB):
         tasks = self.tw.filter_tasks({
             'description.contains': 'foo;bar',
         })
-        eq_(len(tasks), 1)
-        eq_(tasks[0]['id'], 3)
+        assert len(tasks) == 1
+        assert tasks[0]['id'] == 3
 
     def test_filtering_question_mark(self):
         task1 = self.tw.task_add("foobar1")
@@ -448,8 +448,8 @@ class TestDBShellout(_BaseTestDB):
         tasks = self.tw.filter_tasks({
             'description.contains': 'foo?bar',
         })
-        eq_(len(tasks), 1)
-        eq_(tasks[0]['id'], 3)
+        assert len(tasks) == 1
+        assert tasks[0]['id'] == 3
 
     def test_filtering_slash(self):
         task1 = self.tw.task_add("foobar1")
@@ -458,8 +458,8 @@ class TestDBShellout(_BaseTestDB):
         tasks = self.tw.filter_tasks({
             'description.contains': 'foo/bar',
         })
-        eq_(len(tasks), 1)
-        eq_(tasks[0]['id'], 3)
+        assert len(tasks) == 1
+        assert tasks[0]['id'] == 3
 
     #def test_filtering_double_dash(self):
     #    task1 = self.tw.task_add("foobar1")
@@ -482,9 +482,9 @@ class TestDBShellout(_BaseTestDB):
                 ('description.has', 'foobar3'),
             ]
         })
-        eq_(len(tasks), 2)
-        eq_(tasks[0]['id'], 1)
-        eq_(tasks[1]['id'], 3)
+        assert len(tasks) == 2
+        assert tasks[0]['id'] == 1
+        assert tasks[1]['id'] == 3
 
     def test_filtering_logic_conjunction(self):
         task1 = self.tw.task_add("foobar1")
@@ -496,7 +496,7 @@ class TestDBShellout(_BaseTestDB):
                 ('description.has', 'foobar3'),
             ]
         })
-        eq_(len(tasks), 0)
+        assert len(tasks) == 0
 
     def test_filtering_logic_conjunction_junction_whats_your_function(self):
         task1 = self.tw.task_add("foobar1")
@@ -511,7 +511,7 @@ class TestDBShellout(_BaseTestDB):
                 ('status', 'waiting'),
             ]
         })
-        eq_(len(tasks), 1)
+        assert len(tasks) == 1
 
     def test_annotation_escaping(self):
         original = {'description': 're-opening the issue'}
@@ -524,10 +524,9 @@ class TestDBShellout(_BaseTestDB):
         task = self.tw.load_tasks()['pending'][0]
         self.tw.task_update(task)
 
-        eq_(len(task['annotations']), 1)
-        eq_(task['annotations'][0]['description'], original['description'])
+        assert len(task['annotations']) == 1
+        assert task['annotations'][0]['description'] == original['description']
 
-    @raises(KeyError)
     def test_remove_uda_string_marshal(self):
         # Check that a string UDA is removed from a task when its
         # value is set to None
@@ -537,9 +536,9 @@ class TestDBShellout(_BaseTestDB):
         )
         task['somestring'] = None
         id, task = self.tw_marshal.task_update(task)
-        task['somestring']
+        with pytest.raises(KeyError):
+            task['somestring']
 
-    @raises(KeyError)
     def test_remove_uda_date_marshal(self):
         # Check that a date UDA is removed from a task when its
         # value is set to None
@@ -549,9 +548,9 @@ class TestDBShellout(_BaseTestDB):
         )
         task['somedate'] = None
         id, task = self.tw_marshal.task_update(task)
-        task['somedate']
+        with pytest.raises(KeyError):
+            task['somedate']
 
-    @raises(KeyError)
     def test_remove_uda_numeric_marshal(self):
         # Check that a numeric UDA is removed from a task when its
         # value is set to None
@@ -561,7 +560,8 @@ class TestDBShellout(_BaseTestDB):
         )
         task['somenumber'] = None
         id, task = self.tw_marshal.task_update(task)
-        task['somenumber']
+        with pytest.raises(KeyError):
+            task['somenumber']
 
     def test_add_and_retrieve_uda_string_url(self):
         arbitrary_url = "http://www.someurl.com/1084/"
@@ -579,9 +579,9 @@ class TestDBShellout(_BaseTestDB):
         results = self.tw.filter_tasks({
             'someurl.is': arbitrary_url
         })
-        eq_(len(results), 1)
+        assert len(results) == 1
         task = results[0]
-        eq_(task['someurl'], arbitrary_url)
+        assert task['someurl'] == arbitrary_url
 
     def test_add_and_retrieve_uda_string_url_in_parens(self):
         arbitrary_url = "http://www.someurl.com/1084/"
@@ -601,6 +601,6 @@ class TestDBShellout(_BaseTestDB):
                 ('someurl.is', arbitrary_url),
             ],
         })
-        eq_(len(results), 1)
+        assert len(results) == 1
         task = results[0]
-        eq_(task['someurl'], arbitrary_url)
+        assert task['someurl'] == arbitrary_url

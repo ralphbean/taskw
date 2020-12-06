@@ -1,8 +1,8 @@
-import nose
-from nose.tools import eq_
 import os
 import shutil
 import tempfile
+
+import pytest
 
 from taskw import TaskWarriorShellout
 
@@ -18,7 +18,7 @@ class TestRecursibe(object):
     def setup(self):
         if not TaskWarriorShellout.can_use():
             # Sometimes the 'task' command line tool is not installed.
-            raise nose.SkipTest("taskwarrior not installed")
+            pytest.skip("taskwarrior not installed")
 
         # Create some temporary config stuff
         fd, fname = tempfile.mkstemp(prefix='taskw-testsrc')
@@ -53,11 +53,11 @@ class TestRecursibe(object):
     def test_set_dep_on_one_uuid(self):
         task1 = self.tw.task_add('task1')
         task2 = self.tw.task_add('task2', depends=[task1['uuid']])
-        eq_(task2['depends'][0], task1['uuid'])
+        assert task2['depends'][0] == task1['uuid']
 
     def test_set_dep_on_two_uuid(self):
         task1 = self.tw.task_add('task1')
         task2 = self.tw.task_add('task2')
         depends = [task1['uuid'], task2['uuid']]
         task3 = self.tw.task_add('task3', depends=depends)
-        eq_(task3['depends'], [task1['uuid'], task2['uuid']])
+        assert task3['depends'] == [task1['uuid'], task2['uuid']]
