@@ -27,6 +27,7 @@ jobs:
     - name: Install Dependencies
       run: |
         python setup.py install
+        python -m pip install pytest
     - name: Run Tests
       run: |
-        python setup.py nosetests
+        pytest
