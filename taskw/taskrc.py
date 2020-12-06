@@ -114,7 +114,7 @@ class TaskRc(dict):
                         )
                 else:
                     try:
-                        left, right = line.split('=')
+                        left, right = line.split('=', 1)
                         key = left.strip()
                         value = right.strip()
                         config = self._add_to_tree(config, key, value)
