@@ -37,3 +37,14 @@ class TestTaskWarrior(object):
         tasks = self.taskwarrior.load_tasks()
         assert len(tasks['pending']) == 1
         assert tasks['pending'][0]['description'] == 'foobar'
+
+    def test_add_task_recurs(self):
+        """ Try adding a task with `recur` to ensure the uuid can be parsed """
+        self.taskwarrior.task_add("foobar weekly", due="tomorrow", recur="weekly")
+        tasks = self.taskwarrior.load_tasks()
+
+        assert len(tasks['pending']) == 1
+        assert tasks['pending'][0]['description'] == 'foobar weekly'
+        assert tasks['pending'][0]['recur'] == 'weekly'
+        assert tasks['pending'][0]['parent'] is not None
+
