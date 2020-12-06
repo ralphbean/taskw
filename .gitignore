@@ -9,3 +9,4 @@ test.html
 *.egg*
 *.pdf
 .tox/*
+.vscode/*
