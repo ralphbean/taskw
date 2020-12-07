@@ -453,11 +453,12 @@ class TaskWarriorShellout(TaskWarriorBase):
         command = (
             [
                 'task',
-                'rc:%s' % self.config_filename,
             ]
             + self.get_configuration_override_args()
             + [six.text_type(arg) for arg in args]
         )
+        env = os.environ.copy()
+        env['TASKRC'] = self.config_filename
 
         # subprocess is expecting bytestrings only, so nuke unicode if present
         # and remove control characters
@@ -469,6 +470,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         try:
             proc = subprocess.Popen(
                 command,
+                env=env,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
