@@ -1,4 +1,28 @@
 
+1.3.0
+-----
+
+Pull Requests:
+
+- @ryaneverett: #134; Pass taskrc via environment variable to subprocess.
+- @ryaneverett: #131; Adds testing for Python 3.7 and 3.8
+- @gdeterez: #130; Fix error raised when taskwarrior is not installed.
+- @bergercookie: #124; Fix bug on deletion of completed task; disable
+  confirmation for recurring tasks; fix bug in numeric deserialization.
+- @matt-snider: #121; Fixes bug in which UUIDs were improperly parsed
+  when creating recurring tasks.
+- @yonk42: #116; Fix a bug in which configuration values having an equal
+  sign in their value would be improperly parsed.
+
+Mechanical:
+
+- Switched from nose to pytest.
+- Switched from travis.ci to github actions.
+
+Deprecated:
+
+- Dropped automated testing for Python 3.4.
+
 1.2.0
 -----
 
