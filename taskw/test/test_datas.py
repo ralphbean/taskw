@@ -69,7 +69,7 @@ class _BaseTestDB(object):
 
     def test_empty_db(self):
         tasks = self.tw.load_tasks()
-        assert len(sum(tasks.values() == [])), 0
+        assert len(sum(tasks.values(), [])) == 0
 
     def test_add(self):
         self.tw.task_add("foobar")
@@ -92,7 +92,7 @@ class _BaseTestDB(object):
         tasks = self.tw.load_tasks()
         assert len(tasks['pending']) == 0
         assert len(tasks['completed']) == 1
-        assert len(sum(tasks.values() == [])), 1
+        assert len(sum(tasks.values(), [])) == 1
         assert tasks['completed'][0]['end'] is not None
         assert tasks['completed'][0]['status'] == 'completed'
 
@@ -102,7 +102,7 @@ class _BaseTestDB(object):
         tasks = self.tw.load_tasks()
         assert len(tasks['pending']) == 0
         assert len(tasks['completed']) == 1
-        assert len(sum(tasks.values() == [])), 1
+        assert len(sum(tasks.values(), [])) == 1
         assert tasks['completed'][0]['status'] == 'completed'
 
     def test_completing_task_by_id_retrieved(self):
@@ -111,7 +111,7 @@ class _BaseTestDB(object):
         tasks = self.tw.load_tasks()
         assert len(tasks['pending']) == 0
         assert len(tasks['completed']) == 1
-        assert len(sum(tasks.values() == [])), 1
+        assert len(sum(tasks.values(), [])) == 1
         assert tasks['completed'][0]['status'] == 'completed'
 
     def test_completing_task_by_uuid(self):
@@ -121,7 +121,7 @@ class _BaseTestDB(object):
         tasks = self.tw.load_tasks()
         assert len(tasks['pending']) == 0
         assert len(tasks['completed']) == 1
-        assert len(sum(tasks.values() == [])), 1
+        assert len(sum(tasks.values(), [])) == 1
         assert tasks['completed'][0]['status'] == 'completed'
 
     def test_get_task_mismatch(self):
@@ -266,7 +266,7 @@ class _BaseTestDB(object):
     def test_completing_completed_task(self):
         task = self.tw.task_add("foobar")
         self.tw.task_done(uuid=task['uuid'])
-        with pytest.raises(KeyError):
+        with pytest.raises(ValueError):
             self.tw.task_done(uuid=task['uuid'])
 
     def test_updating_completed_task(self):
@@ -295,7 +295,7 @@ class _BaseTestDB(object):
         assert 'completed' in tasks
 
     def test_load_task_with_unknown_command(self):
-        with pytest.raises(KeyError):
+        with pytest.raises(ValueError):
             self.tw.load_tasks(command='foobar')
 
     def test_updating_deleted_task(self):

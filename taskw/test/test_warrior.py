@@ -1,11 +1,12 @@
 import tempfile
 import os
 import shutil
+from unittest import TestCase
 
 from taskw.warrior import TaskWarrior
 
 
-class TestTaskWarrior(object):
+class TestTaskWarrior(TestCase):
     def setUp(self):
         self.taskdata = tempfile.mkdtemp()
         taskrc = os.path.join(os.path.dirname(__file__), 'data/empty.taskrc')
