@@ -799,6 +799,9 @@ class TaskWarriorShellout(TaskWarriorBase):
             if 'annotations' in task_to_modify:
                 del task_to_modify['annotations']
 
+        if task_to_modify.get('urgency') == 0:
+            del task_to_modify['urgency']
+
         modification = taskw.utils.encode_task_experimental(task_to_modify)
         # Only try to modify the task if there are changes to post here
         # (changes *might* just be in annotations).
