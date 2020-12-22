@@ -383,7 +383,7 @@ class TestDBShellout(_BaseTestDB):
         self.tw.task_add("foobar2")
         self.tw.task_add("foobar+")
         tasks = self.tw.filter_tasks({
-            'description.contains': 'foobar+',
+            'description.contains': '"foobar+"',
         })
         assert len(tasks) == 1
         assert tasks[0]['id'] == 3
@@ -393,7 +393,7 @@ class TestDBShellout(_BaseTestDB):
         self.tw.task_add("foobar2")
         self.tw.task_add("foobar-")
         tasks = self.tw.filter_tasks({
-            'description.contains': 'foobar-',
+            'description.contains': '"foobar-"',
         })
         assert len(tasks) == 1
         assert tasks[0]['id'] == 3
@@ -451,7 +451,7 @@ class TestDBShellout(_BaseTestDB):
         self.tw.task_add("foobar2")
         self.tw.task_add("foo/bar")
         tasks = self.tw.filter_tasks({
-            'description.contains': 'foo/bar',
+            'description.contains': '"foo/bar"',
         })
         assert len(tasks) == 1
         assert tasks[0]['id'] == 3
