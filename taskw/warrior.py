@@ -19,6 +19,7 @@ import re
 import time
 import uuid
 import subprocess
+import sys
 import json
 
 import kitchen.text.converters
@@ -412,10 +413,13 @@ class TaskWarriorShellout(TaskWarriorBase):
     and https://github.com/ralphbean/taskw/issues/30 for more.
     """
     DEFAULT_CONFIG_OVERRIDES = {
+        # 'verbose' must be the first param. Otherwise due to
+        # https://github.com/GothenburgBitFactory/taskwarrior/issues/1953
+        # adding tasks will not work in taskwarrior 2.5.3.
+        'verbose': 'nothing',
         'json': {
             'array': 'TRUE'
         },
-        'verbose': 'nothing',
         'confirmation': 'no',
         'dependency': {
             'confirmation': 'no',
@@ -438,6 +442,15 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         if self.get_version() >= LooseVersion('2.4'):
             self.DEFAULT_CONFIG_OVERRIDES['verbose'] = 'new-uuid'
+        # Combination of
+        # https://github.com/GothenburgBitFactory/taskwarrior/issues/1953
+        # and dictionaries random order may cause task add failures in
+        # Python versions before 3.7
+        if (self.get_version() >= LooseVersion('2.5.3') and
+                sys.hexversion < 0x03070000):
+            warnings.once(
+                "Python < 3.7 with TaskWarrior => 2.5.3 is not suppoprted. "
+                "Task addition may fail.")
 
     def get_configuration_override_args(self):
         config_overrides = self.DEFAULT_CONFIG_OVERRIDES.copy()
@@ -773,6 +786,8 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         task_to_modify.pop('uuid', None)
         task_to_modify.pop('id', None)
+        # Urgency field is auto-generated and cannot be modified.
+        task_to_modify.pop('urgency', None)
 
         # Only handle annotation differences if this is an old-style
         # task, or if the task itself says annotations have changed.
