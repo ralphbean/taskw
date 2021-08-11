@@ -23,11 +23,6 @@ class Field(object):
         return value
 
     def __str__(self):
-        if sys.version_info >= (3, ):
-            return self.label
-        return self.__unicode__().encode(sys.getdefaultencoding(), 'replace')
-
-    def __unicode__(self):
         return self.label
 
     def __repr__(self):

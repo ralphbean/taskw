@@ -158,10 +158,7 @@ class TaskRc(dict):
 
         return udas
 
-    def __unicode__(self):
+    def __str__(self):
         return 'TaskRc file at {path}'.format(
             path=self.path
         )
-
-    def __str__(self):
-        return self.__unicode__().encode('utf-8', 'REPLACE')
