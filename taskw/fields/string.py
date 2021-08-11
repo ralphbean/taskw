@@ -1,7 +1,5 @@
 import logging
 
-import six
-
 from taskw.utils import encode_replacements_experimental
 from .base import Field
 
@@ -14,9 +12,9 @@ class StringField(Field):
         # If value is None, let's just let it pass through
         if not value:
             return value
-        if not isinstance(value, six.string_types):
-            value = six.text_type(value)
-        for left, right in six.iteritems(encode_replacements_experimental):
+        if not isinstance(value, str):
+            value = str(value)
+        for left, right in encode_replacements_experimental.items():
             value = value.replace(right, left)
         return value
 
@@ -24,14 +22,14 @@ class StringField(Field):
         # If value is None let it pass through
         if not value:
             return value
-        if not isinstance(value, six.string_types):
-            string_value = six.text_type(value)
+        if not isinstance(value, str):
+            string_value = str(value)
             logger.debug(
                 "Value %s serialized to string as '%s'",
                 repr(value),
                 string_value
             )
             value = string_value
-        for left, right in six.iteritems(encode_replacements_experimental):
+        for left, right in encode_replacements_experimental.items():
             value = value.replace(left, right)
         return value

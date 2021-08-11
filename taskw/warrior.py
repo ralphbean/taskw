@@ -24,11 +24,6 @@ import json
 
 import kitchen.text.converters
 
-import six
-from six import with_metaclass
-from six.moves import filter
-from six.moves import map
-
 import taskw.utils
 from taskw.exceptions import TaskwarriorError
 from taskw.task import Task
@@ -45,7 +40,7 @@ open = lambda fname, mode: codecs.open(fname, mode, "utf-8")
 TASKRC = os.getenv("TASKRC", "~/.taskrc")
 
 
-class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
+class TaskWarriorBase(metaclass=abc.ABCMeta):
     """ The task warrior
 
     Really though, a python object with methods allowing you to interact
@@ -468,7 +463,7 @@ class TaskWarriorShellout(TaskWarriorBase):
                 'task',
             ]
             + self.get_configuration_override_args()
-            + [six.text_type(arg) for arg in args]
+            + [str(arg) for arg in args]
         )
         env = os.environ.copy()
         env['TASKRC'] = self.config_filename
@@ -476,7 +471,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         # subprocess is expecting bytestrings only, so nuke unicode if present
         # and remove control characters
         for i in range(len(command)):
-            if isinstance(command[i], six.text_type):
+            if isinstance(command[i], str):
                 command[i] = (
                     taskw.utils.clean_ctrl_chars(command[i].encode('utf-8')))
 
@@ -653,7 +648,7 @@ class TaskWarriorShellout(TaskWarriorBase):
             )
 
         search = []
-        for key, value in six.iteritems(kwargs):
+        for key, value in kwargs.items():
             if key not in ['id', 'uuid', 'description']:
                 search.append(
                     '%s:%s' % (
@@ -725,7 +720,7 @@ class TaskWarriorShellout(TaskWarriorBase):
             for annotation in annotations:
                 self.task_annotate(added_task, annotation)
 
-        id, added_task = self.get_task(uuid=added_task[six.u('uuid')])
+        id, added_task = self.get_task(uuid=added_task['uuid'])
         return added_task
 
     def task_annotate(self, task, annotation):
@@ -736,7 +731,7 @@ class TaskWarriorShellout(TaskWarriorBase):
             '--',
             annotation
         )
-        id, annotated_task = self.get_task(uuid=task[six.u('uuid')])
+        id, annotated_task = self.get_task(uuid=task['uuid'])
         return annotated_task
 
     def task_denotate(self, task, annotation):
@@ -747,7 +742,7 @@ class TaskWarriorShellout(TaskWarriorBase):
             '--',
             annotation
         )
-        id, denotated_task = self.get_task(uuid=task[six.u('uuid')])
+        id, denotated_task = self.get_task(uuid=task['uuid'])
         return denotated_task
 
     def task_done(self, **kw):
@@ -771,7 +766,7 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         if isinstance(task, Task):
             # Let's pre-serialize taskw.task.Task instances
-            task_uuid = six.text_type(task['uuid'])
+            task_uuid = str(task['uuid'])
             task = task.serialized_changes(keep=True)
             legacy = False
         else:

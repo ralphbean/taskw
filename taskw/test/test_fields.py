@@ -4,7 +4,6 @@ import sys
 
 from dateutil.tz import tzlocal
 from pytz import UTC, timezone
-import six
 
 from taskw import fields
 from taskw.fields.annotationarray import Annotation
@@ -33,9 +32,7 @@ class TestAnnotationArrayField(TestCase):
 
         self.assertEqual(actual_serialized, expected_serialized)
         for entry in actual_serialized:
-            self.assertTrue(
-                isinstance(entry, six.text_type)
-            )
+            self.assertTrue(isinstance(entry, str))
 
     def test_deserialize_fully_formed_entries_to_stringey_things(self):
         # Note that this test is *identical* in conditions and actions

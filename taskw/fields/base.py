@@ -1,8 +1,6 @@
 import copy
 import sys
 
-import six
-
 
 class Field(object):
     def __init__(self, label=None, read_only=False):
@@ -34,8 +32,8 @@ class Field(object):
 
     def __repr__(self):
         return "<{cls} '{label}'>".format(
-            cls=six.text_type(self.__class__.__name__),
-            label=six.text_type(self) if self._label else '(No Label)',
+            cls=str(self.__class__.__name__),
+            label=str(self) if self._label else '(No Label)',
         )
 
     def __eq__(self, other):

@@ -8,7 +8,6 @@ from operator import itemgetter
 
 import dateutil.tz
 import pytz
-import six
 
 from distutils.version import LooseVersion
 
@@ -62,19 +61,17 @@ def encode_task_value(key, value, query=False):
         value = value.astimezone(pytz.utc).strftime(DATE_FORMAT)
     elif isinstance(value, datetime.date):
         value = value.strftime(DATE_FORMAT)
-    elif isinstance(value, six.string_types):
+    elif isinstance(value, str):
         if query:
             # In some contexts, parentheses are interpreted for use in
             # logical expressions.  They must *sometimes* be escaped.
-            for left, right in six.iteritems(logical_replacements):
+            for left, right in logical_replacements.items():
                 # don't replace '?' if this is an exact match
                 if left == '?' and '.' not in key:
                     continue
                 value = value.replace(left, right)
         else:
-            for unsafe, safe in six.iteritems(
-                encode_replacements_experimental
-            ):
+            for unsafe, safe in encode_replacements_experimental.items():
                 value = value.replace(unsafe, safe)
     else:
         value = str(value)
@@ -85,7 +82,7 @@ def encode_query(value, version, query=True):
     args = []
 
     if isinstance(value, dict):
-        value = six.iteritems(value)
+        value = value.items()
 
     for k, v in value:
         if isinstance(v, list):
@@ -143,8 +140,8 @@ def encode_task(task):
     if 'tags' in task:
         task['tags'] = ','.join(task['tags'])
     for k in task:
-        for unsafe, safe in six.iteritems(encode_replacements):
-            if isinstance(task[k], six.string_types):
+        for unsafe, safe in encode_replacements.items():
+            if isinstance(task[k], str):
                 task[k] = task[k].replace(unsafe, safe)
 
         if isinstance(task[k], datetime.datetime):
@@ -172,7 +169,7 @@ def decode_task(line):
     for key, value in re.findall(r'(\w+):"(.*?)(?<!\\)"', line):
         value = value.replace('\\"', '"')  # unescape quotes
         task[key] = value
-        for unsafe, safe in six.iteritems(decode_replacements):
+        for unsafe, safe in decode_replacements.items():
             task[key] = task[key].replace(unsafe, safe)
     if 'tags' in task:
         task['tags'] = task['tags'].split(',')
@@ -240,7 +237,7 @@ def convert_dict_to_override_args(config, prefix=''):
 
     """
     args = []
-    for k, v in six.iteritems(config):
+    for k, v in config.items():
         if isinstance(v, dict):
             args.extend(
                 convert_dict_to_override_args(
@@ -252,7 +249,7 @@ def convert_dict_to_override_args(config, prefix=''):
                 )
             )
         else:
-            v = six.text_type(v)
+            v = str(v)
             left = 'rc' + (('.' + prefix) if prefix else '') + '.' + k
             right = v if ' ' not in v else '"%s"' % v
             args.append('='.join([left, right]))
