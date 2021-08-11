@@ -3,12 +3,8 @@ from __future__ import print_function
 
 import datetime
 import re
+from collections import OrderedDict
 from operator import itemgetter
-
-try:
-    from collections import OrderedDict
-except ImportError:
-    from ordereddict import OrderedDict
 
 import dateutil.tz
 import pytz

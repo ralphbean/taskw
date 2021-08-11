@@ -9,10 +9,7 @@ import six
 from taskw import fields
 from taskw.fields.annotationarray import Annotation
 
-if sys.version_info >= (2, 7):
-    from unittest import TestCase
-else:
-    from unittest2 import TestCase
+from unittest import TestCase
 
 
 class TestAnnotationArrayField(TestCase):

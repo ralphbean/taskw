@@ -37,18 +37,12 @@ for category, filename in REQUIREMENTS_FILES.items():
             ]
     REQUIREMENTS[category] = requirements
 
-if sys.version_info < (2, 7):
-    REQUIREMENTS['test'].append('unittest2')
-    REQUIREMENTS['install'].append('ordereddict')
-
 setup(name='taskw',
       version='1.3.0',
       description="Python bindings for your taskwarrior database",
       long_description=long_description,
       classifiers=[
           "Development Status :: 5 - Production/Stable",
-          "Programming Language :: Python :: 2",
-          "Programming Language :: Python :: 2.7",
           "Programming Language :: Python :: 3",
           "Programming Language :: Python :: 3.4",
           "Programming Language :: Python :: 3.5",
