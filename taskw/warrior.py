@@ -10,7 +10,6 @@ fall back to the older TaskWarriorDirect implementation.
 
 """
 import abc
-import codecs
 import copy
 from distutils.version import LooseVersion
 import logging
@@ -32,8 +31,6 @@ from taskw.taskrc import TaskRc
 
 logger = logging.getLogger(__name__)
 
-
-open = lambda fname, mode: codecs.open(fname, mode, "utf-8")
 
 # Location of configuration file: either specified by TASKRC environment
 # variable, or ~/.taskrc (default).
