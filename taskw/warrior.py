@@ -629,8 +629,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         """
         query_args = taskw.utils.encode_query(filter_dict, self.get_version())
         return self._get_task_objects(
-            'export',
-            *query_args
+            *(query_args + ['export'])
         )
 
     def get_task(self, **kw):
@@ -668,7 +667,7 @@ class TaskWarriorShellout(TaskWarriorBase):
             else:
                 search = [value]
 
-        task = self._get_task_objects('export', *search)
+        task = self._get_task_objects(*(search + ['export']))
 
         if task:
             if isinstance(task, list):
