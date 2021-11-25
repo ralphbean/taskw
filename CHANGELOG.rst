@@ -1,3 +1,12 @@
+1.3.1
+-----
+
+Pull Requests:
+
+- @tbabej: #152; Adds support for Taskwarrior 2.6.0
+- @vrusinov: #147; Adds support for Taskwarrior 2.5.3
+- @jayvdb: #138; Fixes changelog syntax
+- @eumiro: #140; Add tests for pull requests
 
 1.3.0
 -----

@@ -42,7 +42,7 @@ if sys.version_info < (2, 7):
     REQUIREMENTS['install'].append('ordereddict')
 
 setup(name='taskw',
-      version='1.3.0',
+      version='1.3.1',
       description="Python bindings for your taskwarrior database",
       long_description=long_description,
       classifiers=[
