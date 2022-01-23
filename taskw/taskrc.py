@@ -1,4 +1,3 @@
-import codecs
 import logging
 import os
 
@@ -93,7 +92,7 @@ class TaskRc(dict):
 
     def _read(self, path):
         config = {}
-        with codecs.open(path, 'r', 'utf8') as config_file:
+        with open(path, 'r') as config_file:
             for raw_line in config_file.readlines():
                 line = sanitize(raw_line)
                 if not line:
@@ -158,10 +157,7 @@ class TaskRc(dict):
 
         return udas
 
-    def __unicode__(self):
+    def __str__(self):
         return 'TaskRc file at {path}'.format(
             path=self.path
         )
-
-    def __str__(self):
-        return self.__unicode__().encode('utf-8', 'REPLACE')

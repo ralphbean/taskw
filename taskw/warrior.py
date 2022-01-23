@@ -10,7 +10,6 @@ fall back to the older TaskWarriorDirect implementation.
 
 """
 import abc
-import codecs
 import copy
 from distutils.version import LooseVersion
 import logging
@@ -19,14 +18,10 @@ import re
 import time
 import uuid
 import subprocess
+import sys
 import json
 
 import kitchen.text.converters
-
-import six
-from six import with_metaclass
-from six.moves import filter
-from six.moves import map
 
 import taskw.utils
 from taskw.exceptions import TaskwarriorError
@@ -37,14 +32,12 @@ from taskw.taskrc import TaskRc
 logger = logging.getLogger(__name__)
 
 
-open = lambda fname, mode: codecs.open(fname, mode, "utf-8")
-
 # Location of configuration file: either specified by TASKRC environment
 # variable, or ~/.taskrc (default).
 TASKRC = os.getenv("TASKRC", "~/.taskrc")
 
 
-class TaskWarriorBase(with_metaclass(abc.ABCMeta, object)):
+class TaskWarriorBase(metaclass=abc.ABCMeta):
     """ The task warrior
 
     Really though, a python object with methods allowing you to interact
@@ -412,10 +405,13 @@ class TaskWarriorShellout(TaskWarriorBase):
     and https://github.com/ralphbean/taskw/issues/30 for more.
     """
     DEFAULT_CONFIG_OVERRIDES = {
+        # 'verbose' must be the first param. Otherwise due to
+        # https://github.com/GothenburgBitFactory/taskwarrior/issues/1953
+        # adding tasks will not work in taskwarrior 2.5.3.
+        'verbose': 'nothing',
         'json': {
             'array': 'TRUE'
         },
-        'verbose': 'nothing',
         'confirmation': 'no',
         'dependency': {
             'confirmation': 'no',
@@ -438,6 +434,15 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         if self.get_version() >= LooseVersion('2.4'):
             self.DEFAULT_CONFIG_OVERRIDES['verbose'] = 'new-uuid'
+        # Combination of
+        # https://github.com/GothenburgBitFactory/taskwarrior/issues/1953
+        # and dictionaries random order may cause task add failures in
+        # Python versions before 3.7
+        if (self.get_version() >= LooseVersion('2.5.3') and
+                sys.hexversion < 0x03070000):
+            warnings.once(
+                "Python < 3.7 with TaskWarrior => 2.5.3 is not suppoprted. "
+                "Task addition may fail.")
 
     def get_configuration_override_args(self):
         config_overrides = self.DEFAULT_CONFIG_OVERRIDES.copy()
@@ -455,7 +460,7 @@ class TaskWarriorShellout(TaskWarriorBase):
                 'task',
             ]
             + self.get_configuration_override_args()
-            + [six.text_type(arg) for arg in args]
+            + [str(arg) for arg in args]
         )
         env = os.environ.copy()
         env['TASKRC'] = self.config_filename
@@ -463,7 +468,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         # subprocess is expecting bytestrings only, so nuke unicode if present
         # and remove control characters
         for i in range(len(command)):
-            if isinstance(command[i], six.text_type):
+            if isinstance(command[i], str):
                 command[i] = (
                     taskw.utils.clean_ctrl_chars(command[i].encode('utf-8')))
 
@@ -616,8 +621,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         """
         query_args = taskw.utils.encode_query(filter_dict, self.get_version())
         return self._get_task_objects(
-            'export',
-            *query_args
+            *(query_args + ['export'])
         )
 
     def get_task(self, **kw):
@@ -640,7 +644,7 @@ class TaskWarriorShellout(TaskWarriorBase):
             )
 
         search = []
-        for key, value in six.iteritems(kwargs):
+        for key, value in kwargs.items():
             if key not in ['id', 'uuid', 'description']:
                 search.append(
                     '%s:%s' % (
@@ -655,7 +659,7 @@ class TaskWarriorShellout(TaskWarriorBase):
             else:
                 search = [value]
 
-        task = self._get_task_objects('export', *search)
+        task = self._get_task_objects(*(search + ['export']))
 
         if task:
             if isinstance(task, list):
@@ -712,7 +716,7 @@ class TaskWarriorShellout(TaskWarriorBase):
             for annotation in annotations:
                 self.task_annotate(added_task, annotation)
 
-        id, added_task = self.get_task(uuid=added_task[six.u('uuid')])
+        id, added_task = self.get_task(uuid=added_task['uuid'])
         return added_task
 
     def task_annotate(self, task, annotation):
@@ -723,7 +727,7 @@ class TaskWarriorShellout(TaskWarriorBase):
             '--',
             annotation
         )
-        id, annotated_task = self.get_task(uuid=task[six.u('uuid')])
+        id, annotated_task = self.get_task(uuid=task['uuid'])
         return annotated_task
 
     def task_denotate(self, task, annotation):
@@ -734,7 +738,7 @@ class TaskWarriorShellout(TaskWarriorBase):
             '--',
             annotation
         )
-        id, denotated_task = self.get_task(uuid=task[six.u('uuid')])
+        id, denotated_task = self.get_task(uuid=task['uuid'])
         return denotated_task
 
     def task_done(self, **kw):
@@ -758,7 +762,7 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         if isinstance(task, Task):
             # Let's pre-serialize taskw.task.Task instances
-            task_uuid = six.text_type(task['uuid'])
+            task_uuid = str(task['uuid'])
             task = task.serialized_changes(keep=True)
             legacy = False
         else:
@@ -773,6 +777,8 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         task_to_modify.pop('uuid', None)
         task_to_modify.pop('id', None)
+        # Urgency field is auto-generated and cannot be modified.
+        task_to_modify.pop('urgency', None)
 
         # Only handle annotation differences if this is an old-style
         # task, or if the task itself says annotations have changed.
