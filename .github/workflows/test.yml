@@ -1,12 +1,22 @@
 name: Run Tests
-on: [push]
+on:
+  push:
+    branches: ["develop"]
+  pull_request:
+    branches: ["develop"]
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [2.7, 3.5, 3.6, 3.7, 3.8]
-        taskwarrior-version: [2.5.0, 2.5.1]
+        python-version: [3.5, 3.6, 3.7, 3.8]
+        taskwarrior-version: [2.5.0, 2.5.1, 2.5.3]
+        exclude:
+          # Taskwarriror 3.5.3 only supported on Python 3.7+.
+          - python-version: 3.5
+            taskwarrior-version: 2.5.3
+          - python-version: 3.6
+            taskwarrior-version: 2.5.3
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{matrix.python-version}}

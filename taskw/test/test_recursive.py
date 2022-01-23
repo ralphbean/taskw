@@ -60,4 +60,4 @@ class TestRecursibe(object):
         task2 = self.tw.task_add('task2')
         depends = [task1['uuid'], task2['uuid']]
         task3 = self.tw.task_add('task3', depends=depends)
-        assert task3['depends'] == [task1['uuid'], task2['uuid']]
+        assert set(task3['depends']) == set([task1['uuid'], task2['uuid']])

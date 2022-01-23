@@ -1,10 +1,10 @@
 import copy
 import datetime
+import io
 import uuid
 from unittest import TestCase
 
 import pytz
-import six
 from dateutil.tz import tzutc
 
 from taskw.task import Task
@@ -41,7 +41,7 @@ class TestTaskDirtyability(TestCase):
         expected_changes = {'due': (original_due_date, new_due_date)}
         actual_changes = self.task.get_changes()
 
-        self.assertEqual(list(six.iterkeys(actual_changes)), ['due'])
+        self.assertEqual(list(actual_changes.keys()), ['due'])
 
         # Use assertAlmostEqual to allow for millisecond loss when
         # converting to string in setUp
@@ -165,7 +165,7 @@ class TestTaskMarshalling(TestCase):
         self.assertEqual(after_composition, expected_result)
 
     def test_from_input(self):
-        input_add_data = six.StringIO(
+        input_add_data = io.StringIO(
             '{'
             '"description":"Go to Camelot",'
             '"entry":"20180618T030242Z",'
@@ -174,7 +174,7 @@ class TestTaskMarshalling(TestCase):
             '"uuid":"daa3ff05-f716-482e-bc35-3e1601e50778"'
             '}')
 
-        input_modify_data = six.StringIO(
+        input_modify_data = io.StringIO(
             '\n'.join([
                 input_add_data.getvalue(),
                 (

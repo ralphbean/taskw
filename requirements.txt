@@ -1,4 +1,3 @@
-six
 python-dateutil
 pytz
 kitchen
