@@ -19,10 +19,11 @@ class DependsField(Field):
             # In task-2.5, this moved from a comma-separated string to a real list.
             # here we allow a migration path where old splitable strings are
             # handled as well as newschool lists.
-            if hasattr(value, "split"):
-                value = value.split(",")
+            value_list = value
+            if hasattr(value_list, "split"):  # It's not actually a list!
+                value_list = value_list.split(",")
 
-            return DirtyableList([uuid.UUID(v) for v in value])
+            return DirtyableList([uuid.UUID(v) for v in value_list])
         except ValueError:
             dependency_finder = re.compile(
                 "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
