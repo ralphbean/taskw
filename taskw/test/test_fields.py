@@ -218,6 +218,27 @@ class TestDependsField(TestCase):
 
         self.assertEqual(actual_value, expected_value)
 
+    def test_deserialize_malformed_1(self):
+        malformed_depends_field = "[\"eb3a14ce-fee7-4309-b097-aca4ac21851d\",\"ee4ff9af-9017-4292-a4cd-afc363802e4d\"]"
+
+        actual_value = self.field.deserialize(malformed_depends_field)
+        expected_value = [
+            uuid.UUID("eb3a14ce-fee7-4309-b097-aca4ac21851d"),
+            uuid.UUID("ee4ff9af-9017-4292-a4cd-afc363802e4d"),
+        ]
+
+        self.assertEqual(actual_value, expected_value)
+
+    def test_deserialize_malformed_2(self):
+        malformed_depends_field = "[\"[\"59aec08a-a9cc-4804-8e98-9abdd2f8595e\"\",\"\"e3a32703-45e6-436b-8274-6f39b46f2ded\"]\"]"
+
+        actual_value = self.field.deserialize(malformed_depends_field)
+        expected_value = [
+            uuid.UUID("59aec08a-a9cc-4804-8e98-9abdd2f8595e"),
+            uuid.UUID("e3a32703-45e6-436b-8274-6f39b46f2ded"),
+        ]
+
+        self.assertEqual(actual_value, expected_value)
 
 class TestDateField(TestCase):
     def setUp(self):
