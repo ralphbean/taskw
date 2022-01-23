@@ -176,9 +176,9 @@ class TestChoiceField(TestCase):
         self.assertEqual(actual_value, expected_value)
 
 
-class TestCommaSeparatedUUIDField(TestCase):
+class TestDependsField(TestCase):
     def setUp(self):
-        self.field = fields.CommaSeparatedUUIDField()
+        self.field = fields.DependsField()
 
     def test_serialize_single_uuid(self):
         single_uuid = [uuid.uuid4()]

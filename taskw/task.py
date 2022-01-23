@@ -9,7 +9,7 @@ from taskw.fields import (
     AnnotationArrayField,
     ArrayField,
     ChoiceField,
-    CommaSeparatedUUIDField,
+    DependsField,
     DateField,
     DurationField,
     Field,
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 class Task(dict):
     FIELDS = {
         'annotations': AnnotationArrayField(label='Annotations'),
-        'depends': CommaSeparatedUUIDField(label='Depends Upon'),
+        'depends': DependsField(label='Depends Upon'),
         'description': StringField(label='Description'),
         'due': DateField(label='Due'),
         'end': DateField(label='Ended'),

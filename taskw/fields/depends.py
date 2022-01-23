@@ -7,7 +7,7 @@ import uuid
 from .base import DirtyableList, Field
 
 
-class CommaSeparatedUUIDField(Field):
+class DependsField(Field):
     version = LooseVersion('2.4')
 
     def deserialize(self, value):
