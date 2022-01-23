@@ -62,7 +62,7 @@ class Task(dict):
         'tags': ArrayField(label='Tags'),
         'until': DateField(label='Until'),
         'urgency': NumericField(label='Urgency', read_only=True),
-        'uuid': UUIDField(label='UUID'),
+        'uuid': UUIDField(label='UUID', read_only=True),
         'wait': DateField(label='Wait'),
     }
 
@@ -206,11 +206,12 @@ class Task(dict):
         """ Set a key's value regardless of whether a change is seen."""
         return self.__setitem__(key, value, force=True)
 
-    def serialized(self):
+    def serialized(self, include_immutable=True):
         """ Returns a serialized representation of this task."""
         serialized = {}
         for k, v in six.iteritems(self):
-            serialized[k] = self._serialize(k, v, self._fields)
+            if include_immutable or self._field_is_writable(k):
+                serialized[k] = self._serialize(k, v, self._fields)
         return serialized
 
     def serialized_changes(self, keep=False):

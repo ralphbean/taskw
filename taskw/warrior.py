@@ -759,20 +759,14 @@ class TaskWarriorShellout(TaskWarriorBase):
         if isinstance(task, Task):
             # Let's pre-serialize taskw.task.Task instances
             task_uuid = six.text_type(task['uuid'])
-            task = task.serialized_changes(keep=True)
+            task = task.serialized_changes(keep=True, include_immutable=False)
             legacy = False
         else:
             task_uuid = task['uuid']
 
-        id, original_task = self.get_task(uuid=task_uuid)
-
-        if 'id' in task:
-            del task['id']
+        _, original_task = self.get_task(uuid=task_uuid)
 
         task_to_modify = copy.deepcopy(task)
-
-        task_to_modify.pop('uuid', None)
-        task_to_modify.pop('id', None)
 
         # Only handle annotation differences if this is an old-style
         # task, or if the task itself says annotations have changed.
@@ -798,9 +792,6 @@ class TaskWarriorShellout(TaskWarriorBase):
 
             if 'annotations' in task_to_modify:
                 del task_to_modify['annotations']
-
-        if task_to_modify.get('urgency') == 0:
-            del task_to_modify['urgency']
 
         modification = taskw.utils.encode_task_experimental(task_to_modify)
         # Only try to modify the task if there are changes to post here
