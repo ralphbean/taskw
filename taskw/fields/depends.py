@@ -9,6 +9,8 @@ from .base import DirtyableList, Field
 
 
 class DependsField(Field):
+    version = LooseVersion('2.4')
+
     def deserialize(self, value):
         if not value:
             return DirtyableList([])
