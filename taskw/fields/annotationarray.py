@@ -1,11 +1,10 @@
 from dateutil.parser import parse
-import six
 
 from .array import ArrayField
 from .base import DirtyableList
 
 
-class Annotation(six.text_type):
+class Annotation(str):
     """ A special type of string that we'll use for storing annotations.
 
     This is, for all intents and purposes, really just a string, but
@@ -14,7 +13,7 @@ class Annotation(six.text_type):
 
     """
     def __new__(self, description, entry=None):
-        return six.text_type.__new__(self, description)
+        return str.__new__(self, description)
 
     def __init__(self, description, entry=None):
         self._entry = entry
@@ -59,5 +58,5 @@ class AnnotationArrayField(ArrayField):
         if not value:
             value = []
         return super(AnnotationArrayField, self).serialize(
-            [six.text_type(entry) for entry in value]
+            [str(entry) for entry in value]
         )

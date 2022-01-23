@@ -3,7 +3,6 @@ import random
 
 import dateutil.tz
 import pytz
-import six
 
 from taskw.utils import (
     convert_dict_to_override_args,
@@ -74,9 +73,7 @@ class TestUtils(object):
 
     def test_with_unicode(self):
         expected = {
-            six.text_type('andthis'): (
-                six.text_type('has a fucking \\backslash in it')
-            )
+            'andthis': 'has a fucking \\backslash in it'
         }
         line = r'[andthis:"has a fucking \\backslash in it"]'
         r = decode_task(line)

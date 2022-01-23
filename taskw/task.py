@@ -3,8 +3,6 @@ import logging
 import os
 import sys
 
-import six
-
 from taskw.fields import (
     AnnotationArrayField,
     ArrayField,
@@ -73,7 +71,7 @@ class Task(dict):
         self._changes = []
 
         processed = {}
-        for k, v in six.iteritems(data):
+        for k, v in data.items():
             processed[k] = self._deserialize(k, v, self._fields)
 
         super(Task, self).__init__(processed)
@@ -87,7 +85,7 @@ class Task(dict):
         fields.update(udas)
 
         processed = {}
-        for k, v in six.iteritems(data):
+        for k, v in data.items():
             processed[k] = cls._serialize(k, v, fields)
 
         return cls(processed, udas)
@@ -173,7 +171,7 @@ class Task(dict):
             )
 
         # Check for changes on subordinate items
-        for k, v in six.iteritems(self):
+        for k, v in self.items():
             if isinstance(v, Dirtyable):
                 result = v.get_changes(keep=keep)
                 if result:
@@ -198,7 +196,7 @@ class Task(dict):
 
         """
         results = {}
-        for k, v in six.iteritems(values):
+        for k, v in values.items():
             results[k] = self.__setitem__(k, v, force=force)
         return results
 
@@ -209,13 +207,13 @@ class Task(dict):
     def serialized(self):
         """ Returns a serialized representation of this task."""
         serialized = {}
-        for k, v in six.iteritems(self):
+        for k, v in self.items():
             serialized[k] = self._serialize(k, v, self._fields)
         return serialized
 
     def serialized_changes(self, keep=False):
         serialized = {}
-        for k, v in six.iteritems(self.get_changes(keep=keep)):
+        for k, v in self.get_changes(keep=keep).items():
             # Here, `v` is a 2-tuple of the field's original value
             # and the field's new value.
             _, to = v
