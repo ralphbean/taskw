@@ -9,12 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.5, 3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7, 3.8]
         taskwarrior-version: [2.5.0, 2.5.1, 2.5.3]
         exclude:
-          # Taskwarriror 3.5.3 only supported on Python 3.7+.
-          - python-version: 3.5
-            taskwarrior-version: 2.5.3
+          # Taskwarriror 2.5.3 only supported on Python 3.7+.
           - python-version: 3.6
             taskwarrior-version: 2.5.3
     steps:
