@@ -1,7 +1,7 @@
 import json
 import logging
-import os
 import sys
+from typing import Dict
 
 from taskw.fields import (
     AnnotationArrayField,
@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 class Task(dict):
-    FIELDS = {
+    FIELDS: Dict[str, Field] = {
         'annotations': AnnotationArrayField(label='Annotations'),
         'depends': CommaSeparatedUUIDField(label='Depends Upon'),
         'description': StringField(label='Description'),
@@ -60,7 +60,7 @@ class Task(dict):
         'tags': ArrayField(label='Tags'),
         'until': DateField(label='Until'),
         'urgency': NumericField(label='Urgency', read_only=True),
-        'uuid': UUIDField(label='UUID', read_only=True),
+        'uuid': UUIDField(label='UUID'),
         'wait': DateField(label='Wait'),
     }
 

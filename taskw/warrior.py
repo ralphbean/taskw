@@ -763,7 +763,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         if isinstance(task, Task):
             # Let's pre-serialize taskw.task.Task instances
             task_uuid = str(task['uuid'])
-            task = task.serialized_changes(keep=True, include_immutable=False)
+            task = task.serialized_changes(keep=True)
             legacy = False
         else:
             task_uuid = task['uuid']
@@ -771,6 +771,12 @@ class TaskWarriorShellout(TaskWarriorBase):
         _, original_task = self.get_task(uuid=task_uuid)
 
         task_to_modify = copy.deepcopy(task)
+
+        read_only_fields = [
+            k for (k, v) in Task.FIELDS.items() if v.read_only
+        ] + ['uuid']  # 'uuid' isn't always read-only, but is during an update
+        for field_name in read_only_fields:
+            task_to_modify.pop(field_name, None)
 
         # Only handle annotation differences if this is an old-style
         # task, or if the task itself says annotations have changed.
