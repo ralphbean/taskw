@@ -561,8 +561,10 @@ class TaskWarriorShellout(TaskWarriorBase):
 
     @classmethod
     def get_version(cls):
+        if hasattr(cls, 'taskwarrior_version'):
+            return cls.taskwarrior_version
         try:
-            taskwarrior_version = subprocess.Popen(
+            taskwver = subprocess.Popen(
                 ['task', '--version'],
                 stdout=subprocess.PIPE
             ).communicate()[0]
@@ -570,7 +572,8 @@ class TaskWarriorShellout(TaskWarriorBase):
             raise FileNotFoundError(
                 "Unable to find the 'task' command-line tool."
             )
-        return LooseVersion(taskwarrior_version.decode())
+        cls.taskwarrior_version = LooseVersion(taskwver.decode())
+        return cls.taskwarrior_version
 
     def sync(self, init=False):
         if self.get_version() < LooseVersion('2.3'):
