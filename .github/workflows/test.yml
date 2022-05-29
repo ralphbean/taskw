@@ -41,4 +41,5 @@ jobs:
         python -m pip install pytest
     - name: Run Tests
       run: |
+        cp taskw/test/data/test.taskrc ~/.taskrc
         pytest

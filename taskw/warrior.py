@@ -117,11 +117,12 @@ class TaskWarriorBase(metaclass=abc.ABCMeta):
 
         >>> w = TaskWarrior()
         >>> tasks = w.load_tasks()
-        >>> list(tasks.keys())
-        ['pending', 'completed']
-        >>> isinstance(tasks['pending'], list)
+        >>> li = list(tasks.keys())
+        >>> "pending" in li
         True
-        >>> isinstance(tasks['pending'][0], dict)
+        >>> "completed" in li
+        True
+        >>> isinstance(tasks['pending'], list)
         True
         """
 
