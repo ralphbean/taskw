@@ -30,7 +30,7 @@ jobs:
         cd taskwarrior
         git checkout v${{matrix.taskwarrior-version}}
         cmake .
-        make
+        make -j
         sudo make install
         task --version
         cd ../

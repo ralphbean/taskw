@@ -49,8 +49,11 @@ def parse_iso8601_duration(string: str) -> timedelta:
     True
     >>> round(parse_iso8601_duration("P1MT").total_seconds(), 2) == round(30.5*24*60*60, 2)
     True
-    >>> parse_iso8601_duration("P349700DT6H27M21S")
-    datetime.timedelta(days=349700, seconds=23241)
+    >>> dt = parse_iso8601_duration("P349700DT6H27M21S")
+    >>> dt.days
+    349700
+    >>> dt.seconds
+    23241
     """
     orig_string = string
     if not string.startswith("P"):
@@ -67,7 +70,7 @@ def parse_iso8601_duration(string: str) -> timedelta:
         )
     string = string[1:]
 
-    fields_before_t = {"Y": 0, "M": 0, "D": 0}
+    fields_before_t = {"Y": 0.0, "M": 0.0, "D": 0.0}
 
     # Step through letter dividers
     for field_name in fields_before_t.keys():
@@ -80,7 +83,7 @@ def parse_iso8601_duration(string: str) -> timedelta:
             T_index = len(string)
 
         fields_before_t[field_name], string0 = extract_part(string[0:T_index], field_name)
-        string = f"{string0}{string[T_index:]}"
+        string = "{}{}".format(string0, string[T_index:])
 
     if not string.startswith("T"):
         raise ValueError(
@@ -124,4 +127,4 @@ class DurationField(Field):
         # TODO atm (220220529) taskwarrior does not support float notation for its fields (i.e., the
         # following throws an exception on the CLI (task 734 mod durationuda:PT10M5.2S)
         # I'm converting it all  to seconds
-        return f"PT{int(value.total_seconds())}S"
+        return "PT{}S".format(int(value.total_seconds()))
