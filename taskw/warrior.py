@@ -117,12 +117,12 @@ class TaskWarriorBase(metaclass=abc.ABCMeta):
 
         >>> w = TaskWarrior()
         >>> tasks = w.load_tasks()
-        >>> tasks.keys()
-        ['completed', 'pending']
-        >>> type(tasks['pending'])
-        <type 'list'>
-        >>> type(tasks['pending'][0])
-        <type 'dict'>
+        >>> list(tasks.keys())
+        ['pending', 'completed']
+        >>> isinstance(tasks['pending'], list)
+        True
+        >>> isinstance(tasks['pending'][0], dict)
+        True
         """
 
     @abc.abstractmethod
@@ -164,10 +164,7 @@ class TaskWarriorBase(metaclass=abc.ABCMeta):
 
         >>> config = TaskWarrior.load_config()
         >>> config['data']['location']
-        '/home/threebean/.task'
-        >>> config['_forcecolor']
-        'yes'
-
+        '~/.task'
         """
         return TaskRc(config_filename, overrides=overrides)
 
