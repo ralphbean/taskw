@@ -55,15 +55,19 @@ def parse_iso8601_duration(string: str) -> timedelta:
     orig_string = string
     if not string.startswith("P"):
         raise ValueError(
-            f'{orig_string} is not an ISO8601 duration, expected to find the "P" character at the start'
+            '{} is not an ISO8601 duration, expected to find the "P" character at the start'.format(
+                orig_string
+            )
         )
     if "T" not in string:
         raise ValueError(
-            f'{orig_string} is not an ISO8601 duration, expected to find the "T" character'
+            '{} is not an ISO8601 duration, expected to find the "T" character'.format(
+                orig_string
+            )
         )
     string = string[1:]
 
-    fields_before_t: Dict[str, float] = {"Y": 0, "M": 0, "D": 0}
+    fields_before_t = {"Y": 0, "M": 0, "D": 0}
 
     # Step through letter dividers
     for field_name in fields_before_t.keys():
@@ -71,16 +75,18 @@ def parse_iso8601_duration(string: str) -> timedelta:
             break
 
         try:
-            T_index=string.index("T")
+            T_index = string.index("T")
         except ValueError:
-            T_index=len(string)
+            T_index = len(string)
 
         fields_before_t[field_name], string0 = extract_part(string[0:T_index], field_name)
         string = f"{string0}{string[T_index:]}"
 
     if not string.startswith("T"):
         raise ValueError(
-            f'{orig_string} is not an ISO8601 duration, expected to find the "T" character before parsing days/minutes/seconds'
+            '{} is not an ISO8601 duration, expected to find the "T" character before parsing days/minutes/seconds'.format(
+                    orig_string
+            )
         )
     string = string[1:]
 
