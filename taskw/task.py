@@ -43,7 +43,9 @@ class Task(dict):
             label='Priority'
         ),
         'project': StringField(label='Project'),
-        'recur': DurationField(label='Recurrence'),
+        # TODO Convert this to a DurationField, handle values like "monthly" and "daily"
+        # explicitly
+        'recur': StringField(label='Recurrence'),
         'scheduled': DateField(label='Scheduled'),
         'start': DateField(label='Started'),
         'status': ChoiceField(
