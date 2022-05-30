@@ -38,7 +38,7 @@ for category, filename in REQUIREMENTS_FILES.items():
     REQUIREMENTS[category] = requirements
 
 setup(name='taskw',
-      version='1.3.1',
+      version='2.0.0',
       description="Python bindings for your taskwarrior database",
       long_description=long_description,
       classifiers=[
