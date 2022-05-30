@@ -768,17 +768,15 @@ class TaskWarriorShellout(TaskWarriorBase):
         else:
             task_uuid = task['uuid']
 
-        id, original_task = self.get_task(uuid=task_uuid)
-
-        if 'id' in task:
-            del task['id']
+        _, original_task = self.get_task(uuid=task_uuid)
 
         task_to_modify = copy.deepcopy(task)
 
-        task_to_modify.pop('uuid', None)
-        task_to_modify.pop('id', None)
-        # Urgency field is auto-generated and cannot be modified.
-        task_to_modify.pop('urgency', None)
+        read_only_fields = [
+            k for (k, v) in Task.FIELDS.items() if v.read_only
+        ] + ['uuid']  # 'uuid' isn't always read-only, but is during an update
+        for field_name in read_only_fields:
+            task_to_modify.pop(field_name, None)
 
         # Only handle annotation differences if this is an old-style
         # task, or if the task itself says annotations have changed.

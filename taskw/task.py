@@ -1,7 +1,7 @@
 import json
 import logging
-import os
 import sys
+from typing import Dict
 
 from taskw.fields import (
     AnnotationArrayField,
@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 class Task(dict):
-    FIELDS = {
+    FIELDS: Dict[str, Field] = {
         'annotations': AnnotationArrayField(label='Annotations'),
         'depends': CommaSeparatedUUIDField(label='Depends Upon'),
         'description': StringField(label='Description'),
@@ -204,11 +204,12 @@ class Task(dict):
         """ Set a key's value regardless of whether a change is seen."""
         return self.__setitem__(key, value, force=True)
 
-    def serialized(self):
+    def serialized(self, include_immutable=True):
         """ Returns a serialized representation of this task."""
         serialized = {}
         for k, v in self.items():
-            serialized[k] = self._serialize(k, v, self._fields)
+            if include_immutable or self._field_is_writable(k):
+                serialized[k] = self._serialize(k, v, self._fields)
         return serialized
 
     def serialized_changes(self, keep=False):

@@ -143,29 +143,17 @@ class _BaseTestDB(object):
 
         tasks = self.tw.load_tasks()
         assert len(tasks['pending']) == 1
-        assert tasks['pending'][0]['priority'] == 'L'
 
-        # For compatibility with the direct and shellout modes.
-        # Shellout returns more information.
-        try:
-            # Shellout mode returns the correct urgency, so,
-            # let's just not compare for now.
-            del tasks['pending'][0]['urgency']
-            del task['urgency']
+        updated_task = tasks['pending'][0]
+        assert updated_task['priority'] == 'L'
 
-            # Also, experimental mode returns the id.  So, avoid comparing.
-            del tasks['pending'][0]['id']
+        calculated_fields = ['urgency', 'id', 'modified']
+        for field_name in calculated_fields:
+            for record in [task, updated_task]:
+                if field_name in record:
+                    del record[field_name]
 
-            # Task 2.2.0 adds a "modified" field, so delete this.
-            del tasks['pending'][0]['modified']
-        except Exception:
-            pass
-
-        # But Task 2.4.0 puts the modified field in earlier
-        if 'modified' in task:
-            del task['modified']
-
-        assert tasks['pending'][0] == task
+        assert updated_task == task
 
     def test_update_exc(self):
         task = dict(description="lol")
