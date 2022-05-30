@@ -37,11 +37,6 @@ class Task(dict):
         'mask': StringField(label='Mask', read_only=True),
         'modified': DateField(label='Modified'),
         'parent': StringField(label='Parent'),
-        'priority': ChoiceField(
-            choices=[None, 'H', 'M', 'L', ],
-            case_sensitive=False,
-            label='Priority'
-        ),
         'project': StringField(label='Project'),
         'recur': DurationField(label='Recurrence'),
         'scheduled': DateField(label='Scheduled'),
