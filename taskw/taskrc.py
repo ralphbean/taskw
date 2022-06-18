@@ -39,6 +39,7 @@ class TaskRc(dict):
 
     """
 
+    rcdir = None
     UDA_TYPE_MAP = {
         'date': DateField,
         'duration': DurationField,
@@ -54,6 +55,8 @@ class TaskRc(dict):
                     path
                 )
             )
+            if not self.rcdir:
+                TaskRc.rcdir = os.path.dirname(os.path.realpath(self.path))
             config = self._read(self.path)
         else:
             self.path = None
@@ -92,6 +95,17 @@ class TaskRc(dict):
 
     def _read(self, path):
         config = {}
+        if not os.path.exists(path):
+            # include path may be given relative to dir of rcfile
+            oldpath = path
+            path = "%s/%s" % (TaskRc.rcdir, path)
+            if not os.path.exists(path):
+                logger.error(
+                    "rcfile does not exist, tried %s and %s",
+                    oldpath, path
+                )
+                raise FileNotFoundError
+
         with open(path, 'r') as config_file:
             for raw_line in config_file.readlines():
                 line = sanitize(raw_line)
