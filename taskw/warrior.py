@@ -38,6 +38,10 @@ def find_taskrc():
     Find the location of the taskwarrior configuration file.
 
     First checks ${TASKRC} environment variable, then falls back to ~/.taskrc and finally ${XDG_CONFIG_DIR}/task/taskrc.
+
+    Raises FileNotFoundErrors if either
+      * Specified taskrc is not a file
+      * No taskrc was found
     """
     if "TASKRC" in os.environ.keys():
         taskrc = Path(os.environ["TASKRC"])
