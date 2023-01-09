@@ -20,6 +20,7 @@ import uuid
 import subprocess
 import sys
 import json
+from pathlib import Path
 
 import kitchen.text.converters
 
@@ -32,9 +33,31 @@ from taskw.taskrc import TaskRc
 logger = logging.getLogger(__name__)
 
 
-# Location of configuration file: either specified by TASKRC environment
-# variable, or ~/.taskrc (default).
-TASKRC = os.getenv("TASKRC", "~/.taskrc")
+def find_taskrc():
+    """
+    Find the location of configuration file.
+
+    First checks TASKRC environment variable, then falls back to ~/.taskrc and finally ~/.config/task/taskrc.
+
+    """
+    if "TASKRC" in os.environ.keys():
+        taskrc = Path(os.environ["TASKRC"])
+        if taskrc.is_file():
+            return taskrc
+        else:
+            raise FileNotFoundError("Environment variable 'TASKRC' did not resolve to a taskrc file")
+
+    taskrc = Path("~/.taskrc")
+    if taskrc.is_file():
+        return taskrc
+
+    taskrc = Path("~/.config/task/taskrc")
+    if taskrc.is_file():
+        return taskrc
+
+    raise FileNotFoundError("Unable to find taskrc. Set environment variable 'TASKRC=<file>' for a non-standard location")
+    
+
 
 
 class TaskWarriorBase(metaclass=abc.ABCMeta):
@@ -46,11 +69,14 @@ class TaskWarriorBase(metaclass=abc.ABCMeta):
 
     def __init__(
         self,
-        config_filename=TASKRC,
+        config_filename=None,
         config_overrides=None,
         marshal=False
     ):
-        self.config_filename = config_filename
+        if config_filename is None: 
+            self.config_filename = find_taskrc()
+        else: 
+            self.config_filename = config_filename
         self.config = TaskWarriorBase.load_config(config_filename)
         if marshal:
             raise NotImplementedError(
@@ -159,7 +185,7 @@ class TaskWarriorBase(metaclass=abc.ABCMeta):
         return filtered
 
     @classmethod
-    def load_config(cls, config_filename=TASKRC, overrides=None):
+    def load_config(cls, config_filename=None, overrides=None):
         """ Load ~/.taskrc into a python dict
 
         >>> config = TaskWarrior.load_config()
@@ -169,6 +195,8 @@ class TaskWarriorBase(metaclass=abc.ABCMeta):
         'yes'
 
         """
+        if config_filename is None:
+            config_filename = find_taskrc()
         return TaskRc(config_filename, overrides=overrides)
 
     @abc.abstractmethod
@@ -423,10 +451,12 @@ class TaskWarriorShellout(TaskWarriorBase):
 
     def __init__(
         self,
-        config_filename=TASKRC,
+        config_filename=None,
         config_overrides=None,
         marshal=False,
     ):
+        if config_filename is None: 
+            config_filename = find_taskrc()
         super(TaskWarriorShellout, self).__init__(config_filename)
         self.config_overrides = config_overrides if config_overrides else {}
         self._marshal = marshal
@@ -463,7 +493,7 @@ class TaskWarriorShellout(TaskWarriorBase):
             + [str(arg) for arg in args]
         )
         env = os.environ.copy()
-        env['TASKRC'] = self.config_filename
+        env['TASKRC'] = self.config_filename.as_posix()
 
         # subprocess is expecting bytestrings only, so nuke unicode if present
         # and remove control characters
