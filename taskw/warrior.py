@@ -35,10 +35,9 @@ logger = logging.getLogger(__name__)
 
 def find_taskrc():
     """
-    Find the location of configuration file.
+    Find the location of the taskwarrior configuration file.
 
-    First checks TASKRC environment variable, then falls back to ~/.taskrc and finally ~/.config/task/taskrc.
-
+    First checks ${TASKRC} environment variable, then falls back to ~/.taskrc and finally ${XDG_CONFIG_DIR}/task/taskrc.
     """
     if "TASKRC" in os.environ.keys():
         taskrc = Path(os.environ["TASKRC"])
@@ -47,15 +46,15 @@ def find_taskrc():
         else:
             raise FileNotFoundError("Environment variable 'TASKRC' did not resolve to a taskrc file")
 
-    home_dir = Path.home()
 
-    taskrc = home_dir / ".taskrc"
+    taskrc = Path.home() / ".taskrc"
     if taskrc.is_file():
         return taskrc
-
-    taskrc = home_dir / ".config/task/taskrc"
-    if taskrc.is_file():
-        return taskrc
+ 
+    if "XDG_CONFIG_DIR" in os.environ.keys():
+        taskrc = Path(os.environ["XDG_CONFIG_DIR"]) / "task/taskrc"
+        if taskrc.is_file():
+            return taskrc
 
     raise FileNotFoundError("Unable to find taskrc. Set environment variable 'TASKRC=<file>' for a non-standard location")
     
