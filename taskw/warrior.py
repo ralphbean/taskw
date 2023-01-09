@@ -55,8 +55,8 @@ def find_taskrc():
     if taskrc.is_file():
         return taskrc
  
-    if "XDG_CONFIG_DIR" in os.environ.keys():
-        taskrc = Path(os.environ["XDG_CONFIG_DIR"]) / "task/taskrc"
+    if "XDG_CONFIG_HOME" in os.environ.keys():
+        taskrc = Path(os.environ["XDG_CONFIG_HOME"]) / "task/taskrc"
         if taskrc.is_file():
             return taskrc
 
