@@ -47,11 +47,13 @@ def find_taskrc():
         else:
             raise FileNotFoundError("Environment variable 'TASKRC' did not resolve to a taskrc file")
 
-    taskrc = Path("~/.taskrc")
+    home_dir = Path.home()
+
+    taskrc = home_dir / ".taskrc"
     if taskrc.is_file():
         return taskrc
 
-    taskrc = Path("~/.config/task/taskrc")
+    taskrc = home_dir / ".config/task/taskrc"
     if taskrc.is_file():
         return taskrc
 
