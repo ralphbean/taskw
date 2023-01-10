@@ -20,6 +20,7 @@ import uuid
 import subprocess
 import sys
 import json
+from pathlib import Path
 
 import kitchen.text.converters
 
@@ -32,9 +33,40 @@ from taskw.taskrc import TaskRc
 logger = logging.getLogger(__name__)
 
 
-# Location of configuration file: either specified by TASKRC environment
-# variable, or ~/.taskrc (default).
-TASKRC = os.getenv("TASKRC", "~/.taskrc")
+def find_taskrc():
+    """
+    Find the location of the taskwarrior configuration file.
+
+    Follows Taskwarrior's config discovery order
+    * ${HOME}/.taskrc
+    * ${TASKRC}
+    * ${XDG_CONFIG_HOME}/task/taskrc
+
+    Raises FileNotFoundError if either
+      * Specified taskrc is not a file
+      * No taskrc was found
+    """
+    taskrc = Path.home() / ".taskrc"
+    if taskrc.is_file():
+        return taskrc.as_posix()
+
+    if "TASKRC" in os.environ:
+        taskrc = Path(os.environ["TASKRC"])
+        if taskrc.is_file():
+            return taskrc.as_posix()
+        else:
+            raise FileNotFoundError("Environment variable 'TASKRC' did not resolve to a taskrc file") 
+ 
+    if "XDG_CONFIG_HOME" in os.environ.keys():
+        taskrc = Path(os.environ["XDG_CONFIG_HOME"]) / "task/taskrc"
+        if taskrc.is_file():
+            return taskrc.as_posix()
+
+    raise FileNotFoundError("Unable to find taskrc. Set environment variable 'TASKRC=<file>' for a non-standard location")
+
+
+TASKRC = find_taskrc()
+
 
 
 class TaskWarriorBase(metaclass=abc.ABCMeta):
