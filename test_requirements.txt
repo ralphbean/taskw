@@ -1,2 +1,2 @@
 pytest
-tox<3
+tox>=4
