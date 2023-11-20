@@ -11,7 +11,7 @@ fall back to the older TaskWarriorDirect implementation.
 """
 import abc
 import copy
-from distutils.version import LooseVersion
+from packaging.version import Version
 import logging
 import os
 import re
@@ -432,13 +432,13 @@ class TaskWarriorShellout(TaskWarriorBase):
         self._marshal = marshal
         self.config = TaskRc(config_filename, overrides=config_overrides)
 
-        if self.get_version() >= LooseVersion('2.4'):
+        if self.get_version() >= Version('2.4'):
             self.DEFAULT_CONFIG_OVERRIDES['verbose'] = 'new-uuid'
         # Combination of
         # https://github.com/GothenburgBitFactory/taskwarrior/issues/1953
         # and dictionaries random order may cause task add failures in
         # Python versions before 3.7
-        if (self.get_version() >= LooseVersion('2.5.3') and
+        if (self.get_version() >= Version('2.5.3') and
                 sys.hexversion < 0x03070000):
             warnings.once(
                 "Python < 3.7 with TaskWarrior => 2.5.3 is not suppoprted. "
@@ -553,7 +553,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         """ Returns true if runtime requirements of experimental mode are met
         """
         try:
-            return cls.get_version() > LooseVersion('2')
+            return cls.get_version() > Version('2')
         except FileNotFoundError:
             # FileNotFound is raised if subprocess.Popen fails to find
             # the executable.
@@ -570,10 +570,10 @@ class TaskWarriorShellout(TaskWarriorBase):
             raise FileNotFoundError(
                 "Unable to find the 'task' command-line tool."
             )
-        return LooseVersion(taskwarrior_version.decode())
+        return Version(taskwarrior_version.decode())
 
     def sync(self, init=False):
-        if self.get_version() < LooseVersion('2.3'):
+        if self.get_version() < Version('2.3'):
             raise UnsupportedVersionException(
                 "'sync' requires version 2.3 of taskwarrior or later."
             )
@@ -682,7 +682,7 @@ class TaskWarriorShellout(TaskWarriorBase):
 
         # With older versions of taskwarrior, you can specify whatever uuid you
         # want when adding a task.
-        if self.get_version() < LooseVersion('2.4'):
+        if self.get_version() < Version('2.4'):
             task['uuid'] = str(uuid.uuid4())
         elif 'uuid' in task:
             del task['uuid']
@@ -697,7 +697,7 @@ class TaskWarriorShellout(TaskWarriorBase):
         # However, in 2.4 and later, you cannot specify whatever uuid you want
         # when adding a task.  Instead, you have to specify rc.verbose=new-uuid
         # and then parse the assigned uuid out from stdout.
-        if self.get_version() >= LooseVersion('2.4'):
+        if self.get_version() >= Version('2.4'):
             task['uuid'] = re.search(UUID_REGEX, stdout).group(0)
 
         id, added_task = self.get_task(uuid=task['uuid'])

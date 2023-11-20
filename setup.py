@@ -38,17 +38,16 @@ for category, filename in REQUIREMENTS_FILES.items():
     REQUIREMENTS[category] = requirements
 
 setup(name='taskw',
-      version='2.0.0',
+      version='2.1.0',
       description="Python bindings for your taskwarrior database",
       long_description=long_description,
       classifiers=[
           "Development Status :: 5 - Production/Stable",
           "Programming Language :: Python :: 3",
-          "Programming Language :: Python :: 3.4",
-          "Programming Language :: Python :: 3.5",
-          "Programming Language :: Python :: 3.6",
-          "Programming Language :: Python :: 3.7",
-          "Programming Language :: Python :: 3.8",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
           "License :: OSI Approved :: GNU General Public License (GPL)",
           "Intended Audience :: Developers",
       ],
