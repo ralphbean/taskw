@@ -8,7 +8,7 @@ from operator import itemgetter
 import dateutil.tz
 import pytz
 
-from distutils.version import LooseVersion
+from packaging.version import Version
 
 
 DATE_FORMAT = '%Y%m%dT%H%M%SZ'
@@ -91,7 +91,7 @@ def encode_query(value, version, query=True):
                 ])
             )
         else:
-            if k.endswith(".is") and version >= LooseVersion('2.4'):
+            if k.endswith(".is") and version >= Version('2.4'):
                 args.append(
                     '%s == "%s"' % (
                         k[:-3],

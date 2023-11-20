@@ -9,14 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.5, 3.6, 3.7, 3.8]
-        taskwarrior-version: [2.5.0, 2.5.1, 2.5.3]
-        exclude:
-          # Taskwarriror 3.5.3 only supported on Python 3.7+.
-          - python-version: 3.5
-            taskwarrior-version: 2.5.3
-          - python-version: 3.6
-            taskwarrior-version: 2.5.3
+        python-version: [3.9, "3.10", 3.11, 3.12]
+        taskwarrior-version: [2.5.3, 2.6.2]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{matrix.python-version}}
@@ -25,7 +19,7 @@ jobs:
         python-version: ${{matrix.python-version}}
     - name: Install Taskwarrior ${{matrix.taskwarrior-version}}
       run: |
-        sudo apt-get install -y python-dev cmake build-essential libgnutls28-dev uuid-dev gnutls-bin chrpath libssl-dev libfontconfig1-dev
+        sudo apt-get install -y python3-dev cmake build-essential libgnutls28-dev uuid-dev gnutls-bin chrpath libssl-dev libfontconfig1-dev
         git clone https://github.com/GothenburgBitFactory/taskwarrior.git
         cd taskwarrior
         git checkout v${{matrix.taskwarrior-version}}
