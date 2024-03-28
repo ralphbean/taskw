@@ -6,6 +6,7 @@ import dateutil.tz
 
 import pytest
 
+from unittest import TestCase
 from taskw import TaskWarriorDirect, TaskWarriorShellout
 
 
@@ -16,8 +17,9 @@ TASK = {'description': "task 2 http://www.google.com/",
         'uuid': "c1c431ea-f0dc-4683-9a20-e64fcfa65fd1"}
 
 
-class _BaseTestDB(object):
-    def setup(self):
+class _BaseTestDB(TestCase):
+    __test__ = False
+    def setUp(self):
 
         # Sometimes the 'task' command line tool is not installed.
         if self.should_skip():
@@ -330,6 +332,7 @@ class _BaseTestDB(object):
 
 
 class TestDBDirect(_BaseTestDB):
+    __test__ = True
     class_to_test = TaskWarriorDirect
 
     def test_delete_completed(self):
@@ -345,6 +348,7 @@ class TestDBDirect(_BaseTestDB):
 
 
 class TestDBShellout(_BaseTestDB):
+    __test__ = True
     class_to_test = TaskWarriorShellout
 
     def should_skip(self):
