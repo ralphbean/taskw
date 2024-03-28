@@ -4,6 +4,7 @@ import tempfile
 
 import pytest
 
+from unittest import TestCase
 from taskw import TaskWarriorShellout
 
 
@@ -14,8 +15,8 @@ TASK = {'description': "task 2 http://www.google.com/",
         'uuid': "c1c431ea-f0dc-4683-9a20-e64fcfa65fd1"}
 
 
-class TestRecursibe(object):
-    def setup(self):
+class TestRecursibe(TestCase):
+    def setUp(self):
         if not TaskWarriorShellout.can_use():
             # Sometimes the 'task' command line tool is not installed.
             pytest.skip("taskwarrior not installed")

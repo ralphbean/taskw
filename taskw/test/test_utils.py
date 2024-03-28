@@ -4,6 +4,7 @@ import random
 import dateutil.tz
 import pytz
 
+from unittest import TestCase
 from taskw.utils import (
     convert_dict_to_override_args,
     decode_task,
@@ -31,7 +32,7 @@ def shuffled(l):
     return new
 
 
-class TestUtils(object):
+class TestUtils(TestCase):
 
     def test_no_side_effects(self):
         orig = TASK.copy()
@@ -187,7 +188,7 @@ class TestUtils(object):
         assert set(actual_overrides) == set(expected_overrides)
 
 
-class TestCleanExecArg(object):
+class TestCleanExecArg(TestCase):
     def test_clean_null(self):
         assert b"" == clean_ctrl_chars(b"\x00")
 
